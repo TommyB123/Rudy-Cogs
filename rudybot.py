@@ -80,10 +80,10 @@ def isverified(user):
         return False
 
 def isadmin(user):
-    if [role.id in staffroles for role in user.roles]:
-        return True
-    else:
-        return False
+    for role in user.roles:
+        if role.id in staffroles:
+            return True
+    return False
 
 def random_with_N_digits(n):
     range_start = 10**(n-1)
@@ -98,6 +98,22 @@ async def on_ready():
 
     await UpdateSAMPInfo()
 
+@client.event
+async def on_member_ban(member):
+    cursor = mysql.cursor()
+    cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
+    cursor.close()
+
+@client.event
+async def on_member_join(member):
+    cursor = mysql.cursor()
+    cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
+    roles = []
+    for roleid in cursor:
+        discordserver = client.get_server(rcrpguild)
+        roles.append(discord.utils.get(discordserver.roles, id = roleid[0]))
+    await client.add_roles(member, *roles)
+    cursor.close()
 @client.event
 async def on_message(message):
     if client.user.id == message.author.id:
@@ -205,6 +221,7 @@ async def on_member_update(before, after):
             for role in after.roles:
                 if role.id not in before.roles:
                     #do shit
+                    cursor = mysql.cursor()
                     cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
                     mysql.commit()
 
@@ -314,20 +331,23 @@ async def ban(ctx, user: discord.User = None, *reason: str):
         elif len(banreason) == 0:
             await client.say("Enter a reason.")
         else:
-            banlogchannel = client.get_channel(banchannel)
-            adminuser = await client.get_user_info(ctx.message.author.id)
-            em=discord.Embed(title = 'User Banned', description = '<@{0}> was banned by {1}'.format(user.id, adminuser.name), color = 0xe74c3c)
-            em.add_field(name = 'Ban Reason', value = banreason, inline = False)
-            em.set_author(name=ctx.message.author, icon_url=ctx.message.author.avatar_url)
-            em.timestamp = ctx.message.timestamp
-            await client.send_message(banlogchannel, embed = em)
-            await client.say("{0} has been successfully banned.".format(user))
+            if isadmin(user):
+                await client.say("You can't ban other staff idiot boy.")
+            else:
+                banlogchannel = client.get_channel(banchannel)
+                adminuser = await client.get_user_info(ctx.message.author.id)
+                em=discord.Embed(title = 'User Banned', description = '<@{0}> was banned by {1}'.format(user.id, adminuser.name), color = 0xe74c3c)
+                em.add_field(name = 'Ban Reason', value = banreason, inline = False)
+                em.set_author(name=ctx.message.author, icon_url=ctx.message.author.avatar_url)
+                em.timestamp = ctx.message.timestamp
+                await client.send_message(banlogchannel, embed = em)
+                await client.say("<@{0}> has been successfully banned.".format(user.id))
 
-            em=discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c)
-            em.add_field(name = 'Ban Reason', value = banreason, inline = False)
-            em.timestamp = ctx.message.timestamp
-            await client.send_message(user, embed = em)
-            await client.ban(user, 0)
+                em=discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c)
+                em.add_field(name = 'Ban Reason', value = banreason, inline = False)
+                em.timestamp = ctx.message.timestamp
+                await client.send_message(user, embed = em)
+                await client.ban(user, 0)
 
 #simple no parameter/perm check commands
 @client.command()
