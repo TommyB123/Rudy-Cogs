@@ -15,10 +15,10 @@ client = commands.Bot(command_prefix='!')
 
 #mysql info
 mysqlconfig = {
-    'user': 'ucpdev_devsvr',
-    'password': '(N#L0}QXEM@m',
+    'user': 'rcrp_sampserver',
+    'password': '.MRi#z(1IsTH',
     'host': '127.0.0.1',
-    'database': 'ucpdev_devsvr',
+    'database': 'rcrp_rcrp',
     'raise_on_warnings': True,
 }
 
@@ -37,7 +37,16 @@ except mysql.connector.Error as err:
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
 
 #channels where deletions/edits are not logged (management, development, deleted-messages, edited-messages, status)
-staffchannels = ['412340704187252748', '388002249013460993', '463595960367579137', '463644249108250635', '406166047167741952', '464899293166305291', '445668156824879123']
+staffchannels = ['412340704187252748', '388002249013460993', '463595960367579137', '463644249108250635', '406166047167741952', '464899293166305291', '445668156824879123', '466946121445539840']
+
+#ban log channel
+banchannel = '466946121445539840'
+
+#message delete log channel
+deletelogs = '463595960367579137'
+
+#message edit log channel
+editlogs = '463644249108250635'
 
 #all admin+ role IDs
 staffroles = ['293303836125298690', '293441894585729024', '310927289317588992']
@@ -45,6 +54,15 @@ staffroles = ['293303836125298690', '293441894585729024', '310927289317588992']
 #role ID for the verified role
 verifiedrole = '293441047244308481'
 rudyfriend = '460848362111893505'
+
+#helper role ID
+helperrole = '293441873945821184'
+testerrole = '293441807055060993'
+adminrole = '293441894585729024'
+managementrole = '310927289317588992'
+
+#ID of the rcrp guild
+rcrpguild = '93142223473905664'
 
 dashboardurl = "https://redcountyrp.com/dashboard"
 
@@ -57,6 +75,12 @@ async def UpdateSAMPInfo():
 
 def isverified(user):
     if verifiedrole in [role.id for role in user.roles] or rudyfriend in [role.id for role in user.roles]:
+        return True
+    else:
+        return False
+
+def isadmin(user):
+    if [role.id in staffroles for role in user.roles]:
         return True
     else:
         return False
@@ -86,47 +110,56 @@ async def on_message(message):
             list = message.content.split()
             listcount = len(list)
 
-            if listcount == 1: #empty params
-                await client.send_message(message.author, "Usage: verify [Master account name] [Verification code]")
-
-            if listcount > 1:
-                if list[1] != "verify":
-                    cursor = mysql.cursor()
-                    cursor.execute("SELECT COUNT(*) FROM masters WHERE discordid = %s", (message.author.id,))
-                    data = cursor.fetchone()
-                    cursor.close()
-                    if data[0] == 0: #account not verified
+            cursor = mysql.cursor()
+            cursor.execute("SELECT COUNT(*) FROM masters WHERE discordid = %s", (message.author.id,))
+            data = cursor.fetchone()
+            cursor.close()
+            if data[0] == 0: #account not verified
+                if listcount == 1: #empty params
+                    await client.send_message(message.author, "Usage: verify [Master account name]")
+                if listcount > 1:
+                    if list[1] != "verify":
                         if listcount == 2: #entering account name
                             cursor = mysql.cursor()
-                            cursor.execute("SELECT COUNT(*) FROM masters WHERE Username = %s", (list[1], ))
+                            cursor.execute("SELECT COUNT(*) FROM masters WHERE Username = %s", (list[1],))
                             data = cursor.fetchone()
                             if data[0] != 0: #account with name found
                                 code = random_with_N_digits(10)
                                 cursor = mysql.cursor()
                                 cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid IS NULL", (str(code), list[1]))
                                 cursor.close()
-                                await client.send_message(message.author, "Your verification code has been set! (debug: {0}) Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({1})\nOnce you have found your verification code, use /verify {2} [code] to confirm your account.".format(code, dashboardurl, list[1]))
+                                await client.send_message(message.author, "Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, list[1]))
                             else:
                                 await client.send_message(message.author, "Invalid account name.")
-                        if listcount == 3: #entering code
+                        elif listcount == 3: #entering code
                             cursor = mysql.cursor()
-                            cursor.execute("SELECT COUNT(*), id AS results FROM masters WHERE discordcode = %s AND Username = %s", (list[2], list[1]))
+                            cursor.execute("SELECT COUNT(*), id, Helper, Tester, AdminLevel AS results FROM masters WHERE discordcode = %s AND Username = %s", (list[2], list[1]))
                             data = cursor.fetchone()
                             cursor.close()
                             if data[0] == 1: #account match
-                                discordserver = client.get_server('93142223473905664')
+                                discordserver = client.get_server(rcrpguild)
                                 discordmember = discordserver.get_member(message.author.id)
-                                verified = discord.utils.get(discordserver.roles, id = '293441047244308481')
-                                await client.add_roles(discordmember, verified)
+                                discordroles = []
+                                discordroles.append(discord.utils.get(discordserver.roles, id = verifiedrole))
+                                if data[2] == 1: #guy is helper
+                                    discordroles.append(discord.utils.get(discordserver.roles, id = helperrole))
+                                if data[3] == 1: #guy is tester
+                                    discordroles.append(discord.utils.get(discordserver.roles, id = testerrole))
+                                if data[4] != 0: #guy is admin
+                                    discordroles.append(discord.utils.get(discordserver.roles, id = adminrole))
+                                if data[4] == 4: #guy is management
+                                    discordroles.append(discord.utils.get(discordserver.roles, id = managementrole))
+                                await client.add_roles(discordmember, *discordroles)
                                 cursor = mysql.cursor()
                                 cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE id = %s", (message.author.id, data[1]))
                                 cursor.close()
                                 await client.send_message(message.author, "Your account is now verified!")
                             else:
                                 await client.send_message(message.author, "Invalid ID.")
-                    else:
-                        await client.send_message(message.author, "You have already verified your account.")
-
+                        else:
+                            await client.send_message(message.author, "Usage: verify [Master account name]")
+            else:
+                await client.send_message(message.author, "That account is already linked to a discord account.")
         else:
             client.send_message(message.author, "I'm a bot. My only use via direct messages is verifying RCRP accounts. Type 'verify [MA name]' to verify your account.")
     else:
@@ -136,9 +169,11 @@ async def on_message(message):
 @client.event
 async def on_message_delete(message):
     if message.channel.id not in staffchannels and message.channel.is_private == False:
-        channel = client.get_channel('463595960367579137')
-        em=discord.Embed(title='Message Deleted', description='Message by <@{0}> in <#{1}> was deleted'.format(message.author.id, message.channel.id))
+        channel = client.get_channel(deletelogs)
+        em=discord.Embed(title='Message Deleted', description='Message by <@{0}> in <#{1}> was deleted'.format(message.author.id, message.channel.id), color = 0x1abc9c, timestamp = message.timestamp)
         em.add_field(name='Message Content', value=message.content, inline=False)
+        em.set_author(name=message.author, icon_url=message.author.avatar_url)
+        em.set_footer(text="User ID: {0}".format(message.author.id))
         await client.send_message(channel, embed=em)
 
 @client.event
@@ -147,33 +182,36 @@ async def on_message_edit(before, after):
         if before.content == after.content:
             return
 
-        channel = client.get_channel('463644249108250635')
-        em=discord.Embed(title='Message Edited', description='<@{0}> edited a message in <#{1}>'.format(before.author.id, before.channel.id))
+        channel = client.get_channel(editlogs)
+        em=discord.Embed(title='Message Edited', description='<@{0}> edited a message in <#{1}>'.format(before.author.id, before.channel.id), color = 0x1abc9c, timestamp = after.timestamp)
         em.add_field(name='Original Message', value=before.content, inline=False)
         em.add_field(name='New Message', value=after.content, inline=False)
+        em.set_author(name=after.author, icon_url=after.author.avatar_url)
+        em.set_footer(text="User ID: {0}".format(after.author.id))
         await client.send_message(channel, embed=em)
 
-#@client.event
-#async def on_member_update(before, after):
-#    if before.roles != after.roles:
-#        cursor = mysql.cursor()
-#        #check for removed roles and delete them
-#        for role in before.roles:
-#            if role.id not in after.roles:
-#                cursor.execute("DELETE FROM discordroles WHERE discorduser = %s AND discordrole = %s", (before.id, role.id))
-#
-#        #check for added roles and insert them
-#        for role in after.roles:
-#            if role.id not in before.roles:
-#                #do shit
-#                cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
-#                mysql.commit()
-#
-#        cursor.close()
+@client.event
+async def on_member_update(before, after):
+    if isverified(after):
+        if before.roles != after.roles:
+            cursor = mysql.cursor()
+            #check for removed roles and delete them
+            for role in before.roles:
+                if role.id not in after.roles:
+                    cursor.execute("DELETE FROM discordroles WHERE discorduser = %s AND discordrole = %s", (before.id, role.id))
+
+            #check for added roles and insert them
+            for role in after.roles:
+                if role.id not in before.roles:
+                    #do shit
+                    cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
+                    mysql.commit()
+
+            cursor.close()
 
 @client.command(pass_context=True)
 async def rudypic(ctx):
-    if "460848362111893505" in [role.id for role in ctx.message.author.roles]:
+    if rudyfriend in [role.id for role in ctx.message.author.roles]:
         pictures = []
         for image in imclient.get_album_images('WLQku0l'):
             pictures.append(image.link)
@@ -193,11 +231,11 @@ async def give(item = 'none'):
         await client.say("*Rudy stares at your empty hand disappointed. *")
 
 @client.command(pass_context=True)
-async def clear(ctx, *, amount = 'none'):
-    if amount == "" or amount == 'none' or amount.isdigit() == False or amount == 0:
+async def clear(ctx, *, amount : int = 0):
+    if amount == 0:
         return
 
-    if [role.id in staffroles for role in ctx.message.author.roles]:
+    if isadmin(ctx.message.author):
         amount = int(amount)
         if amount > 10:
             await client.say("You cannot clear more than 10 messages at once.")
@@ -214,7 +252,7 @@ async def dms(ctx):
         await client.say("https://imgur.com/a/yYK5dnZ")
 
 @client.command(pass_context = True)
-async def pet(ctx, *, location = 'none'):
+async def pet(ctx, *, location: str = 'None'):
     if location == 'head' or location == 'ears':
         await client.say("* You pet Rudy's head, specifically behind the ears. He enjoys this very much and sticks his nose out directly towards you as a reaction to the affection. *")
     elif location == 'lower back':
@@ -230,6 +268,65 @@ async def clearapps(ctx):
             if not i.pinned:
                 messages.append(i)
         await client.delete_messages(messages)
+
+@client.command(pass_context = True)
+async def whois(ctx, user: discord.User=None):
+    if isadmin(ctx.message.author):
+        if not user:
+            await client.say("Invalid user.")
+        else:
+            cursor = mysql.cursor()
+            cursor.execute("SELECT Username FROM masters WHERE discordid = %s", (user.id, ))
+            data = cursor.fetchone()
+            if cursor.rowcount != 0:
+                await client.say("Master Account of {0}: {1}".format(user, data[0]))
+            else:
+                await client.say("{0} does not have a Master Account linked to their Discord account.".format(user))
+            cursor.close()
+
+@client.command(pass_context = True)
+async def find(ctx, name : str = 'None'):
+    if isadmin(ctx.message.author):
+        if name != 'None':
+            cursor = mysql.cursor()
+            cursor.execute("SELECT discordid FROM masters WHERE Username = %s", (name, ))
+            data = cursor.fetchone()
+            if cursor.rowcount != 0:
+                if data[0] == None:
+                    await client.say("{0} does not have a Discord account linked to their MA.".format(name))
+                else:
+                    member = discord.utils.get(ctx.message.author.server.members, id = data[0])
+                    await client.say("Discord Account of {0}: <@{1}>".format(name, member.id))
+            else:
+                await client.say("{0} is not a valid account name.".format(name))
+            cursor.close()
+
+@client.command(pass_context = True)
+async def ban(ctx, user: discord.User = None, *reason: str):
+    if isadmin(ctx.message.author):
+        str = []
+        for value in reason:
+            str.append(value)
+        banreason = ' '.join(str)
+        if not user:
+            await client.say("Invalid user.")
+        elif len(banreason) == 0:
+            await client.say("Enter a reason.")
+        else:
+            banlogchannel = client.get_channel(banchannel)
+            adminuser = await client.get_user_info(ctx.message.author.id)
+            em=discord.Embed(title = 'User Banned', description = '<@{0}> was banned by {1}'.format(user.id, adminuser.name), color = 0xe74c3c)
+            em.add_field(name = 'Ban Reason', value = banreason, inline = False)
+            em.set_author(name=ctx.message.author, icon_url=ctx.message.author.avatar_url)
+            em.timestamp = ctx.message.timestamp
+            await client.send_message(banlogchannel, embed = em)
+            await client.say("{0} has been successfully banned.".format(user))
+
+            em=discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c)
+            em.add_field(name = 'Ban Reason', value = banreason, inline = False)
+            em.timestamp = ctx.message.timestamp
+            await client.send_message(user, embed = em)
+            await client.ban(user, 0)
 
 #simple no parameter/perm check commands
 @client.command()
