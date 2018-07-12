@@ -199,6 +199,7 @@ async def on_member_update(before, after):
             for role in before.roles:
                 if role.id not in after.roles:
                     cursor.execute("DELETE FROM discordroles WHERE discorduser = %s AND discordrole = %s", (before.id, role.id))
+            cursor.close()
 
             #check for added roles and insert them
             for role in after.roles:
