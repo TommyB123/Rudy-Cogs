@@ -138,14 +138,17 @@ async def on_message(message):
                     if list[1] != "verify":
                         if listcount == 2: #entering account name
                             cursor = mysql.cursor()
-                            cursor.execute("SELECT COUNT(*) FROM masters WHERE Username = %s", (list[1],))
+                            cursor.execute("SELECT COUNT(*), State FROM masters WHERE Username = %s", (list[1],))
                             data = cursor.fetchone()
                             if data[0] != 0: #account with name found
-                                code = random_with_N_digits(10)
-                                cursor = mysql.cursor()
-                                cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid IS NULL", (str(code), list[1]))
-                                cursor.close()
-                                await client.send_message(message.author, "Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, list[1]))
+                                if data[1] == 1: #account is an accepted MA
+                                    code = random_with_N_digits(10)
+                                    cursor = mysql.cursor()
+                                    cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid IS NULL", (str(code), list[1]))
+                                    cursor.close()
+                                    await client.send_message(message.author, "Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, list[1]))
+                                else:
+                                    await client.send_message(message.author, "You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
                             else:
                                 await client.send_message(message.author, "Invalid account name.")
                         elif listcount == 3: #entering code
@@ -221,7 +224,6 @@ async def on_member_update(before, after):
             #check for added roles and insert them
             for role in after.roles:
                 if role.id not in before.roles:
-                    #do shit
                     cursor = mysql.cursor()
                     cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
                     mysql.commit()
