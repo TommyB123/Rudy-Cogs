@@ -114,6 +114,7 @@ async def on_member_join(member):
         roles.append(discord.utils.get(discordserver.roles, id = roleid[0]))
     await client.add_roles(member, *roles)
     cursor.close()
+
 @client.event
 async def on_message(message):
     if client.user.id == message.author.id:
@@ -254,7 +255,6 @@ async def clear(ctx, *, amount : int = 0):
         return
 
     if isadmin(ctx.message.author):
-        amount = int(amount)
         if amount > 10:
             await client.say("You cannot clear more than 10 messages at once.")
         else:
