@@ -322,6 +322,16 @@ async def find(ctx, name : str = 'None'):
             cursor.close()
 
 @client.command(pass_context = True)
+async def lookup(ctx, id : str = 'None'):
+    if isadmin(ctx.message.author) and id != 'None':
+        cursor = mysql.cursor()
+        cursor.execute("SELECT Username FROM masters WHERE discordid = %s", (id, ))
+        data = cursor.fetchone()
+        if cursor.rowcount != 0:
+            await client.say("Master Account of Discord ID {0}: {1}".format(id, data[0]))
+        cursor.close()
+
+@client.command(pass_context = True)
 async def ban(ctx, user: discord.User = None, *reason: str):
     if isadmin(ctx.message.author):
         str = []
@@ -341,6 +351,7 @@ async def ban(ctx, user: discord.User = None, *reason: str):
                 em=discord.Embed(title = 'User Banned', description = '<@{0}> was banned by {1}'.format(user.id, adminuser.name), color = 0xe74c3c)
                 em.add_field(name = 'Ban Reason', value = banreason, inline = False)
                 em.set_author(name=ctx.message.author, icon_url=ctx.message.author.avatar_url)
+                em.set_footer(text="User ID: {0}".format(user.id))
                 em.timestamp = ctx.message.timestamp
                 await client.send_message(banlogchannel, embed = em)
                 await client.say("<@{0}> has been successfully banned.".format(user.id))
