@@ -2,6 +2,7 @@ import discord
 import asyncio
 import random
 import mysql.connector
+import time
 
 from discord.ext import commands
 from samp_client import constants
@@ -353,6 +354,7 @@ async def ban(ctx, user: discord.User = None, *reason: str):
                 em.set_author(name=ctx.message.author, icon_url=ctx.message.author.avatar_url)
                 em.set_footer(text="User ID: {0}".format(user.id))
                 em.timestamp = ctx.message.timestamp
+                await client.ban(user, 0)
                 await client.send_message(banlogchannel, embed = em)
                 await client.say("<@{0}> has been successfully banned.".format(user.id))
 
@@ -360,7 +362,6 @@ async def ban(ctx, user: discord.User = None, *reason: str):
                 em.add_field(name = 'Ban Reason', value = banreason, inline = False)
                 em.timestamp = ctx.message.timestamp
                 await client.send_message(user, embed = em)
-                await client.ban(user, 0)
 
 #simple no parameter/perm check commands
 @client.command()
@@ -402,6 +403,10 @@ async def rabbits():
 @client.command()
 async def bathe():
     await client.say("* You give Rudy a bath. He dislikes it heavily. *")
+
+@client.command()
+async def unixtimestamp():
+    await client.say("CURRENT UNIX TIMESTAMP VALUE: {0}".format(int(time.time())))
 
 client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0")
 
