@@ -335,10 +335,10 @@ async def lookup(ctx, id : str = 'None'):
 @client.command(pass_context = True)
 async def ban(ctx, user: discord.User = None, *reason: str):
     if isadmin(ctx.message.author):
-        str = []
+        banr = []
         for value in reason:
-            str.append(value)
-        banreason = ' '.join(str)
+            banr.append(value)
+        banreason = ' '.join(banr)
         if not user:
             await client.say("Invalid user.")
         elif len(banreason) == 0:
