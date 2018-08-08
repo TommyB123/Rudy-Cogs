@@ -26,12 +26,12 @@ try:
     mysql = mysql.connector.connect(** mysqlconfig)
 
 except mysql.connector.Error as err:
-  if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-    print("Access to MySQL DB denied")
-  elif err.errno == errorcode.ER_BAD_DB_ERROR:
-    print("Invalid database")
-  else:
-    print(err)
+    if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+        print("Access to MySQL DB denied")
+    elif err.errno == errorcode.ER_BAD_DB_ERROR:
+        print("Invalid database")
+    else:
+        print(err)
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
@@ -69,9 +69,9 @@ dashboardurl = "https://redcountyrp.com/dashboard"
 client.remove_command('help')
 
 async def UpdateSAMPInfo():
-    with SampClient(address='server.redcountyrp.com', port=7777) as samp:
-        sampinfo=samp.get_server_info()
-        await client.change_presence(game=discord.Game(name='RCRP (%i/%i players)' % (sampinfo.players, sampinfo.max_players)))
+    with SampClient(address = 'server.redcountyrp.com', port = 7777) as samp:
+        sampinfo = samp.get_server_info()
+        await client.change_presence(game = discord.Game(name = 'RCRP (%i/%i players)' % (sampinfo.players, sampinfo.max_players)))
 
 def isverified(user):
     if verifiedrole in [role.id for role in user.roles] or rudyfriend in [role.id for role in user.roles]:
