@@ -24,7 +24,7 @@ mysqlconfig = {
 }
 
 try:
-    mysql = mysql.connector.connect(** mysqlconfig)
+    sql = mysql.connector.connect(** mysqlconfig)
 
 except mysql.connector.Error as err:
   if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
@@ -33,6 +33,8 @@ except mysql.connector.Error as err:
     print("Invalid database")
   else:
     print(err)
+
+sql.close()
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
@@ -91,6 +93,14 @@ def random_with_N_digits(n):
     range_end = (10**n)-1
     return randint(range_start, range_end)
 
+async def CheckMemberGroups():
+    while 1:
+        for member in get_all_members():
+
+        await asyncio.sleep(3600)
+
+client.loop.create_task(CheckMemberGroups())
+
 @client.event
 async def on_ready():
     print('\nLogged in as {0}'.format(client.user.name))
@@ -101,13 +111,16 @@ async def on_ready():
 
 @client.event
 async def on_member_ban(member):
-    cursor = mysql.cursor()
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor()
     cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
     cursor.close()
+    sql.close()
 
 @client.event
 async def on_member_join(member):
-    cursor = mysql.cursor()
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor()
     cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
     roles = []
     for roleid in cursor:
@@ -115,6 +128,7 @@ async def on_member_join(member):
         roles.append(discord.utils.get(discordserver.roles, id = roleid[0]))
     await client.add_roles(member, *roles)
     cursor.close()
+    sql.close()
 
 @client.event
 async def on_message(message):
@@ -128,7 +142,8 @@ async def on_message(message):
             list = message.content.split()
             listcount = len(list)
 
-            cursor = mysql.cursor()
+            sql = mysql.connector.connect(** mysqlconfig)
+            cursor = sql.cursor()
             cursor.execute("SELECT COUNT(*) FROM masters WHERE discordid = %s", (message.author.id,))
             data = cursor.fetchone()
             cursor.close()
@@ -138,13 +153,13 @@ async def on_message(message):
                 if listcount > 1:
                     if list[1] != "verify":
                         if listcount == 2: #entering account name
-                            cursor = mysql.cursor()
+                            cursor = sql.cursor()
                             cursor.execute("SELECT COUNT(*), State FROM masters WHERE Username = %s", (list[1],))
                             data = cursor.fetchone()
                             if data[0] != 0: #account with name found
                                 if data[1] == 1: #account is an accepted MA
                                     code = random_with_N_digits(10)
-                                    cursor = mysql.cursor()
+                                    cursor = sql.cursor()
                                     cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid IS NULL", (str(code), list[1]))
                                     cursor.close()
                                     await client.send_message(message.author, "Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, list[1]))
@@ -153,7 +168,7 @@ async def on_message(message):
                             else:
                                 await client.send_message(message.author, "Invalid account name.")
                         elif listcount == 3: #entering code
-                            cursor = mysql.cursor()
+                            cursor = sql.cursor()
                             cursor.execute("SELECT COUNT(*), id, Helper, Tester, AdminLevel AS results FROM masters WHERE discordcode = %s AND Username = %s", (list[2], list[1]))
                             data = cursor.fetchone()
                             cursor.close()
@@ -171,7 +186,7 @@ async def on_message(message):
                                 if data[4] == 4: #guy is management
                                     discordroles.append(discord.utils.get(discordserver.roles, id = managementrole))
                                 await client.add_roles(discordmember, *discordroles)
-                                cursor = mysql.cursor()
+                                cursor = sql.cursor()
                                 cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE id = %s", (message.author.id, data[1]))
                                 cursor.close()
                                 await client.send_message(message.author, "Your account is now verified!")
@@ -181,6 +196,7 @@ async def on_message(message):
                             await client.send_message(message.author, "Usage: verify [Master account name]")
             else:
                 await client.send_message(message.author, "That account is already linked to a discord account.")
+            sql.close()
         else:
             client.send_message(message.author, "I'm a bot. My only use via direct messages is verifying RCRP accounts. Type 'verify [MA name]' to verify your account.")
     else:
@@ -215,7 +231,8 @@ async def on_message_edit(before, after):
 async def on_member_update(before, after):
     if isverified(after):
         if before.roles != after.roles:
-            cursor = mysql.cursor()
+            sql = mysql.connector.connect(** mysqlconfig)
+            cursor = sql.cursor()
             #check for removed roles and delete them
             for role in before.roles:
                 if role.id not in after.roles:
@@ -225,11 +242,12 @@ async def on_member_update(before, after):
             #check for added roles and insert them
             for role in after.roles:
                 if role.id not in before.roles:
-                    cursor = mysql.cursor()
+                    cursor = sql.cursor()
                     cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
-                    mysql.commit()
+                    sql.commit()
 
             cursor.close()
+            sql.close()
 
 @client.command(pass_context=True)
 async def rudypic(ctx):
@@ -296,7 +314,8 @@ async def whois(ctx, user: discord.User=None):
         if not user:
             await client.say("Invalid user.")
         else:
-            cursor = mysql.cursor()
+            sql = mysql.connector.connect(** mysqlconfig)
+            cursor = sql.cursor()
             cursor.execute("SELECT Username FROM masters WHERE discordid = %s", (user.id, ))
             data = cursor.fetchone()
             if cursor.rowcount != 0:
@@ -304,12 +323,14 @@ async def whois(ctx, user: discord.User=None):
             else:
                 await client.say("{0} does not have a Master Account linked to their Discord account.".format(user))
             cursor.close()
+            sql.close()
 
 @client.command(pass_context = True)
 async def find(ctx, name : str = 'None'):
     if isadmin(ctx.message.author):
         if name != 'None':
-            cursor = mysql.cursor()
+            sql = mysql.connector.connect(** mysqlconfig)
+            cursor = sql.cursor()
             cursor.execute("SELECT discordid FROM masters WHERE Username = %s", (name, ))
             data = cursor.fetchone()
             if cursor.rowcount != 0:
@@ -321,16 +342,19 @@ async def find(ctx, name : str = 'None'):
             else:
                 await client.say("{0} is not a valid account name.".format(name))
             cursor.close()
+            sql.close()
 
 @client.command(pass_context = True)
 async def lookup(ctx, id : str = 'None'):
     if isadmin(ctx.message.author) and id != 'None':
-        cursor = mysql.cursor()
+        sql = mysql.connector.connect(** mysqlconfig)
+        cursor = sql.cursor()
         cursor.execute("SELECT Username FROM masters WHERE discordid = %s", (id, ))
         data = cursor.fetchone()
         if cursor.rowcount != 0:
             await client.say("Master Account of Discord ID {0}: {1}".format(id, data[0]))
         cursor.close()
+        sql.close()
 
 @client.command(pass_context = True)
 async def ban(ctx, user: discord.User = None, *reason: str):
@@ -411,6 +435,5 @@ async def bathe():
 async def unixtimestamp():
     await client.say("CURRENT UNIX TIMESTAMP VALUE: {0}".format(int(time.time())))
 
-client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0")
 
-mysql.close()
+client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0")
