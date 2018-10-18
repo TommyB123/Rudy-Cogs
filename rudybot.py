@@ -27,12 +27,12 @@ try:
     mysql = mysql.connector.connect(** mysqlconfig)
 
 except mysql.connector.Error as err:
-    if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-        print("Access to MySQL DB denied")
-    elif err.errno == errorcode.ER_BAD_DB_ERROR:
-        print("Invalid database")
-    else:
-        print(err)
+  if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+    print("Access to MySQL DB denied")
+  elif err.errno == errorcode.ER_BAD_DB_ERROR:
+    print("Invalid database")
+  else:
+    print(err)
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
@@ -65,14 +65,14 @@ managementrole = '310927289317588992'
 #ID of the rcrp guild
 rcrpguild = '93142223473905664'
 
-dashboardurl = "https://redcountyrp.com/dashboard"
+dashboardurl = "https://redcountyrp.com/user/dashboard"
 
 client.remove_command('help')
 
 async def UpdateSAMPInfo():
     with SampClient(address = 'server.redcountyrp.com', port = 7777) as samp:
         sampinfo = samp.get_server_info()
-        await client.change_presence(game = discord.Game(name = 'RCRP (%i/%i players)' % (sampinfo.players, sampinfo.max_players)))
+        await client.change_presence(game = discord.Game(name='RCRP (%i/%i players)' % (sampinfo.players, sampinfo.max_players)))
 
 def isverified(user):
     if verifiedrole in [role.id for role in user.roles] or rudyfriend in [role.id for role in user.roles]:
@@ -335,10 +335,10 @@ async def lookup(ctx, id : str = 'None'):
 @client.command(pass_context = True)
 async def ban(ctx, user: discord.User = None, *reason: str):
     if isadmin(ctx.message.author):
-        banr = []
+        str = []
         for value in reason:
-            banr.append(value)
-        banreason = ' '.join(banr)
+            str.append(value)
+        banreason = ' '.join(str)
         if not user:
             await client.say("Invalid user.")
         elif len(banreason) == 0:
@@ -382,7 +382,10 @@ async def weight():
 
 @client.command()
 async def brooks():
-   await client.say("https://i.imgur.com/EZGGWRM.png\n* downstairs borks from dog friend Mr. Brooks *")
+    pictures = []
+    for image in imclient.get_album_images('hWatGWe'):
+        pictures.append(image.link)
+    await client.say("* Downstairs borks from dog friend Mr. Brooks *\n {0}".format(random.choice(pictures)))
 
 @client.command()
 async def sit():
