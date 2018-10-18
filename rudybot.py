@@ -93,14 +93,6 @@ def random_with_N_digits(n):
     range_end = (10**n)-1
     return randint(range_start, range_end)
 
-async def CheckMemberGroups():
-    while 1:
-        for member in get_all_members():
-
-        await asyncio.sleep(3600)
-
-client.loop.create_task(CheckMemberGroups())
-
 @client.event
 async def on_ready():
     print('\nLogged in as {0}'.format(client.user.name))
