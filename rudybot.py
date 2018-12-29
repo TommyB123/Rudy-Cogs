@@ -106,6 +106,7 @@ async def on_member_ban(member):
     sql = mysql.connector.connect(** mysqlconfig)
     cursor = sql.cursor()
     cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
+    cursor.execute("UPDATE masters SET discordid = NULL WHERE discordid = %s", (member.id))
     cursor.close()
     sql.close()
 
@@ -114,9 +115,9 @@ async def on_member_join(member):
     sql = mysql.connector.connect(** mysqlconfig)
     cursor = sql.cursor()
     cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
+    discordserver = client.get_server(rcrpguild)
     roles = []
     for roleid in cursor:
-        discordserver = client.get_server(rcrpguild)
         roles.append(discord.utils.get(discordserver.roles, id = roleid[0]))
     await client.add_roles(member, *roles)
     cursor.close()
@@ -225,6 +226,7 @@ async def on_member_update(before, after):
         if before.roles != after.roles:
             sql = mysql.connector.connect(** mysqlconfig)
             cursor = sql.cursor()
+
             #check for removed roles and delete them
             for role in before.roles:
                 if role.id not in after.roles:
@@ -232,9 +234,9 @@ async def on_member_update(before, after):
             cursor.close()
 
             #check for added roles and insert them
+            cursor = sql.cursor()
             for role in after.roles:
                 if role.id not in before.roles:
-                    cursor = sql.cursor()
                     cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
                     sql.commit()
 
