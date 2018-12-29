@@ -63,6 +63,7 @@ helperrole = '293441873945821184'
 testerrole = '293441807055060993'
 adminrole = '293441894585729024'
 managementrole = '310927289317588992'
+ownerrole = '293303836125298690'
 
 #ID of the rcrp guild
 rcrpguild = '93142223473905664'
@@ -88,10 +89,55 @@ def isadmin(user):
             return True
     return False
 
+def ismanagement(user):
+    if managementrole in [role.id for role in user.roles] or ownerrole in [role.id for role in user.roles]:
+        return True
+    else:
+        return False
+
 def random_with_N_digits(n):
     range_start = 10**(n-1)
     range_end = (10**n)-1
     return randint(range_start, range_end)
+
+async def CheckMemberGroups():
+    while 1:
+        discordserver = client.get_server(rcrpguild)
+        sql = mysql.connector.connect(** mysqlconfig)
+        for member in client.get_all_members():
+            if isverified(member):
+                cursor = sql.cursor()
+                cursor.execute("SELECT Helper, Tester, AdminLevel FROM masters WHERE discordid = %s", (member.id, ))
+                data = cursor.fetchone()
+                cursor.close()
+
+                if data is None:
+                    continue
+
+                if not ismanagement(member):
+                    #remove roles a member shouldn't have
+                    removeroles = []
+                    if helperrole in [role.id for role in member.roles] and data[0] == 0: #member isn't a helper but has the role
+                        removeroles.append(discord.utils.get(discordserver.roles, id = helperrole))
+                    if testerrole in [role.id for role in member.roles] and data[1] == 0: #member isn't a tester but has the role
+                        removeroles.append(discord.utils.get(discordserver.roles, id = testerrole))
+                    if adminrole in [role.id for role in member.roles] and data[2] == 0: #member isn't an admin but has the role
+                        removeroles.append(discord.utils.get(discordserver.roles, id = adminrole))
+                    if removeroles:
+                        await client.remove_roles(member, *removeroles)
+
+                    #add roles a member should have
+                    addroles = []
+                    if helperrole not in [role.id for role in member.roles] and data[0] == 1: #member is a helper but doesn't have the role
+                        addroles.append(discord.utils.get(discordserver.roles, id = helperrole))
+                    if testerrole not in [role.id for role in member.roles] and data[1] == 1: #member is a tester but doesn't have the role
+                        addroles.append(discord.utils.get(discordserver.roles, id = testerrole))
+                    if adminrole not in [role.id for role in member.roles] and data[2] != 0: #member is an admin but doesn't have the role
+                        addroles.append(discord.utils.get(discordserver.roles, id = adminrole))
+                    if addroles:
+                        await client.add_roles(member, *addroles)
+        sql.close()
+        await asyncio.sleep(900)
 
 @client.event
 async def on_ready():
@@ -100,6 +146,7 @@ async def on_ready():
     print('------')
 
     await UpdateSAMPInfo()
+    client.loop.create_task(CheckMemberGroups())
 
 @client.event
 async def on_member_ban(member):
@@ -373,7 +420,7 @@ async def ban(ctx, user: discord.User = None, *reason: str):
                 em.set_footer(text="User ID: {0}".format(user.id))
                 em.timestamp = ctx.message.timestamp
                 await client.ban(user, 0)
-                await client.send_message(banlogchannel, embed = em)
+                await client.send_message(client.get_channel(banchannel), embed = em)
                 await client.say("<@{0}> has been successfully banned.".format(user.id))
 
                 em=discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c)
