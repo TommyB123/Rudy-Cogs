@@ -75,9 +75,10 @@ client.remove_command('help')
 async def UpdateSAMPInfo():
     while 1:
         with SampClient(address = 'server.redcountyrp.com', port = 7777) as samp:
-            sampinfo = samp.get_server_info()
-            await client.change_presence(game = discord.Game(name='RCRP (%i/%i players)' % (sampinfo.players, sampinfo.max_players)))
-    await asyncio.sleep(5) #run every 5 seconds
+            if samp is not None:
+                sampinfo = samp.get_server_info()
+                await client.change_presence(game = discord.Game(name='RCRP (%i/%i players)' % (sampinfo.players, sampinfo.max_players)))
+        await asyncio.sleep(5) #run every 5 seconds
 
 def isverified(user):
     if verifiedrole in [role.id for role in user.roles] or rudyfriend in [role.id for role in user.roles]:
