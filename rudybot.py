@@ -73,9 +73,11 @@ dashboardurl = "https://redcountyrp.com/user/dashboard"
 client.remove_command('help')
 
 async def UpdateSAMPInfo():
-    with SampClient(address = 'server.redcountyrp.com', port = 7777) as samp:
-        sampinfo = samp.get_server_info()
-        await client.change_presence(game = discord.Game(name='RCRP (%i/%i players)' % (sampinfo.players, sampinfo.max_players)))
+    while 1:
+        with SampClient(address = 'server.redcountyrp.com', port = 7777) as samp:
+            sampinfo = samp.get_server_info()
+            await client.change_presence(game = discord.Game(name='RCRP (%i/%i players)' % (sampinfo.players, sampinfo.max_players)))
+    await asyncio.sleep(5) #run every 5 seconds
 
 def isverified(user):
     if verifiedrole in [role.id for role in user.roles] or rudyfriend in [role.id for role in user.roles]:
@@ -137,7 +139,7 @@ async def CheckMemberGroups():
                     if addroles:
                         await client.add_roles(member, *addroles)
         sql.close()
-        await asyncio.sleep(900)
+        await asyncio.sleep(30) #check every 30 seconds
 
 @client.event
 async def on_ready():
@@ -145,8 +147,8 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
-    await UpdateSAMPInfo()
     client.loop.create_task(CheckMemberGroups())
+    client.loop.create_task(UpdateSAMPInfo())
 
 @client.event
 async def on_member_ban(member):
@@ -174,8 +176,6 @@ async def on_member_join(member):
 async def on_message(message):
     if client.user.id == message.author.id:
         return
-
-    await UpdateSAMPInfo()
 
     if message.channel.is_private == True:
         if message.content.find('verify') != -1:
