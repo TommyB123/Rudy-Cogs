@@ -64,6 +64,7 @@ testerrole = '293441807055060993'
 adminrole = '293441894585729024'
 managementrole = '310927289317588992'
 ownerrole = '293303836125298690'
+premiumrole = '534479263966167069'
 
 #ID of the rcrp guild
 rcrpguild = '93142223473905664'
@@ -113,7 +114,7 @@ async def CheckMemberGroups():
         for member in client.get_all_members():
             if isverified(member):
                 cursor = sql.cursor()
-                cursor.execute("SELECT Helper, Tester, AdminLevel FROM masters WHERE discordid = %s", (member.id, ))
+                cursor.execute("SELECT Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
                 data = cursor.fetchone()
                 cursor.close()
 
@@ -129,6 +130,8 @@ async def CheckMemberGroups():
                         removeroles.append(discord.utils.get(discordserver.roles, id = testerrole))
                     if adminrole in [role.id for role in member.roles] and data[2] == 0: #member isn't an admin but has the role
                         removeroles.append(discord.utils.get(discordserver.roles, id = adminrole))
+                    if premiumrole in [role.id for role in member.roles] and data[3] == 0: #member isn't an admin but has the role
+                        removeroles.append(discord.utils.get(discordserver.roles, id = premiumrole))
                     if removeroles:
                         await client.remove_roles(member, *removeroles)
 
@@ -140,6 +143,8 @@ async def CheckMemberGroups():
                         addroles.append(discord.utils.get(discordserver.roles, id = testerrole))
                     if adminrole not in [role.id for role in member.roles] and data[2] != 0: #member is an admin but doesn't have the role
                         addroles.append(discord.utils.get(discordserver.roles, id = adminrole))
+                    if premiumrole not in [role.id for role in member.roles] and data[3] != 0: #member is an admin but doesn't have the role
+                        addroles.append(discord.utils.get(discordserver.roles, id = premiumrole))
                     if addroles:
                         await client.add_roles(member, *addroles)
         sql.close()
@@ -244,8 +249,7 @@ async def on_message(message):
         else:
             client.send_message(message.author, "I'm a bot. My only use via direct messages is verifying RCRP accounts. Type 'verify [MA name]' to verify your account.")
     else:
-        if isverified(message.author):
-            await client.process_commands(message)
+        await client.process_commands(message)
 
 @client.event
 async def on_message_delete(message):
@@ -361,10 +365,10 @@ async def whois(ctx, user: discord.User=None):
         else:
             sql = mysql.connector.connect(** mysqlconfig)
             cursor = sql.cursor()
-            cursor.execute("SELECT Username FROM masters WHERE discordid = %s", (user.id, ))
+            cursor.execute("SELECT id, Username FROM masters WHERE discordid = %s", (user.id, ))
             data = cursor.fetchone()
             if cursor.rowcount != 0:
-                await client.say("Master Account of {0}: {1}".format(user, data[0]))
+                await client.say("Master Account of {0}: {1} (https://redcountyrp.com/admin/masters/{2})".format(user, data[1], data[0]))
             else:
                 await client.say("{0} does not have a Master Account linked to their Discord account.".format(user))
             cursor.close()
