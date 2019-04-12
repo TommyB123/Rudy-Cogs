@@ -129,6 +129,31 @@ def pretty_time_delta(seconds):
     else:
         return '%s%ds' % (sign_string, seconds)
 
+def isValidMasterAccountName(name):
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor()
+    cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
+    data = cursor.fetchone()
+    cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
+def isMasterAccountVerified(name):
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor()
+    cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != NULL", (name, ))
+    data = cursor.fetchone()
+    cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
+
 async def SyncMemberRoles():
     while 1:
         discordguild = client.get_guild(rcrpguild)
@@ -178,15 +203,15 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
-    client.loop.create_task(SyncMemberRoles())
-    client.loop.create_task(UpdateSAMPInfo())
+    #client.loop.create_task(SyncMemberRoles())
+    #client.loop.create_task(UpdateSAMPInfo())
 
 @client.event
 async def on_member_ban(guild, user):
     sql = mysql.connector.connect(** mysqlconfig)
     cursor = sql.cursor()
-    cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
-    cursor.execute("UPDATE masters SET discordid = NULL WHERE discordid = %s", (member.id))
+    cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (user.id, ))
+    cursor.execute("UPDATE masters SET discordid = NULL WHERE discordid = %s", (user.id, ))
     cursor.close()
     sql.close()
 
@@ -223,7 +248,7 @@ async def on_message(message):
             cursor.close()
             if data[0] == 0: #account not verified
                 if listcount == 1: #empty params
-                    await message.author.send(message.author, "Usage: verify [Master account name]")
+                    await message.author.send("Usage: verify [Master account name]")
                 if listcount > 1:
                     if list[1] != "verify":
                         if listcount == 2: #entering account name
@@ -250,15 +275,15 @@ async def on_message(message):
                                 discordguild = client.get_guild(rcrpguild)
                                 discordmember = discordguild.get_member(message.author.id)
                                 discordroles = []
-                                discordroles.append(discord.utils.get(discordguild.roles, id = verifiedrole))
+                                discordroles.append(discordguild.get_role(verifiedrole))
                                 if data[2] == 1: #guy is helper
-                                    discordroles.append(discord.utils.get(discordguild.roles, id = helperrole))
+                                    discordroles.append(discordguild.get_role(helperrole))
                                 if data[3] == 1: #guy is tester
-                                    discordroles.append(discord.utils.get(discordguild.roles, id = testerrole))
+                                    discordroles.append(discordguild.get_role(testerrole))
                                 if data[4] != 0: #guy is admin
-                                    discordroles.append(discord.utils.get(discordguild.roles, id = adminrole))
+                                    discordroles.append(discordguild.get_role(adminrole))
                                 if data[4] == 4: #guy is management
-                                    discordroles.append(discord.utils.get(discordguild.roles, id = managementrole))
+                                    discordroles.append(discordguild.get_role(managementrole))
                                 await member.add_roles(*discordroles)
                                 cursor = sql.cursor()
                                 cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE id = %s", (message.author.id, data[1]))
@@ -272,7 +297,7 @@ async def on_message(message):
                 await message.author.send("That account is already linked to a discord account.")
             sql.close()
         else:
-            message.author.send("I'm a bot. My only use via direct messages is verifying RCRP accounts. Type 'verify [MA name]' to verify your account.")
+            await message.author.send("I'm a bot. My only use via direct messages is verifying RCRP accounts. Type 'verify [MA name]' to verify your account.")
     else:
         await client.process_commands(message)
 
@@ -408,7 +433,7 @@ async def find(ctx, name : str = 'None'):
                 if data[0] == None:
                     await ctx.send("{0} does not have a Discord account linked to their MA.".format(name))
                 else:
-                    member = discord.utils.get(ctx.guild.members, id = data[0])
+                    member = ctx.guild.get_member(data[0])
                     await ctx.send("Discord Account of {0}: <@{1}>".format(name, member.id))
             else:
                 await ctx.send("{0} is not a valid account name.".format(name))
@@ -440,16 +465,99 @@ async def ban(ctx, user: discord.User = None, *reason: str):
         if len(banreason) == 0:
             await ctx.send("Enter a reason.")
             return
-        if isadmin(user):
+        bannedmember = ctx.guild.get_member(user.id)
+        if isadmin(bannedmember):
             await ctx.send("You can't ban other staff idiot boy.")
             return
-        adminuser = await client.get_user_info(ctx.author.id)
+        adminuser = await client.fetch_user(ctx.author.id)
         em = discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c)
         em.add_field(name = 'Ban Reason', value = banreason, inline = False)
-        em.timestamp = ctx.message.timestamp
+        em.timestamp = ctx.message.created_at
         await user.send(embed = em)
-        await ctx.guild.ban(user, 0, Reason = str)
-        await ctx.send("<@{0}> has been successfully banned.".format(user.id))
+        baninfo = "{0} - Banned by {1}".format(banreason, adminuser.name)
+        await ctx.guild.ban(bannedmember, reason = baninfo, delete_message_days = 0)
+        await ctx.send("<@{0}> has been successfully banned.".format(bannedmember.id))
+
+@client.command()
+async def unban(ctx, target: str = ""):
+    if not isadmin(ctx.author):
+        return
+    banned_user = await client.fetch_user(target)
+    if not banned_user:
+        await ctx.send("Invalid user.")
+    bans = await ctx.guild.bans()
+    for ban in bans:
+        if ban.user.id == banned_user.id:
+            await ctx.guild.unban(ban.user)
+            await ctx.send("<@{0}> has been successfully unbanned".format(ban.user.id))
+            return
+    await ctx.send("Could not find any bans for that user.")
+
+@client.command()
+async def baninfo(ctx, target: str = ""):
+    if not isadmin(ctx.author):
+        return
+    banned_user = await client.fetch_user(target)
+    if not banned_user:
+        await ctx.send("Invalid user.")
+        return
+    bans = await ctx.guild.bans()
+    for ban in bans:
+        if ban.user.id == banned_user.id:
+            await ctx.send("<@{0}> was banned for the following reason: {1}".format(ban.user.id, ban.reason))
+            return
+    await ctx.send("Could not find any ban info for that user.")
+
+@client.command()
+async def verify(ctx, member: discord.Member = None, masteraccount: str = " "):
+    if not ismanagement(ctx.author):
+        await ctx.send("You can't do that one buddy")
+        return
+    if not member:
+        await ctx.send("Invalid user.")
+        return
+    if isverified(member):
+        await ctx.send("<@{0}> is already verified.".format(member.id))
+        return
+    if not isValidMasterAccountName(masteraccount):
+        await ctx.send("Invalid MA name")
+        return
+    if isMasterAccountVerified(masteraccount):
+        await ctx.send("MA is already verified")
+        return
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor()
+    cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE Username = %s", (member.id, masteraccount))
+    cursor.close()
+    sql.close()
+
+    await member.add_roles(ctx.guild.get_role(verifiedrole))
+    await ctx.send("<@{0}> has been manually verified as {1}".format(member.id, masteraccount))
+
+@client.command()
+async def unverify(ctx, member: discord.Member = None):
+    if not ismanagement(ctx.author):
+        await ctx.send("You can't do that one buddy")
+        return
+    if not member:
+        await ctx.send("Invalid user.")
+        return
+    if not isverified(member):
+        await ctx.send("This user is not verified")
+        return
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor()
+    cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
+    cursor.execute("UPDATE masters SET discordid = NULL WHERE discordid = %s", (member.id, ))
+    cursor.close()
+    sql.close()
+    roles = []
+    for role in member.roles:
+        if role.id == rcrpguild: #check to see if the role is @everyone, skip it if so
+            continue
+        roles.append(role)
+    await ctx.send("<@{0}> has been unverified.".format(member.id))
+    await member.remove_roles(*roles)
 
 @client.command()
 async def age(ctx):
