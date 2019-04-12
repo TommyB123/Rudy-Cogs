@@ -3,6 +3,7 @@ import asyncio
 import random
 import mysql.connector
 import time
+import subprocess
 
 from discord.ext import commands
 from samp_client import constants
@@ -40,7 +41,7 @@ sql.close()
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
 
 #channels where deletions/edits are not logged (management, development, deleted-messages, edited-messages, status)
-staffchannels = ['412340704187252748', '388002249013460993', '463595960367579137', '463644249108250635', '406166047167741952', '464899293166305291', '445668156824879123', '466946121445539840']
+staffchannels = ['412340704187252748', '388002249013460993', '463595960367579137', '463644249108250635', '406166047167741952', '464899293166305291', '445668156824879123', '466946121445539840', '507547199710822400']
 
 #ban log channel
 banchannel = '466946121445539840'
@@ -70,6 +71,8 @@ premiumrole = '534479263966167069'
 rcrpguild = '93142223473905664'
 
 dashboardurl = "https://redcountyrp.com/user/dashboard"
+
+rudyage = 1409529600
 
 client.remove_command('help')
 
@@ -106,6 +109,24 @@ def random_with_N_digits(n):
     range_start = 10**(n-1)
     range_end = (10**n)-1
     return randint(range_start, range_end)
+
+def pretty_time_delta(seconds):
+    sign_string = '-' if seconds < 0 else ''
+    seconds = abs(int(seconds))
+    years, seconds = divmod(seconds, 31556952)
+    days, seconds = divmod(seconds, 86400)
+    hours, seconds = divmod(seconds, 3600)
+    minutes, seconds = divmod(seconds, 60)
+    if years > 0:
+        return '%s%dy %dd %dh %dm %ds' % (sign_string, years, days, hours, minutes, seconds)
+    elif days > 0:
+        return '%s%dd %dh %dm %ds' % (sign_string, days, hours, minutes, seconds)
+    elif hours > 0:
+        return '%s%dh %dm %ds' % (sign_string, hours, minutes, seconds)
+    elif minutes > 0:
+        return '%s%dm %ds' % (sign_string, minutes, seconds)
+    else:
+        return '%s%ds' % (sign_string, seconds)
 
 async def CheckMemberGroups():
     while 1:
@@ -435,6 +456,11 @@ async def ban(ctx, user: discord.User = None, *reason: str):
                 em.add_field(name = 'Ban Reason', value = banreason, inline = False)
                 em.timestamp = ctx.message.timestamp
                 await client.send_message(user, embed = em)
+
+@client.command()
+async def age():
+    rage = pretty_time_delta(int(time.time()) - rudyage)
+    await client.say("Rudy's age: {0}".format(rage))
 
 #simple no parameter/perm check commands
 @client.command()
