@@ -10,6 +10,7 @@ from samp_client.client import SampClient
 from imgurpython import ImgurClient
 from mysql.connector import errorcode
 from random import randint
+from datetime import datetime
 
 #discord bot handler
 client = commands.Bot(command_prefix='!')
@@ -70,7 +71,7 @@ dashboardurl = "https://redcountyrp.com/user/dashboard"
 
 rudyage = 1409529600
 
-client.remove_command('help')
+#client.remove_command('help')
 
 async def UpdateSAMPInfo():
     while 1:
@@ -85,20 +86,32 @@ async def UpdateSAMPInfo():
             await client.change_presence(activity=game)
         await asyncio.sleep(5) #run every 5 seconds
 
-def isverified(user):
-    if verifiedrole in [role.id for role in user.roles] :
+def isverified(member):
+    if verifiedrole in [role.id for role in member.roles]:
         return True
     else:
         return False
 
-def isadmin(user):
-    for role in user.roles:
+def isadmin(member):
+    for role in member.roles:
         if role.id in staffroles:
             return True
     return False
 
-def ismanagement(user):
-    if managementrole in [role.id for role in user.roles] or ownerrole in [role.id for role in user.roles]:
+def ismanagement(member):
+    if managementrole in [role.id for role in member.roles] or ownerrole in [role.id for role in member.roles]:
+        return True
+    else:
+        return False
+
+async def is_admin(ctx):
+    for role in ctx.author.roles:
+        if role.id in staffroles:
+            return True
+    return False
+
+async def is_management(ctx):
+    if managementrole in [role.id for role in ctx.author.roles] or ownerrole in [role.id for role in ctx.author.roles]:
         return True
     else:
         return False
@@ -242,7 +255,7 @@ async def on_message(message):
     if client.user.id == message.author.id:
         return
 
-    if message.guild not None:
+    if message.guild is not None:
         await client.process_commands(message)
         return
 
@@ -301,7 +314,7 @@ async def on_message(message):
                 discordroles.append(discordguild.get_role(adminrole))
             if data[4] == 4: #guy is management
                 discordroles.append(discordguild.get_role(managementrole))
-            await member.add_roles(*discordroles)
+            await discordmember.add_roles(*discordroles)
             cursor = sql.cursor()
             cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE id = %s", (message.author.id, data[1]))
             cursor.close()
@@ -362,7 +375,11 @@ async def on_member_update(before, after):
     cursor.close()
     sql.close()
 
-@client.command()
+#@client.event
+#async def on_command_error(context, exception):
+#    print("exception received {0}".format(exception))
+
+@client.command(help = "Sends an adorable picture of Rudy")
 async def rudypic(ctx):
     if rudyfriend in [role.id for role in ctx.author.roles]:
         pictures = []
@@ -372,23 +389,23 @@ async def rudypic(ctx):
     else:
         await ctx.send("You can't do that.")
 
-@client.command()
+@client.command(help = "Gives Rudy a number of different items")
 async def give(ctx, item = 'none'):
     if item == 'poptart':
         await ctx.send("* Rudy enjoys the poptart but vomits it back up about twenty minutes later. * (this actually happened i fucking hate my sister)")
     elif item == 'treat':
         await ctx.send("* Rudy takes the treat from your hand and runs off into another room with it, more than likely a room that has carpet. He chews on the treat clumsily, creating a mess of crumbs on the floor. He eventually sniffs out the crumbs he failed to ingest and finishes off every last one. *")
     elif item == 'bone':
-        await ctx.send("* Rudy happily takes the bone from you and runs off with it, however he neglects to actually chew on said bone. He instead leaves the bone in an accessible location at all times and waits for moments of opportune happiness or excitement (e.g, someone returning home) to put it back in his mouth. Once that happens, he prances around the house with the bone in his mouth, doing multiple laps around the kitchen with it as well. *")
+        await ctx.send("* Rudy happily takes the bone from you and runs off with it, however he neglects to actually chew on said bone. He instead leaves the bone in an accessible location at all times and waits for moments of opportune happiness or excitement (e.g, someone returning home) to put it back in his mouth. Once peak excitement levels are reached, he prances around the house with the bone in his mouth, doing multiple laps around the kitchen with it as well. *")
     else:
         await ctx.send("*Rudy stares at your empty hand disappointed. *")
 
-@client.command()
+@client.command(hidden = True)
+@commands.check(is_admin)
 async def clear(ctx, *, amount : int = 0):
-    if not isadmin(ctx.author):
-        return
     if amount == 0:
         return
+
     if amount > 10:
         await ctx.send("You cannot clear more than 10 messages at once.")
         return
@@ -396,12 +413,12 @@ async def clear(ctx, *, amount : int = 0):
     messages = await ctx.channel.history(limit = amount + 1).flatten()
     await ctx.channel.delete_messages(messages)
 
-@client.command()
+@client.command(hidden = True)
+@commands.is_owner()
 async def dms(ctx):
-    if ctx.author.id == 87582156741681152: #tommyb id
-        await ctx.send("https://imgur.com/a/yYK5dnZ")
+    await ctx.send("https://imgur.com/a/yYK5dnZ")
 
-@client.command()
+@client.command(help = "Give Rudy some pets")
 async def pet(ctx, *, location: str = 'None'):
     if location == 'head' or location == 'ears':
         await ctx.send("* You pet Rudy's head, specifically behind the ears. He enjoys this very much and sticks his nose out directly towards you as a reaction to the affection. *")
@@ -410,76 +427,76 @@ async def pet(ctx, *, location: str = 'None'):
     else:
         await ctx.send("*You pet Rudy. He thinks it's pretty neat. *")
 
-@client.command()
+@client.command(hidden = True)
 async def clearapps(ctx):
     if ctx.channel.id == 445668156824879123:
         messages = await ctx.channel.history().filter(predicate).flatten()
         await ctx.channel.delete_messages(messages)
 
-@client.command()
+@client.command(hidden = True)
+@commands.check(is_admin)
 async def whois(ctx, user: discord.User=None):
-    if not isadmin(ctx.author):
-        return
     if not user:
         await ctx.send("Invalid user.")
         return
 
     sql = mysql.connector.connect(** mysqlconfig)
     cursor = sql.cursor()
-    cursor.execute("SELECT id, Username FROM masters WHERE discordid = %s", (user.id, ))
+    cursor.execute("SELECT id, Username, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE discordid = %s", (user.id, ))
     data = cursor.fetchone()
-    if cursor.rowcount != 0:
-        await ctx.send("Master Account of {0}: {1} (https://redcountyrp.com/admin/masters/{2})".format(user, data[1], data[0]))
-    else:
+
+    if cursor.rowcount == 0:
         await ctx.send("{0} does not have a Master Account linked to their Discord account.".format(user))
+        cursor.close()
+        sql.close()
+        return
+
     cursor.close()
     sql.close()
 
-@client.command()
+    embed = discord.Embed(title = "{0} - {1}".format(data[1], user), url = "https://redcountyrp.com/admin/masters/{0}".format(data[0]), color = 0xe74c3c)
+    embed.add_field(name = "Account ID", value = data[0], inline = False)
+    embed.add_field(name = "Username", value = data[1], inline = False)
+    embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
+    embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
+    await ctx.send(embed = embed)
+
+@client.command(hidden = True)
+@commands.check(is_admin)
 async def find(ctx, name : str = 'None'):
-    if not isadmin(ctx.author) or name == 'None':
+    if name == 'None':
         return
 
     sql = mysql.connector.connect(** mysqlconfig)
-    cursor = sql.cursor()
-    cursor.execute("SELECT discordid FROM masters WHERE Username = %s", (name, ))
-    data = cursor.fetchone()
+    cursor = sql.cursor(buffered = True)
+    cursor.execute("SELECT id, discordid, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE Username = %s", (name, ))
 
     if cursor.rowcount == 0:
         await ctx.send("{0} is not a valid account name.".format(name))
         cursor.close()
         sql.close()
         return
-        
-    if data[0] == None:
-        await ctx.send("{0} does not have a Discord account linked to their MA.".format(name))
-    else:
-        user = client.fetch_user(data[0])
-        await ctx.send("Discord Account of {0}: <@{1}>".format(name, user.id))
 
+    data = cursor.fetchone()
     cursor.close()
     sql.close()
 
-@client.command()
-async def lookup(ctx, id : str = 'None'):
-    if not isadmin(ctx.author) or id == 'None':
+    if data[1] == None:
+        await ctx.send("{0} does not have a Discord account linked to their MA.".format(name))
         return
 
-    sql = mysql.connector.connect(** mysqlconfig)
-    cursor = sql.cursor()
-    cursor.execute("SELECT Username FROM masters WHERE discordid = %s", (id, ))
-    data = cursor.fetchone()
-    if cursor.rowcount != 0:
-        await ctx.send("Master Account of Discord ID {0}: {1}".format(id, data[0]))
-    else:
-        await ctx.send("No Master Account found for that Discord ID.")
-    cursor.close()
-    sql.close()    
+    matcheduser = await client.fetch_user(data[1])
+    embed = discord.Embed(title = "{0}".format(name), url = "https://redcountyrp.com/admin/masters/{0}".format(data[0]), color = 0xe74c3c)
+    embed.add_field(name = "Discord User", value = "<@{0}>".format(matcheduser.id))
+    embed.add_field(name = "Account ID", value = data[0], inline = False)
+    embed.add_field(name = "Username", value = name, inline = False)
+    embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
+    embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
+    await ctx.send(embed = embed)
 
-@client.command()
+@client.command(hidden = True)
+@commands.check(is_admin)
 async def ban(ctx, user: discord.User = None, *reason: str):
-    if not isadmin(ctx.author):
-        return
     if not user:
         await ctx.send("Invalid user.")
         return
@@ -497,20 +514,17 @@ async def ban(ctx, user: discord.User = None, *reason: str):
         return
 
     adminuser = await client.fetch_user(ctx.author.id)
-    em = discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c)
-    em.add_field(name = 'Ban Reason', value = banreason, inline = False)
-    em.timestamp = ctx.message.created_at
-    await user.send(embed = em)
+    embed = discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c, timestamp = ctx.message.created_at)
+    embed.add_field(name = 'Ban Reason', value = banreason)
+    await user.send(embed = embed)
 
     baninfo = "{0} - Banned by {1}".format(banreason, adminuser.name)
     await ctx.guild.ban(bannedmember, reason = baninfo, delete_message_days = 0)
     await ctx.send("<@{0}> has been successfully banned.".format(bannedmember.id))
 
-@client.command()
+@client.command(hidden = True)
+@commands.check(is_admin)
 async def unban(ctx, target: str = ""):
-    if not isadmin(ctx.author):
-        return
-
     banned_user = await client.fetch_user(target)
     if not banned_user:
         await ctx.send("Invalid user.")
@@ -524,11 +538,9 @@ async def unban(ctx, target: str = ""):
             return
     await ctx.send("Could not find any bans for that user.")
 
-@client.command()
+@client.command(hidden = True)
+@commands.check(is_admin)
 async def baninfo(ctx, target: str = ""):
-    if not isadmin(ctx.author):
-        return
-
     banned_user = await client.fetch_user(target)
     if not banned_user:
         await ctx.send("Invalid user.")
@@ -541,12 +553,9 @@ async def baninfo(ctx, target: str = ""):
             return
     await ctx.send("Could not find any ban info for that user.")
 
-@client.command()
+@client.command(hidden = True)
+@commands.check(is_management)
 async def verify(ctx, member: discord.Member = None, masteraccount: str = " "):
-    if not ismanagement(ctx.author):
-        await ctx.send("You can't do that one buddy")
-        return
-
     if not member:
         await ctx.send("Invalid user.")
         return
@@ -572,12 +581,9 @@ async def verify(ctx, member: discord.Member = None, masteraccount: str = " "):
     await member.add_roles(ctx.guild.get_role(verifiedrole))
     await ctx.send("<@{0}> has been manually verified as {1}".format(member.id, masteraccount))
 
-@client.command()
+@client.command(hidden = True)
+@commands.check(is_management)
 async def unverify(ctx, member: discord.Member = None):
-    if not ismanagement(ctx.author):
-        await ctx.send("You can't do that one buddy")
-        return
-
     if not member:
         await ctx.send("Invalid user.")
         return
@@ -601,56 +607,93 @@ async def unverify(ctx, member: discord.Member = None):
     await ctx.send("<@{0}> has been unverified.".format(member.id))
     await member.remove_roles(*roles)
 
-@client.command()
+@client.command(help = "Displays the age of Rudy")
 async def age(ctx):
     rudy_age = pretty_time_delta(int(time.time()) - rudyage)
     await ctx.send("Rudy's age: {0}".format(rudy_age))
 
+@client.command(hidden = True)
+@commands.check(is_admin)
+async def admins(ctx):
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor(buffered = True, dictionary = True)
+    cursor.execute("SELECT masters.Username AS mastername, players.Name AS charactername FROM masters JOIN players ON players.MasterAccount = masters.id WHERE AdminLevel != 0 AND Online = 1")
+
+    if cursor.rowcount == 0:
+        cursor.close()
+        sql.close()
+        await ctx.send("There are currently no admins ingame.")
+        return
+
+    embed = discord.Embed(title = 'Ingame Administrators', color = 0xe74c3c, timestamp = ctx.message.created_at)
+
+    for admininfo in cursor:
+        embed.add_field(name = admininfo['mastername'], value = admininfo['charactername'], inline = True)
+
+    cursor.close()
+    sql.close()
+    await ctx.send(embed = embed)
+
+@client.command(hidden = True)
+@commands.check(is_admin)
+async def helpers(ctx):
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor(buffered = True, dictionary = True)
+    cursor.execute("SELECT masters.Username AS mastername, players.Name AS charactername FROM masters JOIN players ON players.MasterAccount = masters.id WHERE Helper != 0 AND Online = 1")
+
+    if cursor.rowcount == 0:
+        cursor.close()
+        sql.close()
+        await ctx.send("There are currently no helpers ingame.")
+        return
+
+    embed = discord.Embed(title = 'Ingame Helpers', color = 0xe74c3c, timestamp = ctx.message.created_at)
+
+    for helperinfo in cursor:
+        embed.add_field(name = helperinfo['mastername'], value = helperinfo['charactername'], inline = False)
+
+    cursor.close()
+    sql.close()
+    await ctx.send(embed = embed)
+
 #simple no parameter/perm check commands
-@client.command()
+@client.command(help = "Gives a kind response about Rudy's weight")
 async def makerudyfat(ctx):
    await ctx.send("Rudy can't be fat you fucking subhuman piece of shit.")
 
-@client.command()
+@client.command(help = "Gives Rudy a nice bellyrub!")
 async def bellyrub(ctx):
    await ctx.send("* You give Rudy a bellyrub. He kicks at your hand like a fucking idiot. *")
 
-@client.command()
+@client.command(help = "Takes Rudy for a walk")
 async def walk(ctx):
    await ctx.send("* Upon hearing news of a potential walk, Rudy fucking loses his shit and starts to jump at you like a madman. He pants heavily while jumping at you repeatedly until you hopefully grab his leash and take him on a nice walk through the nearby park. *")
 
-@client.command()
+@client.command(help = "Displays the weight of Rudy.")
 async def weight(ctx):
    await ctx.send("I weigh 12 pounds. (5.44 KG or 0.85 stone for foreign people)")
 
-@client.command()
-async def brooks(ctx):
-    pictures = []
-    for image in imclient.get_album_images('hWatGWe'):
-        pictures.append(image.link)
-    await ctx.send("* Downstairs borks from dog friend Mr. Brooks *\n {0}".format(random.choice(pictures)))
-
-@client.command()
+@client.command(help = "Orders Rudy to sit")
 async def sit(ctx):
    await ctx.send("* Rudy obediently sits down like a good boy. His tail wags back and forth a few times as well. *")
 
-@client.command()
+@client.command(help = "Orders Rudy to stay")
 async def stay(ctx):
    await ctx.send("* Rudy sits down at his current position with one ear straight up and the other floppy. He eventually gets dog brain syndrome and stands up, following you. *")
 
-@client.command()
+@client.command(help = "A terrible story from a terrible night")
 async def brisket(ctx):
    await ctx.send("Once upon a time, I wad fed copious amounts of delicious brisket by a drunk man. I have a really sensitive stomach and I'm only supposed to eat special dog food which helps relax it. During the middle of the night when I was asleep, I felt a pain in my stomach and started to cough and gag a bunch. My owner woke up due to the sounds and quickly rushed me into the kitchen in hopes to take me outside. I then proceeded to projectile vomit on the floor several times, it was not a fun experience. My poor owner had to clean up the mess I created. I haven't been fed table food since.")
 
-@client.command()
+@client.command(help = "A terrible story about some rabbits")
 async def rabbits(ctx):
    await ctx.send("Once upon a time, there was a rabbit that kept intruding in the back yard every once in a while. Every time I noticed it, I would sprint off towards it for reasons my dog brain can't explain. One day I was sniffing around the yard and noticed a bunch of little baby rabbits in a hole dug in MY YARD. My instinctive dog reaction was to murder every single little rabbit that I could find. I even ripped two of them in half with my dog teeth.")
 
-@client.command()
+@client.command(help = "Give Rudy a bath!")
 async def bathe(ctx):
     await ctx.send("* You give Rudy a bath. He dislikes it heavily. *")
 
-@client.command()
+@client.command(hidden = True)
 async def unixtimestamp(ctx):
     await ctx.send("CURRENT UNIX TIMESTAMP VALUE: {0}".format(int(time.time())))
 
