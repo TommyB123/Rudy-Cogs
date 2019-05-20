@@ -656,6 +656,21 @@ async def helpers(ctx):
     sql.close()
     await ctx.send(embed = embed)
 
+@client.command(hidden = True)
+@commands.check(is_management)
+async def speak(ctx, *message: str):
+    str = []
+    for value in message:
+        str.append(value)
+    copymessage = ' '.join(str)
+    if len(copymessage) == 0:
+        return
+
+    delet = []
+    delet.append(ctx.message)
+    await ctx.channel.delete_messages(delet)
+    await ctx.send(copymessage)
+
 #simple no parameter/perm check commands
 @client.command(help = "Gives a kind response about Rudy's weight")
 async def makerudyfat(ctx):
