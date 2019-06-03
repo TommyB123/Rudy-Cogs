@@ -5,8 +5,6 @@ import mysql.connector
 import time
 
 from discord.ext import commands
-from samp_client import constants
-from samp_client.client import SampClient
 from imgurpython import ImgurClient
 from mysql.connector import errorcode
 from random import randint
@@ -75,15 +73,15 @@ rudyage = 1409529600
 
 async def UpdateSAMPInfo():
     while 1:
-        try:
-            with SampClient(address = 'server.redcountyrp.com', port = 7777) as samp:
-                if samp is not None:
-                    sampinfo = samp.get_server_info()
-                    game = discord.Game('RCRP (%i/%i players)' % (sampinfo.players, sampinfo.max_players))
-                    await client.change_presence(activity=game)
-        except:
-            game = discord.Game('RCRP (currently down)')
-            await client.change_presence(activity=game)
+        sql = mysql.connector.connect(** mysqlconfig)
+        cursor = sql.cursor()
+        cursor.execute("SELECT SUM(Online) AS playercount FROM players WHERE Online = 1")
+        data = cursor.fetchone()
+        cursor.close()
+        sql.close()
+
+        game = discord.Game('RCRP (%i/150 players)' % (data[0]))
+        await client.change_presence(activity=game)
         await asyncio.sleep(5) #run every 5 seconds
 
 def isverified(member):
@@ -416,7 +414,7 @@ async def clear(ctx, *, amount : int = 0):
 @client.command(hidden = True)
 @commands.is_owner()
 async def dms(ctx):
-    await ctx.send("https://imgur.com/a/yYK5dnZ")
+    await ctx.send("<https://imgur.com/a/yYK5dnZ>")
 
 @client.command(help = "Give Rudy some pets")
 async def pet(ctx, *, location: str = 'None'):
