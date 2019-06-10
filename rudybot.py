@@ -16,7 +16,7 @@ client = commands.Bot(command_prefix='!')
 #mysql info
 mysqlconfig = {
     'user': 'rcrp_sampserver',
-    'password': '.MRi#z(1IsTH',
+    'password': '1DgBj4QM21p9D2fP62Na5XAeEkkOwi',
     'host': '127.0.0.1',
     'database': 'rcrp_rcrp',
     'raise_on_warnings': True,
@@ -80,7 +80,7 @@ async def UpdateSAMPInfo():
         cursor.close()
         sql.close()
 
-        game = discord.Game('RCRP (%i/150 players)' % (data[0]))
+        game = discord.Game('RCRP ({0}/150 players)'.format(data[0]))
         await client.change_presence(activity=game)
         await asyncio.sleep(5) #run every 5 seconds
 
@@ -664,9 +664,7 @@ async def speak(ctx, *message: str):
     if len(copymessage) == 0:
         return
 
-    delet = []
-    delet.append(ctx.message)
-    await ctx.channel.delete_messages(delet)
+    await ctx.message.delete()
     await ctx.send(copymessage)
 
 #simple no parameter/perm check commands
