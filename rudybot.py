@@ -47,42 +47,31 @@ deletelogs = 463595960367579137
 #message edit log channel
 editlogs = 463644249108250635
 
-#all admin+ role IDs
-staffroles = [293303836125298690, 293441894585729024, 310927289317588992]
-
-#role ID for the verified role
-verifiedrole = 293441047244308481
-rudyfriend = 460848362111893505
-
-#helper role ID
-helperrole = 293441873945821184
-testerrole = 293441807055060993
+#various server roles
 adminrole = 293441894585729024
+bannedrole = 592730783924486168
+helperrole = 293441873945821184
 managementrole = 310927289317588992
+mutedrole = 347541774883094529
 ownerrole = 293303836125298690
 premiumrole = 534479263966167069
+rudyfriend = 460848362111893505
+testerrole = 293441807055060993
+verifiedrole = 293441047244308481
+
+#all admin+ role IDs
+staffroles = [ownerrole, adminrole, managementrole]
 
 #ID of the rcrp guild
 rcrpguild = 93142223473905664
 
+#url of the dashboard. sent to players when they try to verify
 dashboardurl = "https://redcountyrp.com/user/dashboard"
 
+#the age of rudy. used for the fancy time delta in the age command
 rudyage = 1409529600
 
 #client.remove_command('help')
-
-async def UpdateSAMPInfo():
-    while 1:
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT SUM(Online) AS playercount FROM players WHERE Online = 1")
-        data = cursor.fetchone()
-        cursor.close()
-        sql.close()
-
-        game = discord.Game('RCRP ({0}/150 players)'.format(data[0]))
-        await client.change_presence(activity=game)
-        await asyncio.sleep(5) #run every 5 seconds
 
 def isverified(member):
     if verifiedrole in [role.id for role in member.roles]:
@@ -113,6 +102,25 @@ async def is_management(ctx):
         return True
     else:
         return False
+
+def ismuted(member):
+    if mutedrole in [role.id for role in member.roles]:
+        return True
+    else:
+        return False
+
+def isbanned(accountid):
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor()
+    cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
+    data = cursor.fetchone()
+    cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
 
 def predicate(message):
     return not message.pinned
@@ -152,6 +160,7 @@ def isValidMasterAccountName(name):
         return False
     else:
         return True
+
 def isMasterAccountVerified(name):
     sql = mysql.connector.connect(** mysqlconfig)
     cursor = sql.cursor()
@@ -165,6 +174,19 @@ def isMasterAccountVerified(name):
     else:
         return True
 
+async def UpdateSAMPInfo():
+    while 1:
+        sql = mysql.connector.connect(** mysqlconfig)
+        cursor = sql.cursor()
+        cursor.execute("SELECT SUM(Online) AS playercount FROM players WHERE Online = 1")
+        data = cursor.fetchone()
+        cursor.close()
+        sql.close()
+
+        game = discord.Game('RCRP ({0}/200 players)'.format(data[0]))
+        await client.change_presence(activity=game)
+        await asyncio.sleep(5) #run every 5 seconds
+
 async def SyncMemberRoles():
     while 1:
         discordguild = client.get_guild(rcrpguild)
@@ -173,8 +195,8 @@ async def SyncMemberRoles():
             if not isverified(member):
                 continue
 
-            cursor = sql.cursor()
-            cursor.execute("SELECT Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
+            cursor = sql.cursor(dictionary = True)
+            cursor.execute("SELECT id, Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
             data = cursor.fetchone()
             cursor.close()
 
@@ -184,29 +206,37 @@ async def SyncMemberRoles():
             if ismanagement(member):
                 continue
 
+            banned = False
+            if isbanned(data['id']):
+                banned = True
+
             #remove roles a member shouldn't have
             removeroles = []
-            if helperrole in [role.id for role in member.roles] and data[0] == 0: #member isn't a helper but has the role
+            if helperrole in [role.id for role in member.roles] and data['Helper'] == 0: #member isn't a helper but has the role
                 removeroles.append(discordguild.get_role(helperrole))
-            if testerrole in [role.id for role in member.roles] and data[1] == 0: #member isn't a tester but has the role
+            if testerrole in [role.id for role in member.roles] and data['Tester'] == 0: #member isn't a tester but has the role
                 removeroles.append(discordguild.get_role(testerrole))
-            if adminrole in [role.id for role in member.roles] and data[2] == 0: #member isn't an admin but has the role
+            if adminrole in [role.id for role in member.roles] and data['AdminLevel'] == 0: #member isn't an admin but has the role
                 removeroles.append(discordguild.get_role(adminrole))
-            if premiumrole in [role.id for role in member.roles] and data[3] == 0: #member isn't an admin but has the role
+            if premiumrole in [role.id for role in member.roles] and data['Premium'] == 0: #member isn't an admin but has the role
                 removeroles.append(discordguild.get_role(premiumrole))
+            if bannedrole in [role.id for role in member.roles] and banned is False: #member isn't banned but has the role
+                removeroles.append(discordguild.get_role(bannedrole))
             if removeroles:
                 await member.remove_roles(*removeroles)
 
             #add roles a member should have
             addroles = []
-            if helperrole not in [role.id for role in member.roles] and data[0] == 1: #member is a helper but doesn't have the role
+            if helperrole not in [role.id for role in member.roles] and data['Helper'] == 1: #member is a helper but doesn't have the role
                 addroles.append(discordguild.get_role(helperrole))
-            if testerrole not in [role.id for role in member.roles] and data[1] == 1: #member is a tester but doesn't have the role
+            if testerrole not in [role.id for role in member.roles] and data['Tester'] == 1: #member is a tester but doesn't have the role
                 addroles.append(discordguild.get_role(testerrole))
-            if adminrole not in [role.id for role in member.roles] and data[2] != 0: #member is an admin but doesn't have the role
+            if adminrole not in [role.id for role in member.roles] and data['AdminLevel'] != 0: #member is an admin but doesn't have the role
                 addroles.append(discordguild.get_role(adminrole))
-            if premiumrole not in [role.id for role in member.roles] and data[3] != 0: #member is an admin but doesn't have the role
+            if premiumrole not in [role.id for role in member.roles] and data['Premium'] != 0: #member is an admin but doesn't have the role
                 addroles.append(discordguild.get_role(premiumrole))
+            if bannedrole not in [role.id for role in member.roles] and banned is True: #member isn't banned but has the role
+                addroles.append(discordguild.get_role(bannedrole))
             if addroles:
                 await member.add_roles(*addroles)
         sql.close()
@@ -550,6 +580,42 @@ async def baninfo(ctx, target: str = ""):
             await ctx.send("<@{0}> was banned for the following reason: {1}".format(ban.user.id, ban.reason))
             return
     await ctx.send("Could not find any ban info for that user.")
+
+@client.command(hidden = True)
+@commands.check(is_admin)
+async def mute(ctx, member: discord.Member = None):
+    if not member:
+        await ctx.send("Invalid user.")
+        return
+
+    if isadmin(member):
+        await ctx.send("You can't mute other staff.")
+        return
+
+    if ismuted(member):
+        await ctx.send("<@{0}> is already muted.".format(member.id))
+        return
+
+    await member.add_roles(ctx.guild.get_role(mutedrole))
+    await ctx.send("<@{0}> has been muted.".format(member.id))
+
+@client.command(hidden = True)
+@commands.check(is_admin)
+async def unmute(ctx, member: discord.Member = None):
+    if not member:
+        await ctx.send("Invalid user.")
+        return
+
+    if isadmin(member):
+        await ctx.send("You can't mute other staff.")
+        return
+
+    if not ismuted(member):
+        await ctx.send("<@{0}> is not muted.".format(member.id))
+        return
+
+    await member.remove_roles(ctx.guild.get_role(mutedrole))
+    await ctx.send("<@{0}> has been unmuted.".format(member.id))
 
 @client.command(hidden = True)
 @commands.check(is_management)
