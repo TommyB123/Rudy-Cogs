@@ -415,7 +415,7 @@ async def rudypic(ctx):
             pictures.append(image.link)
         await ctx.send(random.choice(pictures))
     else:
-        await ctx.send("You can't do that.")
+        await ctx.message.delete()
 
 @client.command(help = "Gives Rudy a number of different items")
 async def give(ctx, item = 'none'):
