@@ -164,7 +164,7 @@ def isValidMasterAccountName(name):
 def isMasterAccountVerified(name):
     sql = mysql.connector.connect(** mysqlconfig)
     cursor = sql.cursor()
-    cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != NULL", (name, ))
+    cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
     data = cursor.fetchone()
     cursor.close()
     sql.close()
@@ -256,7 +256,7 @@ async def on_member_ban(guild, user):
     sql = mysql.connector.connect(** mysqlconfig)
     cursor = sql.cursor()
     cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (user.id, ))
-    cursor.execute("UPDATE masters SET discordid = NULL WHERE discordid = %s", (user.id, ))
+    cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (user.id, ))
     cursor.close()
     sql.close()
 
@@ -317,7 +317,7 @@ async def on_message(message):
             if data[1] == 1: #account is an accepted MA
                 code = random_with_N_digits(10)
                 cursor = sql.cursor()
-                cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid IS NULL", (str(code), list[1]))
+                cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid = 0", (str(code), list[1]))
                 cursor.close()
                 await message.author.send("Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, list[1]))
             else:
@@ -659,7 +659,7 @@ async def unverify(ctx, member: discord.Member = None):
     sql = mysql.connector.connect(** mysqlconfig)
     cursor = sql.cursor()
     cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
-    cursor.execute("UPDATE masters SET discordid = NULL WHERE discordid = %s", (member.id, ))
+    cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (member.id, ))
     cursor.close()
     sql.close()
 
