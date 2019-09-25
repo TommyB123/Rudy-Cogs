@@ -59,6 +59,10 @@ rudyfriend = 460848362111893505
 testerrole = 293441807055060993
 verifiedrole = 293441047244308481
 
+#staff chat server echo channels
+adminchat = 397566940723281922
+helperchat = 609053396204257290
+
 #all admin+ role IDs
 staffroles = [ownerrole, adminrole, managementrole]
 
@@ -71,7 +75,7 @@ dashboardurl = "https://redcountyrp.com/user/dashboard"
 #the age of rudy. used for the fancy time delta in the age command
 rudyage = 1409529600
 
-#client.remove_command('help')
+client.remove_command('help')
 
 def isverified(member):
     if verifiedrole in [role.id for role in member.roles]:
@@ -242,6 +246,26 @@ async def SyncMemberRoles():
         sql.close()
         await asyncio.sleep(120) #check every 2 minutes
 
+async def ProcessMessageQueue():
+    while 1:
+        sql = mysql.connector.connect(** mysqlconfig)
+        cursor = sql.cursor(dictionary = True)
+        cursor.execute("SELECT id, channel, message FROM messagequeue WHERE origin = 1 ORDER BY timestamp ASC")
+
+        delete = []
+        for message in cursor:
+            channel = client.get_channel(int(message['channel']))
+            await channel.send(message['message'])
+            delete.append(message['id'])
+
+        for messageid in delete:
+            cursor.execute("DELETE FROM messagequeue WHERE id = %s", (messageid, ))
+
+        sql.commit()
+        cursor.close()
+        sql.close()
+        await asyncio.sleep(1) #checks every second for a new message
+
 @client.event
 async def on_ready():
     print('\nLogged in as {0}'.format(client.user.name))
@@ -250,6 +274,7 @@ async def on_ready():
 
     client.loop.create_task(SyncMemberRoles())
     client.loop.create_task(UpdateSAMPInfo())
+    client.loop.create_task(ProcessMessageQueue())
 
 @client.event
 async def on_member_ban(guild, user):
@@ -285,6 +310,15 @@ async def on_message(message):
 
     if message.guild is not None:
         await client.process_commands(message)
+
+        if message.channel.id == adminchat or message.channel.id == helperchat:
+            queuemessage = "{0} (discord): {1}".format(message.author.name, message.content)
+            sql = mysql.connector.connect(** mysqlconfig)
+            cursor = sql.cursor()
+            cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (%s, %s, 2, UNIX_TIMESTAMP())", (message.channel.id, queuemessage))
+            sql.commit()
+            cursor.close()
+            sql.close()
         return
 
     if message.content.find('verify') == -1:
@@ -773,6 +807,5 @@ async def bathe(ctx):
 @client.command(hidden = True)
 async def unixtimestamp(ctx):
     await ctx.send("CURRENT UNIX TIMESTAMP VALUE: {0}".format(int(time.time())))
-
 
 client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0")
