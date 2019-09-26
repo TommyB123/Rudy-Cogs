@@ -189,7 +189,7 @@ async def UpdateSAMPInfo():
 
         game = discord.Game('RCRP ({0}/200 players)'.format(data[0]))
         await client.change_presence(activity=game)
-        await asyncio.sleep(5) #run every 5 seconds
+        await asyncio.sleep(1) #run every second
 
 async def SyncMemberRoles():
     while 1:
@@ -244,7 +244,7 @@ async def SyncMemberRoles():
             if addroles:
                 await member.add_roles(*addroles)
         sql.close()
-        await asyncio.sleep(120) #check every 2 minutes
+        await asyncio.sleep(60) #check every minute
 
 async def ProcessMessageQueue():
     while 1:
@@ -264,7 +264,7 @@ async def ProcessMessageQueue():
         sql.commit()
         cursor.close()
         sql.close()
-        await asyncio.sleep(1) #checks every second for a new message
+        await asyncio.sleep(1) #checks every second
 
 @client.event
 async def on_ready():
@@ -287,10 +287,10 @@ async def on_member_ban(guild, user):
 
 @client.event
 async def on_member_join(member):
+    discordguild = client.get_guild(rcrpguild)
     sql = mysql.connector.connect(** mysqlconfig)
     cursor = sql.cursor()
     cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
-    discordguild = client.get_guild(rcrpguild)
 
     roles = []
     for roleid in cursor:
@@ -326,9 +326,9 @@ async def on_message(message):
         return
 
     list = message.content.split()
-    listcount = len(list)
+    paramcount = len(list)
 
-    if listcount == 1: #empty params
+    if paramcount == 1: #empty params
         await message.author.send("Usage: verify [Master account name]")
         return
 
@@ -343,7 +343,7 @@ async def on_message(message):
         sql.close()
         return
 
-    if listcount == 2: #entering account name
+    if paramcount == 2: #entering account name
         cursor = sql.cursor()
         cursor.execute("SELECT COUNT(*), State FROM masters WHERE Username = %s", (list[1],))
         data = cursor.fetchone()
@@ -358,7 +358,7 @@ async def on_message(message):
                 await message.author.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
         else:
             await message.author.send("Invalid account name.")
-    elif listcount == 3: #entering code
+    elif paramcount == 3: #entering code
         cursor = sql.cursor()
         cursor.execute("SELECT COUNT(*), id, Helper, Tester, AdminLevel AS results FROM masters WHERE discordcode = %s AND Username = %s", (list[2], list[1]))
         data = cursor.fetchone()
@@ -558,27 +558,27 @@ async def find(ctx, name : str = 'None'):
 
 @client.command(hidden = True)
 @commands.check(is_admin)
-async def ban(ctx, user: discord.User = None, *reason: str):
+async def ban(ctx, user: discord.User = None, *, banreason):
     if not user:
         await ctx.send("Invalid user.")
         return
 
-    str = []
-    for value in reason:
-        str.append(value)
-    banreason = ' '.join(str)
     if len(banreason) == 0:
         await ctx.send("Enter a reason.")
         return
+
     bannedmember = ctx.guild.get_member(user.id)
     if isadmin(bannedmember):
         await ctx.send("You can't ban other staff idiot boy.")
         return
 
-    adminuser = await client.fetch_user(ctx.author.id)
-    embed = discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c, timestamp = ctx.message.created_at)
-    embed.add_field(name = 'Ban Reason', value = banreason)
-    await user.send(embed = embed)
+    try:
+        adminuser = await client.fetch_user(ctx.author.id)
+        embed = discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c, timestamp = ctx.message.created_at)
+        embed.add_field(name = 'Ban Reason', value = banreason)
+        await user.send(embed = embed)
+    except:
+        print("couldn't ban user because dms off")
 
     baninfo = "{0} - Banned by {1}".format(banreason, adminuser.name)
     await ctx.guild.ban(bannedmember, reason = baninfo, delete_message_days = 0)
@@ -586,10 +586,10 @@ async def ban(ctx, user: discord.User = None, *reason: str):
 
 @client.command(hidden = True)
 @commands.check(is_admin)
-async def unban(ctx, target: str = ""):
+async def unban(ctx, target):
     banned_user = await client.fetch_user(target)
     if not banned_user:
-        await ctx.send("Invalid user.")
+        await ctx.send("Invalid user. Enter their discord ID, nothing else.")
         return
 
     bans = await ctx.guild.bans()
@@ -598,6 +598,7 @@ async def unban(ctx, target: str = ""):
             await ctx.guild.unban(ban.user)
             await ctx.send("<@{0}> has been successfully unbanned".format(ban.user.id))
             return
+
     await ctx.send("Could not find any bans for that user.")
 
 @client.command(hidden = True)
@@ -756,11 +757,7 @@ async def helpers(ctx):
 
 @client.command(hidden = True)
 @commands.check(is_management)
-async def speak(ctx, *message: str):
-    str = []
-    for value in message:
-        str.append(value)
-    copymessage = ' '.join(str)
+async def speak(ctx, *, copymessage):
     if len(copymessage) == 0:
         return
 
