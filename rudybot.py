@@ -393,6 +393,9 @@ async def on_message(message):
 
 @client.event
 async def on_message_delete(message):
+    if message.author.id == 311318305564655637: #mussy's id
+        await message.channel.send('Mussy just deleted a message like a bitch. Here are its contents:\n{0}'.format(message.content))
+
     if message.channel.id not in staffchannels and message.guild is not None:
         deletechan = client.get_channel(deletelogs)
         em=discord.Embed(title='Message Deleted', description='Message by <@{0}> in <#{1}> was deleted'.format(message.author.id, message.channel.id), color = 0x1abc9c, timestamp = message.created_at)
