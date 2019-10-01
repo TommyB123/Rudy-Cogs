@@ -180,15 +180,19 @@ def isMasterAccountVerified(name):
 
 async def UpdateSAMPInfo():
     while 1:
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT SUM(Online) AS playercount FROM players WHERE Online = 1")
-        data = cursor.fetchone()
-        cursor.close()
-        sql.close()
+        try:
+            sql = mysql.connector.connect(** mysqlconfig)
+            cursor = sql.cursor()
+            cursor.execute("SELECT SUM(Online) AS playercount FROM players WHERE Online = 1")
+            data = cursor.fetchone()
+            cursor.close()
+            sql.close()
 
-        game = discord.Game('RCRP ({0}/200 players)'.format(data[0]))
-        await client.change_presence(activity=game)
+            game = discord.Game('RCRP ({0}/200 players)'.format(data[0]))
+            await client.change_presence(activity=game)
+        except:
+            print("Error while updating player count.")
+
         await asyncio.sleep(1) #run every second
 
 async def SyncMemberRoles():
