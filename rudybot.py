@@ -329,8 +329,8 @@ async def on_message(message):
         await message.author.send("I'm a bot. My only use via direct messages is verifying RCRP accounts. Type 'verify [MA name]' to verify your account.")
         return
 
-    list = message.content.split()
-    paramcount = len(list)
+    params = message.content.split()
+    paramcount = len(params)
 
     if paramcount == 1: #empty params
         await message.author.send("Usage: verify [Master account name]")
@@ -349,22 +349,22 @@ async def on_message(message):
 
     if paramcount == 2: #entering account name
         cursor = sql.cursor()
-        cursor.execute("SELECT COUNT(*), State FROM masters WHERE Username = %s", (list[1],))
+        cursor.execute("SELECT COUNT(*), State FROM masters WHERE Username = %s", (params[1],))
         data = cursor.fetchone()
         if data[0] != 0: #account with name found
             if data[1] == 1: #account is an accepted MA
                 code = random_with_N_digits(10)
                 cursor = sql.cursor()
-                cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid = 0", (str(code), list[1]))
+                cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid = 0", (str(code), params[1]))
                 cursor.close()
-                await message.author.send("Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, list[1]))
+                await message.author.send("Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, params[1]))
             else:
                 await message.author.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
         else:
             await message.author.send("Invalid account name.")
     elif paramcount == 3: #entering code
         cursor = sql.cursor()
-        cursor.execute("SELECT COUNT(*), id, Helper, Tester, AdminLevel AS results FROM masters WHERE discordcode = %s AND Username = %s", (list[2], list[1]))
+        cursor.execute("SELECT COUNT(*), id, Helper, Tester, AdminLevel AS results FROM masters WHERE discordcode = %s AND Username = %s", (params[2], params[1]))
         data = cursor.fetchone()
         cursor.close()
         if data[0] == 1: #account match
