@@ -178,6 +178,32 @@ def isMasterAccountVerified(name):
     else:
         return True
 
+def IsDiscordIDLinked(discordid):
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor()
+    cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
+    data = cursor.fetchone()
+    cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
+
+def IsAcceptedMasterAccount(mastername):
+    sql = mysql.connector.connect(** mysqlconfig)
+    cursor = sql.cursor()
+    cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))
+    data = cursor.fetchone()
+    cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
+
 async def UpdateSAMPInfo():
     while 1:
         try:
@@ -336,57 +362,53 @@ async def on_message(message):
         await message.author.send("Usage: verify [Master account name]")
         return
 
-    sql = mysql.connector.connect(** mysqlconfig)
-    cursor = sql.cursor()
-    cursor.execute("SELECT COUNT(*) FROM masters WHERE discordid = %s", (message.author.id,))
-    data = cursor.fetchone()
-    cursor.close()
-
-    if data[0] != 0: #account is verified
-        await message.author.send("That account is already linked to a discord account.")
-        sql.close()
+    if IsDiscordIDLinked(message.author.id):
+        await message.author.send("This Discord account is already linked to an RCRP account.")
         return
 
     if paramcount == 2: #entering account name
-        cursor = sql.cursor()
-        cursor.execute("SELECT COUNT(*), State FROM masters WHERE Username = %s", (params[1],))
-        data = cursor.fetchone()
-        if data[0] != 0: #account with name found
-            if data[1] == 1: #account is an accepted MA
-                code = random_with_N_digits(10)
-                cursor = sql.cursor()
-                cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid = 0", (str(code), params[1]))
-                cursor.close()
-                await message.author.send("Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, params[1]))
-            else:
-                await message.author.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
-        else:
+        if isValidMasterAccountName(params[1]) == False:
             await message.author.send("Invalid account name.")
+            return
+
+        if IsAcceptedMasterAccount(params[1]) == False:
+            await message.author.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
+            return
+
+        code = random_with_N_digits(10)
+        cursor = sql.cursor()
+        cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid = 0", (str(code), params[1]))
+        cursor.close()
+        await message.author.send("Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, params[1]))
     elif paramcount == 3: #entering code
         cursor = sql.cursor()
         cursor.execute("SELECT COUNT(*), id, Helper, Tester, AdminLevel AS results FROM masters WHERE discordcode = %s AND Username = %s", (params[2], params[1]))
         data = cursor.fetchone()
         cursor.close()
-        if data[0] == 1: #account match
-            discordguild = client.get_guild(rcrpguild)
-            discordmember = discordguild.get_member(message.author.id)
-            discordroles = []
-            discordroles.append(discordguild.get_role(verifiedrole))
-            if data[2] == 1: #guy is helper
-                discordroles.append(discordguild.get_role(helperrole))
-            if data[3] == 1: #guy is tester
-                discordroles.append(discordguild.get_role(testerrole))
-            if data[4] != 0: #guy is admin
-                discordroles.append(discordguild.get_role(adminrole))
-            if data[4] == 4: #guy is management
-                discordroles.append(discordguild.get_role(managementrole))
-            await discordmember.add_roles(*discordroles)
-            cursor = sql.cursor()
-            cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE id = %s", (message.author.id, data[1]))
-            cursor.close()
-            await message.author.send("Your account is now verified!")
-        else:
+
+        if data[0] == 0: #account doesn't match
             await message.author.send("Invalid ID.")
+            return
+
+        discordguild = client.get_guild(rcrpguild)
+        discordmember = discordguild.get_member(message.author.id)
+        discordroles = []
+        discordroles.append(discordguild.get_role(verifiedrole))
+        if data[2] == 1: #guy is helper
+            discordroles.append(discordguild.get_role(helperrole))
+        if data[3] == 1: #guy is tester
+            discordroles.append(discordguild.get_role(testerrole))
+        if data[4] != 0: #guy is admin
+            discordroles.append(discordguild.get_role(adminrole))
+        if data[4] == 4: #guy is management
+            discordroles.append(discordguild.get_role(managementrole))
+        await discordmember.add_roles(*discordroles)
+
+        cursor = sql.cursor()
+        cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE id = %s", (message.author.id, data[1]))
+        cursor.close()
+
+        await message.author.send("Your account is now verified!")
     else:
         await message.author.send("Usage: verify [Master account name]")
     sql.close()
@@ -670,7 +692,7 @@ async def verify(ctx, member: discord.Member = None, masteraccount: str = " "):
         await ctx.send("<@{0}> is already verified.".format(member.id))
         return
 
-    if not isValidMasterAccountName(masteraccount):
+    if isValidMasterAccountName(masteraccount) == False:
         await ctx.send("Invalid MA name")
         return
 
