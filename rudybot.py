@@ -285,7 +285,8 @@ async def ProcessMessageQueue():
         delete = []
         for message in cursor:
             channel = client.get_channel(int(message['channel']))
-            await channel.send(message['message'])
+            if message['message']:
+                await channel.send(message['message'])
             delete.append(message['id'])
 
         for messageid in delete:
@@ -376,11 +377,15 @@ async def on_message(message):
             return
 
         code = random_with_N_digits(10)
+        sql = mysql.connector.connect(** mysqlconfig)
         cursor = sql.cursor()
         cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid = 0", (str(code), params[1]))
         cursor.close()
+        sql.close()
+
         await message.author.send("Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, params[1]))
     elif paramcount == 3: #entering code
+        sql = mysql.connector.connect(** mysqlconfig)
         cursor = sql.cursor()
         cursor.execute("SELECT COUNT(*), id, Helper, Tester, AdminLevel AS results FROM masters WHERE discordcode = %s AND Username = %s", (params[2], params[1]))
         data = cursor.fetchone()
@@ -407,21 +412,24 @@ async def on_message(message):
         cursor = sql.cursor()
         cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE id = %s", (message.author.id, data[1]))
         cursor.close()
+        sql.close()
 
         await message.author.send("Your account is now verified!")
     else:
         await message.author.send("Usage: verify [Master account name]")
-    sql.close()
 
 @client.event
 async def on_message_delete(message):
     if message.author.id == 311318305564655637: #mussy's id
-        escapedmessage = discord.utils.escape_mentions(message.content);
-        await message.channel.send('Mussy just deleted a message like a bitch. Here are its contents:\n{0}'.format(escapedmessage))
+        em=discord.Embed(title='Message Deleted', description="Mussy deleted a message like a bitch. Let's see what it was!".format(message.author.id, message.channel.id), color = 0xe74c3c, timestamp = message.created_at)
+        em.add_field(name='Message Content', value=message.content, inline=False)
+        em.set_author(name=message.author, icon_url=message.author.avatar_url)
+        em.set_footer(text="User ID: {0}".format(message.author.id))
+        await message.channel.send(embed=em)
 
     if message.channel.id not in staffchannels and message.guild is not None:
         deletechan = client.get_channel(deletelogs)
-        em=discord.Embed(title='Message Deleted', description='Message by <@{0}> in <#{1}> was deleted'.format(message.author.id, message.channel.id), color = 0x1abc9c, timestamp = message.created_at)
+        em=discord.Embed(title='Message Deleted', description='Message by <@{0}> in <#{1}> was deleted'.format(message.author.id, message.channel.id), color = 0xe74c3c, timestamp = message.created_at)
         em.add_field(name='Message Content', value=message.content, inline=False)
         em.set_author(name=message.author, icon_url=message.author.avatar_url)
         em.set_footer(text="User ID: {0}".format(message.author.id))
@@ -434,7 +442,7 @@ async def on_message_edit(before, after):
             return
 
         editchan = client.get_channel(editlogs)
-        em=discord.Embed(title='Message Edited', description='<@{0}> edited a message in <#{1}>'.format(before.author.id, before.channel.id), color = 0x1abc9c, timestamp = after.edited_at)
+        em=discord.Embed(title='Message Edited', description='<@{0}> edited a message in <#{1}>'.format(before.author.id, before.channel.id), color = 0xe74c3c, timestamp = after.edited_at)
         em.add_field(name='Original Message', value=before.content, inline=False)
         em.add_field(name='New Message', value=after.content, inline=False)
         em.set_author(name=after.author, icon_url=after.author.avatar_url)
