@@ -214,7 +214,7 @@ async def UpdateSAMPInfo():
             cursor.close()
             sql.close()
 
-            game = discord.Game('RCRP ({0}/200 players)'.format(data[0]))
+            game = discord.Game('RCRP ({data[0]}/200 players)')
             await client.change_presence(activity=game)
         except:
             print("Error while updating player count.")
@@ -299,7 +299,7 @@ async def ProcessMessageQueue():
 
 @client.event
 async def on_ready():
-    print('\nLogged in as {0}'.format(client.user.name))
+    print('\nLogged in as {client.user.name}')
     print(client.user.id)
     print('------')
 
@@ -343,7 +343,7 @@ async def on_message(message):
         await client.process_commands(message)
 
         if message.channel.id == adminchat or message.channel.id == helperchat:
-            queuemessage = "{0} (discord): {1}".format(message.author.name, message.content)
+            queuemessage = "{message.author.name} (discord): {message.content}"
             sql = mysql.connector.connect(** mysqlconfig)
             cursor = sql.cursor()
             cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (%s, %s, 2, UNIX_TIMESTAMP())", (message.channel.id, queuemessage))
@@ -383,7 +383,7 @@ async def on_message(message):
         cursor.close()
         sql.close()
 
-        await message.author.send("Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({0})\nOnce you have found your verification code, send 'verify {1} [code]' to confirm your account.".format(dashboardurl, params[1]))
+        await message.author.send("Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({dashboardurl})\nOnce you have found your verification code, send 'verify {params[1]} [code]' to confirm your account.")
     elif paramcount == 3: #entering code
         sql = mysql.connector.connect(** mysqlconfig)
         cursor = sql.cursor()
@@ -421,18 +421,18 @@ async def on_message(message):
 @client.event
 async def on_message_delete(message):
     if message.author.id == 311318305564655637: #mussy's id
-        em=discord.Embed(title='Message Deleted', description="Mussy deleted a message like a bitch. Let's see what it was!".format(message.author.id, message.channel.id), color = 0xe74c3c, timestamp = message.created_at)
+        em=discord.Embed(title='Message Deleted', description="Mussy deleted a message like a bitch. Let's see what it was!", color = 0xe74c3c, timestamp = message.created_at)
         em.add_field(name='Message Content', value=message.content, inline=False)
         em.set_author(name=message.author, icon_url=message.author.avatar_url)
-        em.set_footer(text="User ID: {0}".format(message.author.id))
+        em.set_footer(text="User ID: {message.author.id}")
         await message.channel.send(embed=em)
 
     if message.channel.id not in staffchannels and message.guild is not None:
         deletechan = client.get_channel(deletelogs)
-        em=discord.Embed(title='Message Deleted', description='Message by <@{0}> in <#{1}> was deleted'.format(message.author.id, message.channel.id), color = 0xe74c3c, timestamp = message.created_at)
+        em=discord.Embed(title='Message Deleted', description='Message by {message.author.mention} in {message.channel.mention} was deleted', color = 0xe74c3c, timestamp = message.created_at)
         em.add_field(name='Message Content', value=message.content, inline=False)
         em.set_author(name=message.author, icon_url=message.author.avatar_url)
-        em.set_footer(text="User ID: {0}".format(message.author.id))
+        em.set_footer(text="User ID: {message.author.id}")
         await deletechan.send(embed=em)
 
 @client.event
@@ -442,11 +442,11 @@ async def on_message_edit(before, after):
             return
 
         editchan = client.get_channel(editlogs)
-        em=discord.Embed(title='Message Edited', description='<@{0}> edited a message in <#{1}>'.format(before.author.id, before.channel.id), color = 0xe74c3c, timestamp = after.edited_at)
+        em=discord.Embed(title='Message Edited', description='{before.author.mention} edited a message in {before.channel.mention}', color = 0xe74c3c, timestamp = after.edited_at)
         em.add_field(name='Original Message', value=before.content, inline=False)
         em.add_field(name='New Message', value=after.content, inline=False)
         em.set_author(name=after.author, icon_url=after.author.avatar_url)
-        em.set_footer(text="User ID: {0}".format(after.author.id))
+        em.set_footer(text="User ID: {after.author.id}")
         await editchan.send(embed=em)
 
 @client.event
@@ -474,10 +474,6 @@ async def on_member_update(before, after):
 
     cursor.close()
     sql.close()
-
-#@client.event
-#async def on_command_error(context, exception):
-#    print("exception received {0}".format(exception))
 
 @client.command(help = "Sends an adorable picture of Rudy")
 async def rudypic(ctx):
@@ -546,7 +542,7 @@ async def whois(ctx, user: discord.User=None):
     data = cursor.fetchone()
 
     if cursor.rowcount == 0:
-        await ctx.send("{0} does not have a Master Account linked to their Discord account.".format(user))
+        await ctx.send("{user} does not have a Master Account linked to their Discord account.")
         cursor.close()
         sql.close()
         return
@@ -554,7 +550,7 @@ async def whois(ctx, user: discord.User=None):
     cursor.close()
     sql.close()
 
-    embed = discord.Embed(title = "{0} - {1}".format(data[1], user), url = "https://redcountyrp.com/admin/masters/{0}".format(data[0]), color = 0xe74c3c)
+    embed = discord.Embed(title = "{data[1]} - {user}", url = "https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
     embed.add_field(name = "Account ID", value = data[0], inline = False)
     embed.add_field(name = "Username", value = data[1], inline = False)
     embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
@@ -572,7 +568,7 @@ async def find(ctx, name : str = 'None'):
     cursor.execute("SELECT id, discordid, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE Username = %s", (name, ))
 
     if cursor.rowcount == 0:
-        await ctx.send("{0} is not a valid account name.".format(name))
+        await ctx.send("{name} is not a valid account name.")
         cursor.close()
         sql.close()
         return
@@ -582,12 +578,12 @@ async def find(ctx, name : str = 'None'):
     sql.close()
 
     if data[1] == None:
-        await ctx.send("{0} does not have a Discord account linked to their MA.".format(name))
+        await ctx.send("{name} does not have a Discord account linked to their MA.")
         return
 
     matcheduser = await client.fetch_user(data[1])
-    embed = discord.Embed(title = "{0}".format(name), url = "https://redcountyrp.com/admin/masters/{0}".format(data[0]), color = 0xe74c3c)
-    embed.add_field(name = "Discord User", value = "<@{0}>".format(matcheduser.id))
+    embed = discord.Embed(title = "{name}", url = "https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
+    embed.add_field(name = "Discord User", value = matcheduser.id.mention)
     embed.add_field(name = "Account ID", value = data[0], inline = False)
     embed.add_field(name = "Username", value = name, inline = False)
     embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
@@ -612,15 +608,15 @@ async def ban(ctx, user: discord.User = None, *, banreason):
 
     try:
         adminuser = await client.fetch_user(ctx.author.id)
-        embed = discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {0}'.format(adminuser.name), color = 0xe74c3c, timestamp = ctx.message.created_at)
+        embed = discord.Embed(title = 'Banned', description = 'You have been banned from the Red County Roleplay Discord server by {adminuser.name}', color = 0xe74c3c, timestamp = ctx.message.created_at)
         embed.add_field(name = 'Ban Reason', value = banreason)
         await user.send(embed = embed)
     except:
         print("couldn't ban user because dms off")
 
-    baninfo = "{0} - Banned by {1}".format(banreason, adminuser.name)
+    baninfo = "{banreason} - Banned by {adminuser.name}"
     await ctx.guild.ban(bannedmember, reason = baninfo, delete_message_days = 0)
-    await ctx.send("<@{0}> has been successfully banned.".format(bannedmember.id))
+    await ctx.send("{bannedmember.id.mention} has been successfully banned.")
 
 @client.command(hidden = True)
 @commands.check(is_admin)
@@ -634,7 +630,7 @@ async def unban(ctx, target):
     for ban in bans:
         if ban.user.id == banned_user.id:
             await ctx.guild.unban(ban.user)
-            await ctx.send("<@{0}> has been successfully unbanned".format(ban.user.id))
+            await ctx.send("{ban.user.mention} has been successfully unbanned")
             return
 
     await ctx.send("Could not find any bans for that user.")
@@ -650,7 +646,7 @@ async def baninfo(ctx, target: str = ""):
     bans = await ctx.guild.bans()
     for ban in bans:
         if ban.user.id == banned_user.id:
-            await ctx.send("<@{0}> was banned for the following reason: {1}".format(ban.user.id, ban.reason))
+            await ctx.send("{ban.user.mention} was banned for the following reason: {ban.reason}")
             return
     await ctx.send("Could not find any ban info for that user.")
 
@@ -666,11 +662,11 @@ async def mute(ctx, member: discord.Member = None):
         return
 
     if ismuted(member):
-        await ctx.send("<@{0}> is already muted.".format(member.id))
+        await ctx.send("{member.id.mention} is already muted.")
         return
 
     await member.add_roles(ctx.guild.get_role(mutedrole))
-    await ctx.send("<@{0}> has been muted.".format(member.id))
+    await ctx.send("{member.id.mention} has been muted.")
 
 @client.command(hidden = True)
 @commands.check(is_admin)
@@ -684,11 +680,11 @@ async def unmute(ctx, member: discord.Member = None):
         return
 
     if not ismuted(member):
-        await ctx.send("<@{0}> is not muted.".format(member.id))
+        await ctx.send("{member.id.mention} is not muted.")
         return
 
     await member.remove_roles(ctx.guild.get_role(mutedrole))
-    await ctx.send("<@{0}> has been unmuted.".format(member.id))
+    await ctx.send("{member.id.mention} has been unmuted.")
 
 @client.command(hidden = True)
 @commands.check(is_management)
@@ -698,7 +694,7 @@ async def verify(ctx, member: discord.Member = None, masteraccount: str = " "):
         return
 
     if isverified(member):
-        await ctx.send("<@{0}> is already verified.".format(member.id))
+        await ctx.send("{member.id.mention} is already verified.")
         return
 
     if isValidMasterAccountName(masteraccount) == False:
@@ -716,7 +712,7 @@ async def verify(ctx, member: discord.Member = None, masteraccount: str = " "):
     sql.close()
 
     await member.add_roles(ctx.guild.get_role(verifiedrole))
-    await ctx.send("<@{0}> has been manually verified as {1}".format(member.id, masteraccount))
+    await ctx.send("{member.id.mention} has been manually verified as {masteraccount}")
 
 @client.command(hidden = True)
 @commands.check(is_management)
@@ -741,13 +737,13 @@ async def unverify(ctx, member: discord.Member = None):
         if role.id == rcrpguild: #check to see if the role is @everyone, skip it if so
             continue
         roles.append(role)
-    await ctx.send("<@{0}> has been unverified.".format(member.id))
+    await ctx.send("{member.id.mention} has been unverified.")
     await member.remove_roles(*roles)
 
 @client.command(help = "Displays the age of Rudy")
 async def age(ctx):
     rudy_age = pretty_time_delta(int(time.time()) - rudyage)
-    await ctx.send("Rudy's age: {0}".format(rudy_age))
+    await ctx.send("Rudy's age: {rudy_age}")
 
 @client.command(hidden = True)
 @commands.check(is_admin)
@@ -841,6 +837,7 @@ async def bathe(ctx):
 
 @client.command(hidden = True)
 async def unixtimestamp(ctx):
-    await ctx.send("CURRENT UNIX TIMESTAMP VALUE: {0}".format(int(time.time())))
+    time = int(time.time())
+    await ctx.send("CURRENT UNIX TIMESTAMP VALUE: {time}")
 
-client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0")
+client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0", reconnect=True)
