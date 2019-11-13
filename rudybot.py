@@ -7,7 +7,7 @@ client = commands.Bot(command_prefix='!')
 
 client.remove_command('help')
 
-cogs = ['cogs.commands_fun', 'cogs.commands_player', 'cogs.commands_staff', 'cogs.logging', 'cogs.messagequeue', 'cogs.rolesync', 'cogs.rudypic', 'cogs.sampinfo', 'cogs.verification']
+cogs = ['cogs.commands_fun', 'cogs.commands_player', 'cogs.commands_staff', 'cogs.commands_owner', 'cogs.logging', 'cogs.messagequeue', 'cogs.rolesync', 'cogs.rudypic', 'cogs.sampinfo', 'cogs.verification']
 
 if __name__ == '__main__':
     for cog in cogs:
@@ -31,4 +31,4 @@ async def on_message(message):
         await client.process_commands(message)
         return
 
-client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0", reconnect=True)
+client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0")

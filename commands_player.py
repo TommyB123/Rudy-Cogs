@@ -10,7 +10,7 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
         self.bot = bot
 
     @commands.command(hidden = True)
-    @commands.check(is_admin)
+    @commands.cooldown(1, 60)
     async def admins(self, ctx):
         sql = mysql.connector.connect(** mysqlconfig)
         cursor = sql.cursor(buffered = True, dictionary = True)
@@ -32,7 +32,7 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
         await ctx.send(embed = embed)
 
     @commands.command(hidden = True)
-    @commands.check(is_admin)
+    @commands.cooldown(1, 60)
     async def helpers(self, ctx):
         sql = mysql.connector.connect(** mysqlconfig)
         cursor = sql.cursor(buffered = True, dictionary = True)

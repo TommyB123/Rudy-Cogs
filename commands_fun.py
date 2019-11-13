@@ -19,11 +19,6 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
         else:
             await ctx.send("*Rudy stares at your empty hand disappointed. *")
 
-    @commands.command(hidden = True)
-    @commands.is_owner()
-    async def dms(self, ctx):
-        await ctx.send("<https://imgur.com/a/yYK5dnZ>")
-
     @commands.command(help = "Give Rudy some pets")
     async def pet(self, ctx, *, location: str = 'None'):
         if location == 'head' or location == 'ears':
