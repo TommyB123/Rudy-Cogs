@@ -2,7 +2,7 @@ import discord
 import random
 from imgurpython import ImgurClient
 from discord.ext import commands
-from utility import rcrp_utility
+from cogs.utility import rcrp_utility
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')

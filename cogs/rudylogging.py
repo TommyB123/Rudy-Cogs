@@ -1,7 +1,6 @@
 import discord
-import asyncio
 from discord.ext import commands
-from utility import rcrp_utility
+from cogs.utility import rcrp_utility
 
 class LoggingCog(commands.Cog, name="Logging"):
     def __init__(self, bot):

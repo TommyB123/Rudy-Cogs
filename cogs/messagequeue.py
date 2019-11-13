@@ -1,8 +1,8 @@
 import discord
 import mysql.connector
 from discord.ext import commands
-from utility import rcrp_utility
-from mysqlinfo import mysqlconfig
+from cogs.utility import rcrp_utility
+from cogs.mysqlinfo import mysqlconfig
 
 class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
     def __init__(self, bot):

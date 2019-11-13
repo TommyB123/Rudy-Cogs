@@ -2,7 +2,7 @@ import discord
 import random
 import mysql.connector
 from random import randint
-from mysqlinfo import mysqlconfig
+from cogs.mysqlinfo import mysqlconfig
 
 #channels where deletions/edits are not logged (management, development, deleted-messages, edited-messages, status)
 staffchannels = [412340704187252748, 388002249013460993, 463595960367579137, 463644249108250635, 406166047167741952, 464899293166305291, 445668156824879123, 466946121445539840, 507547199710822400]

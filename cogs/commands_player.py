@@ -1,7 +1,6 @@
 import discord
 import mysql.connector
-
-from mysqlinfo import mysqlconfig
+from cogs.mysqlinfo import mysqlconfig
 from discord.ext import commands
 
 class PlayerCmdsCog(commands.Cog, name="Player Commands"):

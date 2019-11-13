@@ -1,8 +1,8 @@
 import discord
 import mysql.connector
 from discord.ext import commands
-from mysqlinfo import mysqlconfig
-from utility import rcrp_utility
+from cogs.mysqlinfo import mysqlconfig
+from cogs.utility import rcrp_utility
 
 class RoleSyncCog(commands.Cog, name="Fun Commands"):
     def __init__(self, bot):

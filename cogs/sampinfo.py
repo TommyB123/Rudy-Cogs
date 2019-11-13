@@ -1,6 +1,6 @@
 import discord
 import mysql.connector
-from mysqlinfo import mysqlconfig
+from cogs.mysqlinfo import mysqlconfig
 from discord.ext import commands
 
 class SampinfoCog(commands.Cog, name="SA-MP Server Info"):

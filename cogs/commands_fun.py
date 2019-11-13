@@ -1,7 +1,7 @@
 import discord
 import time
 from discord.ext import commands
-from utility import rcrp_utility
+from cogs.utility import rcrp_utility
 
 class FunCmdsCog(commands.Cog, name="Fun Commands"):
     def __init__(self, bot):

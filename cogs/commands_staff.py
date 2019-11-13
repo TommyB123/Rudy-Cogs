@@ -1,8 +1,8 @@
 import discord
 import mysql.connector
-from utility import rcrp_utility
+from cogs.utility import rcrp_utility
 from discord.ext import commands
-from mysqlinfo import mysqlconfig
+from cogs.mysqlinfo import mysqlconfig
 from datetime import datetime
 
 class StaffCmdsCog(commands.Cog, name="Staff Commands"):
