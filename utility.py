@@ -1,46 +1,109 @@
 import discord
 import random
-import mysqlinfo
 import mysql.connector
 from random import randint
+from mysqlinfo import mysqlconfig
+
+#channels where deletions/edits are not logged (management, development, deleted-messages, edited-messages, status)
+staffchannels = [412340704187252748, 388002249013460993, 463595960367579137, 463644249108250635, 406166047167741952, 464899293166305291, 445668156824879123, 466946121445539840, 507547199710822400]
+
+#message delete log channel
+deletelogs = 463595960367579137
+
+#message edit log channel
+editlogs = 463644249108250635
+
+#various server roles
+adminrole = 293441894585729024
+bannedrole = 592730783924486168
+helperrole = 293441873945821184
+managementrole = 310927289317588992
+mutedrole = 347541774883094529
+ownerrole = 293303836125298690
+premiumrole = 534479263966167069
+rudyfriend = 460848362111893505
+testerrole = 293441807055060993
+verifiedrole = 293441047244308481
+
+#staff chat server echo channels
+adminchat = 397566940723281922
+helperchat = 609053396204257290
+
+#all admin+ role IDs
+staffroles = [ownerrole, adminrole, managementrole]
+
+#ID of the rcrp guild
+rcrpguild = 93142223473905664
+
+#url of the dashboard. sent to players when they try to verify
+dashboardurl = "https://redcountyrp.com/user/dashboard"
+
+#the age of rudy. used for the fancy time delta in the age command
+rudyage = 1409529600
 
 class rcrp_utility:
-    #channels where deletions/edits are not logged (management, development, deleted-messages, edited-messages, status)
-    staffchannels = [412340704187252748, 388002249013460993, 463595960367579137, 463644249108250635, 406166047167741952, 464899293166305291, 445668156824879123, 466946121445539840, 507547199710822400]
+    def isstaffchannel(channel):
+        if channel in staffchannels:
+            return True
+        else:
+            return False
 
-    #message delete log channel
-    deletelogs = 463595960367579137
+    def deletelogchannel():
+        return deletelogs
 
-    #message edit log channel
-    editlogs = 463644249108250635
+    def geteditlogchannel():
+        return editlogs
 
-    #various server roles
-    adminrole = 293441894585729024
-    bannedrole = 592730783924486168
-    helperrole = 293441873945821184
-    managementrole = 310927289317588992
-    mutedrole = 347541774883094529
-    ownerrole = 293303836125298690
-    premiumrole = 534479263966167069
-    rudyfriend = 460848362111893505
-    testerrole = 293441807055060993
-    verifiedrole = 293441047244308481
+    def adminrole():
+        return adminrole
 
-    #staff chat server echo channels
-    adminchat = 397566940723281922
-    helperchat = 609053396204257290
+    def bannedrole():
+        return bannedrole
 
-    #all admin+ role IDs
-    staffroles = [ownerrole, adminrole, managementrole]
+    def helperrole():
+        return helperrole
 
-    #ID of the rcrp guild
-    rcrpguild = 93142223473905664
+    def managementrole():
+        return managementrole
 
-    #url of the dashboard. sent to players when they try to verify
-    dashboardurl = "https://redcountyrp.com/user/dashboard"
+    def mutedrole():
+        return mutedrole
 
-    #the age of rudy. used for the fancy time delta in the age command
-    rudyage = 1409529600
+    def ownerrole():
+        return ownerrole
+
+    def premiumrole():
+        return premiumrole
+
+    def rudyfriend():
+        return rudyfriend
+
+    def testerrole():
+        return testerrole
+
+    def verifiedrole():
+        return verifiedrole
+
+    def adminchat():
+        return adminchat
+
+    def helperchat():
+        return helperchat
+
+    def isstaffrole(role):
+        if role in staffroles:
+            return True
+        else:
+            return False
+
+    def getrcrpguild():
+        return rcrpguild
+
+    def getdashboardurl():
+        return dashboardurl
+
+    def getrudyage():
+        return rudyage
 
     def isverified(member):
         if verifiedrole in [role.id for role in member.roles]:

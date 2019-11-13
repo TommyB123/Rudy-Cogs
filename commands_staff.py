@@ -1,8 +1,9 @@
 import discord
-import mysqlinfo
 import mysql.connector
 from utility import rcrp_utility
 from discord.ext import commands
+from mysqlinfo import mysqlconfig
+from datetime import datetime
 
 class StaffCmdsCog(commands.Cog, name="Staff Commands"):
     def __init__(self, bot):
@@ -81,7 +82,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
 
         matcheduser = await self.bot.fetch_user(data[1])
         embed = discord.Embed(title = f"{name}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
-        embed.add_field(name = "Discord User", value = matcheduser.id.mention)
+        embed.add_field(name = "Discord User", value = matcheduser.mention)
         embed.add_field(name = "Account ID", value = data[0], inline = False)
         embed.add_field(name = "Username", value = name, inline = False)
         embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
@@ -114,7 +115,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
 
         baninfo = f"{banreason} - Banned by {adminuser.name}"
         await ctx.guild.ban(bannedmember, reason = baninfo, delete_message_days = 0)
-        await ctx.send(f"{bannedmember.id.mention} has been successfully banned.")
+        await ctx.send(f"{bannedmember.mention} has been successfully banned.")
 
     @commands.command(hidden = True)
     @commands.check(rcrp_utility.is_admin)
@@ -160,11 +161,11 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             return
 
         if rcrp_utility.ismuted(member):
-            await ctx.send(f"{member.id.mention} is already muted.")
+            await ctx.send(f"{member.mention} is already muted.")
             return
 
-        await member.add_roles(ctx.guild.get_role(rcrp_utility.mutedrole))
-        await ctx.send(f"{member.id.mention} has been muted.")
+        await member.add_roles(ctx.guild.get_role(rcrp_utility.mutedrole()))
+        await ctx.send(f"{member.mention} has been muted.")
 
     @commands.command(hidden = True)
     @commands.check(rcrp_utility.is_admin)
@@ -178,11 +179,11 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             return
 
         if not rcrp_utility.ismuted(member):
-            await ctx.send(f"{member.id.mention} is not muted.")
+            await ctx.send(f"{member.mention} is not muted.")
             return
 
-        await member.remove_roles(ctx.guild.get_role(rcrp_utility.mutedrole))
-        await ctx.send(f"{member.id.mention} has been unmuted.")
+        await member.remove_roles(ctx.guild.get_role(rcrp_utility.mutedrole()))
+        await ctx.send(f"{member.mention} has been unmuted.")
 
     @commands.command(hidden = True)
     @commands.check(rcrp_utility.is_management)
@@ -192,7 +193,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             return
 
         if rcrp_utility.isverified(member):
-            await ctx.send(f"{member.id.mention} is already verified.")
+            await ctx.send(f"{member.mention} is already verified.")
             return
 
         if rcrp_utility.isValidMasterAccountName(masteraccount) == False:
@@ -209,8 +210,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         cursor.close()
         sql.close()
 
-        await member.add_roles(ctx.guild.get_role(rcrp_utility.verifiedrole))
-        await ctx.send(f"{member.id.mention} has been manually verified as {masteraccount}")
+        await member.add_roles(ctx.guild.get_role(rcrp_utility.verifiedrole()))
+        await ctx.send(f"{member.mention} has been manually verified as {masteraccount}")
 
     @commands.command(hidden = True)
     @commands.check(rcrp_utility.is_management)
@@ -235,7 +236,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             if role.id == rcrp_utility.rcrpguild: #check to see if the role is @everyone, skip it if so
                 continue
             roles.append(role)
-        await ctx.send(f"{member.id.mention} has been unverified.")
+        await ctx.send(f"{member.mention} has been unverified.")
         await member.remove_roles(*roles)
 
     @commands.command(hidden = True)

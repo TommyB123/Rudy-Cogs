@@ -1,8 +1,8 @@
 import discord
-import mysqlinfo
 import mysql.connector
 from discord.ext import commands
 from utility import rcrp_utility
+from mysqlinfo import mysqlconfig
 
 class VerificationCog(commands.Cog, name="RCRP Verification"):
     def __init__(self, bot):
@@ -42,7 +42,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
                 cursor.close()
                 sql.close()
 
-                await message.author.send(f"Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({rcrp_utility.dashboardurl})\nOnce you have found your verification code, send 'verify {params[1]} [code]' to confirm your account.")
+                await message.author.send(f"Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({rcrp_utility.getdashboardurl()})\nOnce you have found your verification code, send 'verify {params[1]} [code]' to confirm your account.")
             elif paramcount == 3: #entering code
                 sql = mysql.connector.connect(** mysqlconfig)
                 cursor = sql.cursor()
@@ -54,18 +54,18 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
                     await message.author.send("Invalid ID.")
                     return
 
-                discordguild = self.bot.get_guild(rcrp_utility.rcrpguild)
+                discordguild = self.bot.get_guild(rcrp_utility.getrcrpguild())
                 discordmember = discordguild.get_member(message.author.id)
                 discordroles = []
-                discordroles.append(discordguild.get_role(rcrp_utility.verifiedrole))
+                discordroles.append(discordguild.get_role(rcrp_utility.verifiedrole()))
                 if data[2] == 1: #guy is helper
-                    discordroles.append(discordguild.get_role(rcrp_utility.helperrole))
+                    discordroles.append(discordguild.get_role(rcrp_utility.helperrole()))
                 if data[3] == 1: #guy is tester
-                    discordroles.append(discordguild.get_role(rcrp_utility.testerrole))
+                    discordroles.append(discordguild.get_role(rcrp_utility.testerrole()))
                 if data[4] != 0: #guy is admin
-                    discordroles.append(discordguild.get_role(rcrp_utility.adminrole))
+                    discordroles.append(discordguild.get_role(rcrp_utility.adminrole()))
                 if data[4] == 4: #guy is management
-                    discordroles.append(discordguild.get_role(rcrp_utility.managementrole))
+                    discordroles.append(discordguild.get_role(rcrp_utility.managementrole()))
                 await discordmember.add_roles(*discordroles)
 
                 cursor = sql.cursor()

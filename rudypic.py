@@ -1,4 +1,5 @@
 import discord
+import random
 from imgurpython import ImgurClient
 from discord.ext import commands
 from utility import rcrp_utility
@@ -12,7 +13,7 @@ class RudypicCog(commands.Cog, name="rudypic"):
 
     @commands.command(help = "Sends an adorable picture of Rudy")
     async def rudypic(self, ctx):
-        if rcrp_utility.rudyfriend in [role.id for role in ctx.author.roles]:
+        if rcrp_utility.rudyfriend() in [role.id for role in ctx.author.roles]:
             pictures = []
             for image in imclient.get_album_images('WLQku0l'):
                 pictures.append(image.link)

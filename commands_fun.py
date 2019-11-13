@@ -1,6 +1,5 @@
 import discord
 import time
-from datetime import datetime
 from discord.ext import commands
 from utility import rcrp_utility
 
@@ -30,7 +29,7 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
 
     @commands.command(help = "Displays the age of Rudy")
     async def age(self, ctx):
-        rudy_age = rcrp_utility.pretty_time_delta(int(time.time()) - rcrp_utility.rudyage)
+        rudy_age = rcrp_utility.pretty_time_delta(int(time.time()) - rcrp_utility.getrudyage())
         await ctx.send(f"Rudy's age: {rudy_age}")
 
     @commands.command(help = "Gives a kind response about Rudy's weight")
