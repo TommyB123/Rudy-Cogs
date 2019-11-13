@@ -28,4 +28,35 @@ async def on_message(message):
         await client.process_commands(message)
         return
 
+@client.command(hidden = True)
+@commands.is_owner()
+async def loadcog(ctx, *, cog:str):
+    try:
+        client.load_extension(cog)
+    except Exception as e:
+        await ctx.send(f'Unable to load {cog}. Reason: {e}')
+    else:
+        await ctx.send(f'{cog} loaded successfully.')
+
+@client.command(hidden = True)
+@commands.is_owner()
+async def unloadcog(ctx, *, cog:str):
+    try:
+        client.unload_extension(cog)
+    except Exception as e:
+        await ctx.send(f'Unable to unload {cog}. Reason: {e}')
+    else:
+        await ctx.send(f'{cog} unloaded successfully.')
+
+@client.command(hidden = True)
+@commands.is_owner()
+async def reloadcog(ctx, *, cog:str):
+    try:
+        client.unload_extension(cog)
+        client.load_extension(cog)
+    except Exception as e:
+        await ctx.send(f'Relaoding of {cog} failed. Reason: {e}')
+    else:
+        await ctx.send(f'{cog} successfully reloaded.')
+
 client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0")
