@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from cogs.utility import rcrp_utility
+from cogs.utility import *
 
 class LoggingCog(commands.Cog, name="Logging"):
     def __init__(self, bot):
@@ -15,8 +15,8 @@ class LoggingCog(commands.Cog, name="Logging"):
             em.set_footer(text=f"User ID: {message.author.id}")
             await message.channel.send(embed=em)
 
-        if rcrp_utility.isstaffchannel(before.channel.id) == False and before.guild is not None:
-            deletechan = self.bot.get_channel(rcrp_utility.deletelogchannel())
+        if  message.channel.id not in staffchannels and before.guild is not None:
+            deletechan = self.bot.get_channel(deletelogs)
             em=discord.Embed(title='Message Deleted', description=f'Message by {message.author.mention} in {message.channel.mention} was deleted', color = 0xe74c3c, timestamp = message.created_at)
             em.add_field(name='Message Content', value=message.content, inline=False)
             em.set_author(name=message.author, icon_url=message.author.avatar_url)
@@ -25,11 +25,11 @@ class LoggingCog(commands.Cog, name="Logging"):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
-        if rcrp_utility.isstaffchannel(before.channel.id) == False and before.guild is not None:
+        if before.channel.id not in staffchannels and before.guild is not None:
             if before.content == after.content:
                 return
 
-            editchan = self.bot.get_channel(rcrp_utility.editlogchannel())
+            editchan = self.bot.get_channel(editlogs)
             em=discord.Embed(title='Message Edited', description=f'{before.author.mention} edited a message in {before.channel.mention}', color = 0xe74c3c, timestamp = after.edited_at)
             em.add_field(name='Original Message', value=before.content, inline=False)
             em.add_field(name='New Message', value=after.content, inline=False)

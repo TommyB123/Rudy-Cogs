@@ -42,69 +42,6 @@ dashboardurl = "https://redcountyrp.com/user/dashboard"
 rudyage = 1409529600
 
 class rcrp_utility:
-    def isstaffchannel(channel):
-        if channel in staffchannels:
-            return True
-        else:
-            return False
-
-    def deletelogchannel():
-        return deletelogs
-
-    def geteditlogchannel():
-        return editlogs
-
-    def adminrole():
-        return adminrole
-
-    def bannedrole():
-        return bannedrole
-
-    def helperrole():
-        return helperrole
-
-    def managementrole():
-        return managementrole
-
-    def mutedrole():
-        return mutedrole
-
-    def ownerrole():
-        return ownerrole
-
-    def premiumrole():
-        return premiumrole
-
-    def rudyfriend():
-        return rudyfriend
-
-    def testerrole():
-        return testerrole
-
-    def verifiedrole():
-        return verifiedrole
-
-    def adminchat():
-        return adminchat
-
-    def helperchat():
-        return helperchat
-
-    def isstaffrole(role):
-        if role in staffroles:
-            return True
-        else:
-            return False
-
-    def getrcrpguild():
-        return rcrpguild
-
-    def getdashboardurl():
-        return dashboardurl
-
-    def getrudyage():
-        return rudyage
-
     def isverified(member):
         if verifiedrole in [role.id for role in member.roles]:
             return True

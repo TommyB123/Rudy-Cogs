@@ -2,7 +2,7 @@ import discord
 import asyncio
 import mysql.connector
 from discord.ext import commands
-from cogs.utility import rcrp_utility
+from cogs.utility import *
 from cogs.mysqlinfo import mysqlconfig
 
 class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
@@ -16,7 +16,7 @@ class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild is not None:
-            if message.channel.id == rcrp_utility.adminchat() or message.channel.id == rcrp_utility.helperchat():
+            if message.channel.id == adminchat or message.channel.id == helperchat:
                 queuemessage = f"{message.author.name} (discord): {message.content}"
                 sql = mysql.connector.connect(** mysqlconfig)
                 cursor = sql.cursor()

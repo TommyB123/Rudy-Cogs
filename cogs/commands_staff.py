@@ -1,6 +1,6 @@
 import discord
 import mysql.connector
-from cogs.utility import rcrp_utility
+from cogs.utility import *
 from discord.ext import commands
 from cogs.mysqlinfo import mysqlconfig
 from datetime import datetime
@@ -164,7 +164,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             await ctx.send(f"{member.mention} is already muted.")
             return
 
-        await member.add_roles(ctx.guild.get_role(rcrp_utility.mutedrole()))
+        await member.add_roles(ctx.guild.get_role(mutedrole))
         await ctx.send(f"{member.mention} has been muted.")
 
     @commands.command(hidden = True)
@@ -182,7 +182,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             await ctx.send(f"{member.mention} is not muted.")
             return
 
-        await member.remove_roles(ctx.guild.get_role(rcrp_utility.mutedrole()))
+        await member.remove_roles(ctx.guild.get_role(mutedrole))
         await ctx.send(f"{member.mention} has been unmuted.")
 
     @commands.command(hidden = True)
@@ -210,7 +210,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         cursor.close()
         sql.close()
 
-        await member.add_roles(ctx.guild.get_role(rcrp_utility.verifiedrole()))
+        await member.add_roles(ctx.guild.get_role(verifiedrole))
         await ctx.send(f"{member.mention} has been manually verified as {masteraccount}")
 
     @commands.command(hidden = True)
@@ -233,7 +233,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
 
         roles = []
         for role in member.roles:
-            if role.id == rcrp_utility.rcrpguild: #check to see if the role is @everyone, skip it if so
+            if role.id == rcrpguild: #check to see if the role is @everyone, skip it if so
                 continue
             roles.append(role)
         await ctx.send(f"{member.mention} has been unverified.")
