@@ -1,8 +1,8 @@
 import discord
 import time
-
 from datetime import datetime
-from discord import commands
+from discord.ext import commands
+from utility import rcrp_utility
 
 class FunCmdsCog(commands.Cog, name="Fun Commands"):
     def __init__(self, bot):
@@ -30,8 +30,8 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
 
     @commands.command(help = "Displays the age of Rudy")
     async def age(self, ctx):
-        rudy_age = pretty_time_delta(int(time.time()) - rudyage)
-        await ctx.send("Rudy's age: {rudy_age}")
+        rudy_age = rcrp_utility.pretty_time_delta(int(time.time()) - rcrp_utility.rudyage)
+        await ctx.send(f"Rudy's age: {rudy_age}")
 
     @commands.command(help = "Gives a kind response about Rudy's weight")
     async def makerudyfat(self, ctx):
@@ -72,7 +72,7 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
     @commands.command(hidden = True)
     async def unixtimestamp(self, ctx):
         time = int(time.time())
-        await ctx.send("CURRENT UNIX TIMESTAMP VALUE: {time}")
+        await ctx.send(f"CURRENT UNIX TIMESTAMP VALUE: {time}")
 
 def setup(bot):
     bot.add_cog(FunCmdsCog(bot))

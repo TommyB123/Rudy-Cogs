@@ -1,9 +1,5 @@
 import discord
-import utility
-import mysqlinfo
-import mysql.connector
-
-from discord import commands
+from discord.ext import commands
 
 class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
     def __init__(self, bot):

@@ -1,9 +1,8 @@
 import discord
 import mysqlinfo
 import mysql.connector
-import utility
-
-from discord import commands
+from discord.ext import commands
+from utility import rcrp_utility
 
 class VerificationCog(commands.Cog, name="RCRP Verification"):
     def __init__(self, bot):
@@ -23,27 +22,27 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
                 await message.author.send("Usage: verify [Master account name]")
                 return
 
-            if IsDiscordIDLinked(message.author.id):
+            if rcrp_utility.IsDiscordIDLinked(message.author.id):
                 await message.author.send("This Discord account is already linked to an RCRP account.")
                 return
 
             if paramcount == 2: #entering account name
-                if isValidMasterAccountName(params[1]) == False:
+                if rcrp_utility.isValidMasterAccountName(params[1]) == False:
                     await message.author.send("Invalid account name.")
                     return
 
-                if IsAcceptedMasterAccount(params[1]) == False:
+                if rcrp_utility.IsAcceptedMasterAccount(params[1]) == False:
                     await message.author.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
                     return
 
-                code = random_with_N_digits(10)
+                code = rcrp_utility.random_with_N_digits(10)
                 sql = mysql.connector.connect(** mysqlconfig)
                 cursor = sql.cursor()
                 cursor.execute("UPDATE masters SET discordcode = %s WHERE Username = %s AND discordid = 0", (str(code), params[1]))
                 cursor.close()
                 sql.close()
 
-                await message.author.send("Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({dashboardurl})\nOnce you have found your verification code, send 'verify {params[1]} [code]' to confirm your account.")
+                await message.author.send(f"Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({rcrp_utility.dashboardurl})\nOnce you have found your verification code, send 'verify {params[1]} [code]' to confirm your account.")
             elif paramcount == 3: #entering code
                 sql = mysql.connector.connect(** mysqlconfig)
                 cursor = sql.cursor()
@@ -55,18 +54,18 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
                     await message.author.send("Invalid ID.")
                     return
 
-                discordguild = self.bot.get_guild(rcrpguild)
+                discordguild = self.bot.get_guild(rcrp_utility.rcrpguild)
                 discordmember = discordguild.get_member(message.author.id)
                 discordroles = []
-                discordroles.append(discordguild.get_role(verifiedrole))
+                discordroles.append(discordguild.get_role(rcrp_utility.verifiedrole))
                 if data[2] == 1: #guy is helper
-                    discordroles.append(discordguild.get_role(helperrole))
+                    discordroles.append(discordguild.get_role(rcrp_utility.helperrole))
                 if data[3] == 1: #guy is tester
-                    discordroles.append(discordguild.get_role(testerrole))
+                    discordroles.append(discordguild.get_role(rcrp_utility.testerrole))
                 if data[4] != 0: #guy is admin
-                    discordroles.append(discordguild.get_role(adminrole))
+                    discordroles.append(discordguild.get_role(rcrp_utility.adminrole))
                 if data[4] == 4: #guy is management
-                    discordroles.append(discordguild.get_role(managementrole))
+                    discordroles.append(discordguild.get_role(rcrp_utility.managementrole))
                 await discordmember.add_roles(*discordroles)
 
                 cursor = sql.cursor()

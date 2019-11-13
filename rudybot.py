@@ -7,18 +7,15 @@ client = commands.Bot(command_prefix='!')
 
 client.remove_command('help')
 
-cogs = ['cogs.commands_fun', 'cogs.commands_player', 'cogs.commands_staff', 'cogs.commands_owner', 'cogs.logging', 'cogs.messagequeue', 'cogs.rolesync', 'cogs.rudypic', 'cogs.sampinfo', 'cogs.verification']
+cogs = ['commands_fun', 'commands_player', 'commands_staff', 'commands_owner', 'rudylogging', 'messagequeue', 'rolesync', 'rudypic', 'sampinfo', 'verification']
 
 if __name__ == '__main__':
     for cog in cogs:
-        try:
-            client.load_extension(cog)
-        except:
-            print('Failed to load {cog}')
+        client.load_extension(cog)
 
 @client.event
 async def on_ready():
-    print('\nLogged in as {client.user.name}')
+    print(f'\nLogged in as {client.user.name}')
     print(client.user.id)
     print('------')
 

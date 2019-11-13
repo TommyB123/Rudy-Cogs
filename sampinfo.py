@@ -2,15 +2,11 @@ import discord
 import mysqlinfo
 import mysql.connector
 
-from discord import commands
+from discord.ext import commands
 
 class SampinfoCog(commands.Cog, name="SA-MP Server Info"):
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        self.bot.loop.create_task(UpdateSAMPInfo(self))
 
     async def UpdateSAMPInfo(self):
         while 1:
@@ -22,12 +18,16 @@ class SampinfoCog(commands.Cog, name="SA-MP Server Info"):
                 cursor.close()
                 sql.close()
 
-                game = discord.Game('RCRP ({data[0]}/150 players)')
+                game = discord.Game(f'RCRP ({data[0]}/150 players)')
                 await self.bot.change_presence(activity = game)
             except:
                 print("Error while updating player count.")
 
             await asyncio.sleep(1) #run every second
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.bot.loop.create_task(UpdateSAMPInfo(self))
 
 def setup(bot):
     bot.add_cog(SampinfoCog(bot))
