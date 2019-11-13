@@ -15,7 +15,7 @@ class LoggingCog(commands.Cog, name="Logging"):
             em.set_footer(text=f"User ID: {message.author.id}")
             await message.channel.send(embed=em)
 
-        if  message.channel.id not in staffchannels and before.guild is not None:
+        if message.channel.id not in staffchannels and message.guild is not None:
             deletechan = self.bot.get_channel(deletelogs)
             em=discord.Embed(title='Message Deleted', description=f'Message by {message.author.mention} in {message.channel.mention} was deleted', color = 0xe74c3c, timestamp = message.created_at)
             em.add_field(name='Message Content', value=message.content, inline=False)

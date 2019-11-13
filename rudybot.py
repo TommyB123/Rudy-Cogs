@@ -28,6 +28,11 @@ async def on_message(message):
         await client.process_commands(message)
         return
 
+@client.event
+async def on_command_error(context, exception):
+    exceptionchannel = client.get_channel(644115120154345472)
+    await exceptionchannel.send(f'A command exception was caught: {exception}')
+
 @client.command(hidden = True)
 @commands.is_owner()
 async def loadcog(ctx, *, cog:str):
