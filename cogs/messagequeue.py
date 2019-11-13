@@ -1,4 +1,5 @@
 import discord
+import asyncio
 import mysql.connector
 from discord.ext import commands
 from cogs.utility import rcrp_utility
@@ -7,27 +8,6 @@ from cogs.mysqlinfo import mysqlconfig
 class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
     def __init__(self, bot):
         self.bot = bot
-
-    async def ProcessMessageQueue(self):
-        while 1:
-            sql = mysql.connector.connect(** mysqlconfig)
-            cursor = sql.cursor(dictionary = True)
-            cursor.execute("SELECT id, channel, message FROM messagequeue WHERE origin = 1 ORDER BY timestamp ASC")
-
-            delete = []
-            for message in cursor:
-                channel = self.bot.get_channel(int(message['channel']))
-                if message['message']:
-                    await channel.send(message['message'])
-                delete.append(message['id'])
-
-            for messageid in delete:
-                cursor.execute("DELETE FROM messagequeue WHERE id = %s", (messageid, ))
-
-            sql.commit()
-            cursor.close()
-            sql.close()
-            await asyncio.sleep(1) #checks every second
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -44,6 +24,27 @@ class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
                 sql.commit()
                 cursor.close()
                 sql.close()
+
+async def ProcessMessageQueue(self):
+    while 1:
+        sql = mysql.connector.connect(** mysqlconfig)
+        cursor = sql.cursor(dictionary = True)
+        cursor.execute("SELECT id, channel, message FROM messagequeue WHERE origin = 1 ORDER BY timestamp ASC")
+
+        delete = []
+        for message in cursor:
+            channel = self.bot.get_channel(int(message['channel']))
+            if message['message']:
+                await channel.send(message['message'])
+            delete.append(message['id'])
+
+        for messageid in delete:
+            cursor.execute("DELETE FROM messagequeue WHERE id = %s", (messageid, ))
+
+        sql.commit()
+        cursor.close()
+        sql.close()
+        await asyncio.sleep(1) #checks every second
 
 def setup(bot):
     bot.add_cog(MsgQueueCog(bot))

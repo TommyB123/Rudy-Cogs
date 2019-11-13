@@ -1,4 +1,5 @@
 import discord
+import asyncio
 import mysql.connector
 from discord.ext import commands
 from cogs.mysqlinfo import mysqlconfig
@@ -7,61 +8,6 @@ from cogs.utility import rcrp_utility
 class RoleSyncCog(commands.Cog, name="Fun Commands"):
     def __init__(self, bot):
         self.bot = bot
-
-    async def SyncMemberRoles(self):
-        while 1:
-            discordguild = self.bot.get_guild(rcrp_utility.getrcrpguild())
-            sql = mysql.connector.connect(** mysqlconfig)
-            for member in self.bot.get_all_members():
-                if not rcrp_utility.isverified(member):
-                    continue
-
-                cursor = sql.cursor(dictionary = True)
-                cursor.execute("SELECT id, Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
-                data = cursor.fetchone()
-                cursor.close()
-
-                if data is None:
-                    continue
-
-                if rcrp_utility.ismanagement(member):
-                    continue
-
-                banned = False
-                if rcrp_utility.isbanned(data['id']):
-                    banned = True
-
-                #remove roles a member shouldn't have
-                removeroles = []
-                if rcrp_utility.helperrole() in [role.id for role in member.roles] and data['Helper'] == 0: #member isn't a helper but has the role
-                    removeroles.append(discordguild.get_role(rcrp_utility.helperrole()))
-                if rcrp_utility.testerrole() in [role.id for role in member.roles] and data['Tester'] == 0: #member isn't a tester but has the role
-                    removeroles.append(discordguild.get_role(rcrp_utility.testerrole()))
-                if rcrp_utility.adminrole() in [role.id for role in member.roles] and data['AdminLevel'] == 0: #member isn't an admin but has the role
-                    removeroles.append(discordguild.get_role(rcrp_utility.adminrole()))
-                if rcrp_utility.premiumrole() in [role.id for role in member.roles] and data['Premium'] == 0: #member isn't an admin but has the role
-                    removeroles.append(discordguild.get_role(rcrp_utility.premiumrole()))
-                if rcrp_utility.bannedrole() in [role.id for role in member.roles] and banned is False: #member isn't banned but has the role
-                    removeroles.append(discordguild.get_role(rcrp_utility.bannedrole()))
-                if removeroles:
-                    await member.remove_roles(*removeroles)
-
-                #add roles a member should have
-                addroles = []
-                if rcrp_utility.helperrole() not in [role.id for role in member.roles] and data['Helper'] == 1: #member is a helper but doesn't have the role
-                    addroles.append(discordguild.get_role(rcrp_utility.helperrole()))
-                if rcrp_utility.testerrole() not in [role.id for role in member.roles] and data['Tester'] == 1: #member is a tester but doesn't have the role
-                    addroles.append(discordguild.get_role(rcrp_utility.testerrole()))
-                if rcrp_utility.adminrole() not in [role.id for role in member.roles] and data['AdminLevel'] != 0: #member is an admin but doesn't have the role
-                    addroles.append(discordguild.get_role(rcrp_utility.adminrole()))
-                if rcrp_utility.premiumrole() not in [role.id for role in member.roles] and data['Premium'] != 0: #member is an admin but doesn't have the role
-                    addroles.append(discordguild.get_role(rcrp_utility.premiumrole()))
-                if rcrp_utility.bannedrole() not in [role.id for role in member.roles] and banned is True: #member isn't banned but has the role
-                    addroles.append(discordguild.get_role(rcrp_utility.bannedrole()))
-                if addroles:
-                    await member.add_roles(*addroles)
-            sql.close()
-            await asyncio.sleep(60) #check every minute
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -119,6 +65,61 @@ class RoleSyncCog(commands.Cog, name="Fun Commands"):
         cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (user.id, ))
         cursor.close()
         sql.close()
+
+async def SyncMemberRoles(self):
+    while 1:
+        discordguild = self.bot.get_guild(rcrp_utility.getrcrpguild())
+        sql = mysql.connector.connect(** mysqlconfig)
+        for member in self.bot.get_all_members():
+            if not rcrp_utility.isverified(member):
+                continue
+
+            cursor = sql.cursor(dictionary = True)
+            cursor.execute("SELECT id, Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
+            data = cursor.fetchone()
+            cursor.close()
+
+            if data is None:
+                continue
+
+            if rcrp_utility.ismanagement(member):
+                continue
+
+            banned = False
+            if rcrp_utility.isbanned(data['id']):
+                banned = True
+
+            #remove roles a member shouldn't have
+            removeroles = []
+            if rcrp_utility.helperrole() in [role.id for role in member.roles] and data['Helper'] == 0: #member isn't a helper but has the role
+                removeroles.append(discordguild.get_role(rcrp_utility.helperrole()))
+            if rcrp_utility.testerrole() in [role.id for role in member.roles] and data['Tester'] == 0: #member isn't a tester but has the role
+                removeroles.append(discordguild.get_role(rcrp_utility.testerrole()))
+            if rcrp_utility.adminrole() in [role.id for role in member.roles] and data['AdminLevel'] == 0: #member isn't an admin but has the role
+                removeroles.append(discordguild.get_role(rcrp_utility.adminrole()))
+            if rcrp_utility.premiumrole() in [role.id for role in member.roles] and data['Premium'] == 0: #member isn't an admin but has the role
+                removeroles.append(discordguild.get_role(rcrp_utility.premiumrole()))
+            if rcrp_utility.bannedrole() in [role.id for role in member.roles] and banned is False: #member isn't banned but has the role
+                removeroles.append(discordguild.get_role(rcrp_utility.bannedrole()))
+            if removeroles:
+                await member.remove_roles(*removeroles)
+
+            #add roles a member should have
+            addroles = []
+            if rcrp_utility.helperrole() not in [role.id for role in member.roles] and data['Helper'] == 1: #member is a helper but doesn't have the role
+                addroles.append(discordguild.get_role(rcrp_utility.helperrole()))
+            if rcrp_utility.testerrole() not in [role.id for role in member.roles] and data['Tester'] == 1: #member is a tester but doesn't have the role
+                addroles.append(discordguild.get_role(rcrp_utility.testerrole()))
+            if rcrp_utility.adminrole() not in [role.id for role in member.roles] and data['AdminLevel'] != 0: #member is an admin but doesn't have the role
+                addroles.append(discordguild.get_role(rcrp_utility.adminrole()))
+            if rcrp_utility.premiumrole() not in [role.id for role in member.roles] and data['Premium'] != 0: #member is an admin but doesn't have the role
+                addroles.append(discordguild.get_role(rcrp_utility.premiumrole()))
+            if rcrp_utility.bannedrole() not in [role.id for role in member.roles] and banned is True: #member isn't banned but has the role
+                addroles.append(discordguild.get_role(rcrp_utility.bannedrole()))
+            if addroles:
+                await member.add_roles(*addroles)
+        sql.close()
+        await asyncio.sleep(60) #check every minute
 
 def setup(bot):
     bot.add_cog(RoleSyncCog(bot))
