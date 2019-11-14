@@ -24,9 +24,7 @@ async def on_message(message):
     if client.user.id == message.author.id:
         return
 
-    if message.guild is not None:
-        await client.process_commands(message)
-        return
+    await client.process_commands(message)
 
 @client.event
 async def on_command_error(context, exception):

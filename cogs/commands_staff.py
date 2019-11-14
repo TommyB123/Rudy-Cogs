@@ -187,7 +187,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
 
     @commands.command(hidden = True)
     @commands.check(rcrp_utility.is_management)
-    async def verify(self, ctx, member: discord.Member = None, masteraccount: str = " "):
+    async def manualverify(self, ctx, member: discord.Member = None, masteraccount: str = " "):
         if not member:
             await ctx.send("Invalid user.")
             return
