@@ -17,10 +17,10 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
         if cursor.rowcount == 0:
             cursor.close()
             sql.close()
-            await ctx.send("There are currently no admins ingame.")
+            await ctx.send("There are currently no admins in-game.")
             return
 
-        embed = discord.Embed(title = 'Ingame Administrators', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        embed = discord.Embed(title = 'In-game Administrators', color = 0xe74c3c, timestamp = ctx.message.created_at)
 
         for admininfo in cursor:
             embed.add_field(name = admininfo['mastername'], value = admininfo['charactername'], inline = True)
@@ -39,7 +39,7 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
         if cursor.rowcount == 0:
             cursor.close()
             sql.close()
-            await ctx.send("There are currently no helpers ingame.")
+            await ctx.send("There are currently no helpers in-game.")
             return
 
         embed = discord.Embed(title = 'Ingame Helpers', color = 0xe74c3c, timestamp = ctx.message.created_at)

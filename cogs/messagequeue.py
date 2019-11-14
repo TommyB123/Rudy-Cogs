@@ -15,7 +15,7 @@ class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.guild is not None:
+        if message.guild is not None and message.author.id != self.bot.user.id:
             if message.channel.id == adminchat or message.channel.id == helperchat:
                 queuemessage = f"{message.author.name} (discord): {message.content}"
                 sql = mysql.connector.connect(** mysqlconfig)

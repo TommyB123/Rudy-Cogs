@@ -23,7 +23,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         await ctx.channel.delete_messages(messages)
 
     @commands.command(hidden = True)
-    async def clearapps(ctx):
+    async def clearapps(self, ctx):
         if ctx.channel.id == 445668156824879123:
             messages = await ctx.channel.history().filter(rcrp_utility.appfilter).flatten()
             await ctx.channel.delete_messages(messages)
