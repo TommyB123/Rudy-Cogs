@@ -7,7 +7,19 @@ client = commands.Bot(command_prefix='!')
 
 client.remove_command('help')
 
-cogs = ['cogs.commands_fun', 'cogs.commands_player', 'cogs.commands_staff', 'cogs.commands_owner', 'cogs.rudylogging', 'cogs.messagequeue', 'cogs.rolesync', 'cogs.rudypic', 'cogs.sampinfo', 'cogs.verification']
+cogs = [
+    'cogs.commands_fun',
+    'cogs.commands_player',
+    'cogs.commands_staff',
+    'cogs.commands_owner',
+    'cogs.commands_weeb'
+    'cogs.rudylogging',
+    'cogs.messagequeue',
+    'cogs.rolesync',
+    'cogs.rudypic',
+    'cogs.sampinfo',
+    'cogs.verification'
+]
 
 if __name__ == '__main__':
     for cog in cogs:
