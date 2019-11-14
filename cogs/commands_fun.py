@@ -1,5 +1,6 @@
 import discord
 import time
+from string import ascii_lowercase
 from discord.ext import commands
 from cogs.utility import *
 
@@ -17,6 +18,29 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
             await ctx.send("* Rudy happily takes the bone from you and runs off with it, however he neglects to actually chew on said bone. He instead leaves the bone in an accessible location at all times and waits for moments of opportune happiness or excitement (e.g, someone returning home) to put it back in his mouth. Once peak excitement levels are reached, he prances around the house with the bone in his mouth, doing multiple laps around the kitchen with it as well. *")
         else:
             await ctx.send("*Rudy stares at your empty hand disappointed. *")
+
+    @commands.command(hidden = True)
+    @commands.check(rcrp_utility.is_admin)
+    async def emojisay(self, ctx, *, message:str = None):
+        if str is None:
+            await ctx.send("Usage: !emojisay [message]")
+            return
+
+        message = message.lower()
+        newmessage = []
+        for c in message:
+            if c in ascii_lowercase:
+                newmessage.append(':regional_indicator_{0}:'.format(c))
+            else:
+                newmessage.append(c)
+
+        newmessage = ''.join(newmessage)
+        await ctx.message.delete()
+
+        if len(newmessage) >= 2000:
+            await ctx.send("Final message was too long.")
+        else:
+            await ctx.send(newmessage)
 
     @commands.command(help = "Give Rudy some pets")
     async def pet(self, ctx, *, location: str = 'None'):
