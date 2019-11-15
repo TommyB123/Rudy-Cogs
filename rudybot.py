@@ -12,7 +12,7 @@ cogs = [
     'cogs.commands_player',
     'cogs.commands_staff',
     'cogs.commands_owner',
-    'cogs.commands_weeb'
+    'cogs.commands_weeb',
     'cogs.rudylogging',
     'cogs.messagequeue',
     'cogs.rolesync',
@@ -47,7 +47,7 @@ async def on_command_error(context, exception):
 @commands.is_owner()
 async def loadcog(ctx, *, cog:str):
     try:
-        client.load_extension(cog)
+        client.load_extension(f'cogs.{cog}')
     except Exception as e:
         await ctx.send(f'Unable to load {cog}. Reason: {e}')
     else:
@@ -57,7 +57,7 @@ async def loadcog(ctx, *, cog:str):
 @commands.is_owner()
 async def unloadcog(ctx, *, cog:str):
     try:
-        client.unload_extension(cog)
+        client.unload_extension(f'cogs.{cog}')
     except Exception as e:
         await ctx.send(f'Unable to unload {cog}. Reason: {e}')
     else:
@@ -67,8 +67,8 @@ async def unloadcog(ctx, *, cog:str):
 @commands.is_owner()
 async def reloadcog(ctx, *, cog:str):
     try:
-        client.unload_extension(cog)
-        client.load_extension(cog)
+        client.unload_extension(f'cogs.{cog}')
+        client.load_extension(f'cogs.{cog}')
     except Exception as e:
         await ctx.send(f'Relaoding of {cog} failed. Reason: {e}')
     else:
