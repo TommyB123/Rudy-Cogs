@@ -52,6 +52,11 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
         else:
             await ctx.send('https://cdn.discordapp.com/attachments/477293251737550861/577684575388565541/tWzddexCr7NKfzYKafUY33wUuzYw56GvwVsOiEyrGMQ.png')
 
+    @commands.command(hidden = True)
+    @commands.cooldown(1, 60)
+    async def dozed(self, ctx):
+        await ctx.send(file=discord.File('dozed.mp3'))
+
     @commands.command(help = "Give Rudy some pets")
     async def pet(self, ctx, *, location: str = 'None'):
         if location == 'head' or location == 'ears':
