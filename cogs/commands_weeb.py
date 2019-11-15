@@ -3,7 +3,7 @@ import httpx
 import json
 from discord.ext import commands
 
-weebs = [87582156741681152, 253685655471783936] #tommy & graber
+weebs = [87582156741681152, 253685655471783936, 273956905397911553] #tommy, graber & cave
 weebcategories = ['neko', 'kitsune', 'hug', 'pat', 'waifu', 'cry', 'kiss']
 
 async def isweeb(ctx):
