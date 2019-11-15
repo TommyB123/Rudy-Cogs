@@ -1,5 +1,5 @@
 import discord
-import mysql.connector
+import aiomysql
 from cogs.utility import *
 from discord.ext import commands
 from cogs.mysqlinfo import mysqlconfig
@@ -35,18 +35,18 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             await ctx.send("Invalid user.")
             return
 
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT id, Username, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE discordid = %s", (user.id, ))
-        data = cursor.fetchone()
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT id, Username, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE discordid = %s", (user.id, ))
+        data = await cursor.fetchone()
 
         if cursor.rowcount == 0:
             await ctx.send(f"{user} does not have a Master Account linked to their Discord account.")
-            cursor.close()
+            await cursor.close()
             sql.close()
             return
 
-        cursor.close()
+        await cursor.close()
         sql.close()
 
         embed = discord.Embed(title = f"{data[1]} - {user}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
@@ -62,18 +62,18 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         if name == 'None':
             return
 
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor(buffered = True)
-        cursor.execute("SELECT id, discordid, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE Username = %s", (name, ))
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT id, discordid, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE Username = %s", (name, ))
 
         if cursor.rowcount == 0:
             await ctx.send(f"{name} is not a valid account name.")
-            cursor.close()
+            await cursor.close()
             sql.close()
             return
 
-        data = cursor.fetchone()
-        cursor.close()
+        data = await cursor.fetchone()
+        await cursor.close()
         sql.close()
 
         if data[1] == None:
@@ -204,10 +204,10 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             await ctx.send("MA is already verified")
             return
 
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE Username = %s", (member.id, masteraccount))
-        cursor.close()
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE Username = %s", (member.id, masteraccount))
+        await cursor.close()
         sql.close()
 
         await member.add_roles(ctx.guild.get_role(verifiedrole))
@@ -224,11 +224,11 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             await ctx.send("This user is not verified")
             return
 
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
-        cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (member.id, ))
-        cursor.close()
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
+        await cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (member.id, ))
+        await cursor.close()
         sql.close()
 
         roles = []

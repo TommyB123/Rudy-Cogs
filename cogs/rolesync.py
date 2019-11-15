@@ -1,6 +1,6 @@
 import discord
 import asyncio
-import mysql.connector
+import aiomysql
 from discord.ext import commands
 from cogs.mysqlinfo import mysqlconfig
 from cogs.utility import *
@@ -16,19 +16,20 @@ class RoleSyncCog(commands.Cog, name="Fun Commands"):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         discordguild = self.bot.get_guild(rcrpguild)
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
 
         roles = []
-        for roleid in cursor:
+        results = await cursor.fetchall()
+        for roleid in results:
             role = int(roleid[0])
             if role == rcrpguild: ##check to see if the role is @everyone, skip it if so
                 continue
             roles.append(discordguild.get_role(int(roleid[0])))
         await member.add_roles(*roles)
 
-        cursor.close()
+        await cursor.close()
         sql.close()
 
     @commands.Cog.listener()
@@ -36,48 +37,48 @@ class RoleSyncCog(commands.Cog, name="Fun Commands"):
         if not rcrp_utility.isverified(after) or before.roles == after.roles:
             return
 
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
 
         #check for removed roles and delete them
         for role in before.roles:
             if role.id not in after.roles:
-                cursor.execute("DELETE FROM discordroles WHERE discorduser = %s AND discordrole = %s", (before.id, role.id))
-        cursor.close()
+                await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s AND discordrole = %s", (before.id, role.id))
+        await cursor.close()
 
         #check for added roles and insert them
-        cursor = sql.cursor()
+        cursor = await sql.cursor()
         for role in after.roles:
             if role.id not in before.roles:
                 if role.id == rcrpguild: #check to see if role is @everyone, skip it if so
                     continue;
-                cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
-                sql.commit()
+                await cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
+                await sql.commit()
 
-        cursor.close()
+        await cursor.close()
         sql.close()
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (user.id, ))
-        cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (user.id, ))
-        cursor.close()
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (user.id, ))
+        await cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (user.id, ))
+        await cursor.close()
         sql.close()
 
 async def SyncMemberRoles(self):
     while 1:
         discordguild = self.bot.get_guild(rcrpguild)
-        sql = mysql.connector.connect(** mysqlconfig)
+        sql = await aiomysql.connect(** mysqlconfig)
         for member in self.bot.get_all_members():
             if not rcrp_utility.isverified(member):
                 continue
 
-            cursor = sql.cursor(dictionary = True)
-            cursor.execute("SELECT id, Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
-            data = cursor.fetchone()
-            cursor.close()
+            cursor = await sql.cursor(aiomysql.DictCursor)
+            await cursor.execute("SELECT id, Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
+            data = await cursor.fetchone()
+            await cursor.close()
 
             if data is None:
                 continue
@@ -85,9 +86,7 @@ async def SyncMemberRoles(self):
             if rcrp_utility.ismanagement(member):
                 continue
 
-            banned = False
-            if rcrp_utility.isbanned(data['id']):
-                banned = True
+            banned = await rcrp_utility.isbanned(data['id'])
 
             #remove roles a member shouldn't have
             removeroles = []

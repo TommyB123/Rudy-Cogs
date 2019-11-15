@@ -1,5 +1,5 @@
 import discord
-import mysql.connector
+import aiomysql
 from discord.ext import commands
 from cogs.utility import *
 from cogs.mysqlinfo import mysqlconfig
@@ -28,10 +28,10 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             return
 
         code = rcrp_utility.random_with_N_digits(10)
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("UPDATE masters SET discordcode = %s, pendingdiscordid = %s WHERE Username = %s AND discordid = 0", (str(code), ctx.author.id, masteraccount))
-        cursor.close()
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("UPDATE masters SET discordcode = %s, pendingdiscordid = %s WHERE Username = %s AND discordid = 0", (str(code), ctx.author.id, masteraccount))
+        await cursor.close()
         sql.close()
 
         await ctx.send(f"Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({dashboardurl})\nOnce you have found your verification code, send '!validate [code]' to confirm your account.")
@@ -42,11 +42,11 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
         if code == -1:
             await ctx.send("Usage: !validate [code]")
 
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT COUNT(*), id, Helper, Tester, AdminLevel AS results FROM masters WHERE discordcode = %s AND pendingdiscordid = %s", (code, ctx.author.id))
-        data = cursor.fetchone()
-        cursor.close()
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT COUNT(*), id, Helper, Tester, AdminLevel AS results FROM masters WHERE discordcode = %s AND pendingdiscordid = %s", (code, ctx.author.id))
+        data = await cursor.fetchone()
+        await cursor.close()
 
         if data[0] == 0: #account doesn't match
             await ct.send("Invalid verification code.")
@@ -66,9 +66,9 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             discordroles.append(discordguild.get_role(managementrole))
         await discordmember.add_roles(*discordroles)
 
-        cursor = sql.cursor()
-        cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0, pendingdiscordid = 0 WHERE id = %s", (ctx.author.id, data[1]))
-        cursor.close()
+        cursor = await sql.cursor()
+        await cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0, pendingdiscordid = 0 WHERE id = %s", (ctx.author.id, data[1]))
+        await cursor.close()
         sql.close()
 
         await ctx.send("Your account is now verified!")

@@ -1,6 +1,6 @@
 import discord
 import random
-import mysql.connector
+import aiomysql
 from random import randint
 from cogs.mysqlinfo import mysqlconfig
 
@@ -78,12 +78,12 @@ class rcrp_utility:
         else:
             return False
 
-    def isbanned(accountid):
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
-        data = cursor.fetchone()
-        cursor.close()
+    async def isbanned(accountid):
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
+        data = await cursor.fetchone()
+        await cursor.close()
         sql.close()
 
         if data is None:
@@ -117,12 +117,12 @@ class rcrp_utility:
         else:
             return '%s%ds' % (sign_string, seconds)
 
-    def isValidMasterAccountName(name):
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
-        data = cursor.fetchone()
-        cursor.close()
+    async def isValidMasterAccountName(name):
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
+        data = await cursor.fetchone()
+        await cursor.close()
         sql.close()
 
         if data is None:
@@ -130,12 +130,12 @@ class rcrp_utility:
         else:
             return True
 
-    def isMasterAccountVerified(name):
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
-        data = cursor.fetchone()
-        cursor.close()
+    async def isMasterAccountVerified(name):
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
+        data = await cursor.fetchone()
+        await cursor.close()
         sql.close()
 
         if data is None:
@@ -143,12 +143,12 @@ class rcrp_utility:
         else:
             return True
 
-    def IsDiscordIDLinked(discordid):
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
-        data = cursor.fetchone()
-        cursor.close()
+    async def IsDiscordIDLinked(discordid):
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
+        data = await cursor.fetchone()
+        await cursor.close()
         sql.close()
 
         if data is None:
@@ -156,12 +156,12 @@ class rcrp_utility:
         else:
             return True
 
-    def IsAcceptedMasterAccount(mastername):
-        sql = mysql.connector.connect(** mysqlconfig)
-        cursor = sql.cursor()
-        cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))
-        data = cursor.fetchone()
-        cursor.close()
+    async def IsAcceptedMasterAccount(mastername):
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))
+        data = await cursor.fetchone()
+        await cursor.close()
         sql.close()
 
         if data is None:
