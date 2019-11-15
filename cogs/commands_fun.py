@@ -1,5 +1,6 @@
 import discord
 import time
+from random import randint
 from string import ascii_lowercase
 from discord.ext import commands
 from cogs.utility import *
@@ -41,6 +42,15 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
             await ctx.send("Final message was too long.")
         else:
             await ctx.send(newmessage)
+
+    @commands.command(hidden = True)
+    @commands.cooldown(1, 60)
+    async def gasgasgas(self, ctx):
+        choice = randint(1, 2)
+        if choice == 1:
+            await ctx.send('https://i.imgur.com/iuuFvBb.jpg')
+        else:
+            await ctx.send('https://cdn.discordapp.com/attachments/477293251737550861/577684575388565541/tWzddexCr7NKfzYKafUY33wUuzYw56GvwVsOiEyrGMQ.png')
 
     @commands.command(help = "Give Rudy some pets")
     async def pet(self, ctx, *, location: str = 'None'):
