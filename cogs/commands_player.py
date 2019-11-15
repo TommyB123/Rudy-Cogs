@@ -66,19 +66,33 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
             sql.close()
             await ctx.send("There are currently no players in-game.")
 
-        embed = discord.Embed(title = 'In-Game Players', color = 0xe74c3c, timestamp = ctx.message.created_at)
-
-        players = []
         results = await cursor.fetchall()
-        for playerinfo in results:
-            players.append(playerinfo[0])
-
-        players = ','.join(players)
-        players = players.replace(',', '\n')
-        embed.add_field(name = 'Online Players ({0})'.format(cursor.rowcount), value = players, inline = False)
-
         await cursor.close()
         sql.close()
+
+        players = []
+        for playerinfo in results:
+            players.append(playerinfo[0])
+        players = ','.join(players)
+        players = players.replace(',', '\n')
+
+        embed = discord.Embed(title = 'In-Game Players', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        embed.add_field(name = 'Online Players ({0})'.format(cursor.rowcount), value = players, inline = False)
+        await ctx.send(embed = embed)
+
+    @commands.command(hidden = True)
+    @commands.cooldown(1, 60)
+    async def factiononline(self, ctx):
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        await cursor.execute("SELECT COUNT(players.id) AS members, COUNT(IF(Online = 1, 1, NULL)) AS onlinemembers, factions.FactionName AS name FROM players JOIN factions ON players.Faction = factions.id WHERE Faction != 0 GROUP BY Faction ORDER BY Faction ASC")
+        factiondata = await cursor.fetchall()
+        await cursor.close()
+        sql.close()
+
+        embed = discord.Embed(title = "Faction List", color = 0xe74c3c, timestamp = ctx.message.created_at)
+        for factioninfo in factiondata:
+            embed.add_field(name = factioninfo['name'], value = '{0}/{1}'.format(factioninfo['onlinemembers'], factioninfo['members']), inline = False)
         await ctx.send(embed = embed)
 
 def setup(bot):
