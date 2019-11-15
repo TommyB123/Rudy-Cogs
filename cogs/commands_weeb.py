@@ -18,6 +18,7 @@ class WeebCog(commands.Cog, name = "Weeb Commands"):
 
 	@commands.command()
 	@commands.check(isweeb)
+	@commands.cooldown(1, 60)
 	async def weeb(self, ctx, category:str = ''):
 		category = category.lower()
 		if category not in weebcategories:

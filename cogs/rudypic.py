@@ -21,5 +21,15 @@ class RudypicCog(commands.Cog, name="rudypic"):
         else:
             await ctx.message.delete()
 
+    @commands.command(help = "Sends an adorable picture of Sammy")
+    async def sammypic(self, ctx):
+        if rudyfriend in [role.id for role in ctx.author.roles]:
+            pictures = []
+            for image in imclient.get_album_images('WLCguFk'):
+                pictures.append(image.link)
+            await ctx.send(random.choice(pictures))
+        else:
+            await ctx.message.delete()
+
 def setup(bot):
     bot.add_cog(RudypicCog(bot))
