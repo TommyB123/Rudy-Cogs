@@ -23,9 +23,9 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         factionbank = await cursor.fetchone()
         await cursor.execute("SELECT SUM(itemval) AS dollars FROM inventory WHERE item = 45 GROUP BY type ORDER BY type ASC")
         storedcash = await cursor.fetchall()
+        cashsum = storedcash[0]['dollars'] + playerdata['Bank'] + playerdata['CheckSlot1'] + playerdata['CheckSlot2'] + playerdata['CheckSlot3'] + factionbank['FBank'] + storedcash[1]['dollars'] + storedcash[2]['dollars'] + storedcash[3]['dollars']
         await cursor.close()
         sql.close()
-        cashsum = storedcash[0]['dollars'] + playerdata['Bank'] + playerdata['CheckSlot1'] + playerdata['CheckSlot2'] + playerdata['CheckSlot3'] + factionbank['FBank'] + storedcash[1]['dollars'] + storedcash[2]['dollars'] + storedcash[3]['dollars']
 
         embed = discord.Embed(title = 'RCRP Economy Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
         embed.add_field(name = "In-Hand Cash", value = '${:,}'.format(storedcash[0]['dollars']))
@@ -39,6 +39,36 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         embed.add_field(name = 'Stored Vehicle Cash', value = '${:,}'.format(storedcash[3]['dollars']))
         embed.add_field(name = 'Total', value = '${:,}'.format(cashsum))
         await ctx.send(embed = embed)
+
+    @commands.command(hidden = True)
+    @commands.is_owner()
+    async def loadcog(self, ctx, *, cog:str):
+        try:
+            self.bot.load_extension(f'cogs.{cog}')
+        except Exception as e:
+            await ctx.send(f'Unable to load {cog}. Reason: {e}')
+        else:
+            await ctx.send(f'{cog} loaded successfully.')
+
+    @commands.command(hidden = True)
+    @commands.is_owner()
+    async def unloadcog(self, ctx, *, cog:str):
+        try:
+            self.bot.unload_extension(f'cogs.{cog}')
+        except Exception as e:
+            await ctx.send(f'Unable to unload {cog}. Reason: {e}')
+        else:
+            await ctx.send(f'{cog} unloaded successfully.')
+
+    @commands.command(hidden = True)
+    @commands.is_owner()
+    async def reloadcog(self, ctx, *, cog:str):
+        try:
+            self.bot.reload_extension(f'cogs.{cog}')
+        except Exception as e:
+            await ctx.send(f'Reloading of {cog} failed. Reason: {e}')
+        else:
+            await ctx.send(f'{cog} successfully reloaded.')
 
 def setup(bot):
     bot.add_cog(OwnerCmdsCog(bot))

@@ -25,11 +25,16 @@ cogs = [
 async def on_ready():
     print(f'\nLogged in as {client.user.name}')
     print(client.user.id)
-    print('------')
 
     if __name__ == '__main__':
         for cog in cogs:
-            client.load_extension(cog)
+            try: 
+                client.load_extension(cog)
+            except Exception as e:
+                print(f'Failed load {cog}. Reason: {e}')
+            else:
+                print(f'Cog {cog} successfully loaded.')
+    print('------')
 
 @client.event
 async def on_message(message):
@@ -42,36 +47,5 @@ async def on_message(message):
 async def on_command_error(context, exception):
     exceptionchannel = client.get_channel(644115120154345472)
     await exceptionchannel.send(f'A command exception was caught: {exception}')
-
-@client.command(hidden = True)
-@commands.is_owner()
-async def loadcog(ctx, *, cog:str):
-    try:
-        client.load_extension(f'cogs.{cog}')
-    except Exception as e:
-        await ctx.send(f'Unable to load {cog}. Reason: {e}')
-    else:
-        await ctx.send(f'{cog} loaded successfully.')
-
-@client.command(hidden = True)
-@commands.is_owner()
-async def unloadcog(ctx, *, cog:str):
-    try:
-        client.unload_extension(f'cogs.{cog}')
-    except Exception as e:
-        await ctx.send(f'Unable to unload {cog}. Reason: {e}')
-    else:
-        await ctx.send(f'{cog} unloaded successfully.')
-
-@client.command(hidden = True)
-@commands.is_owner()
-async def reloadcog(ctx, *, cog:str):
-    try:
-        client.unload_extension(f'cogs.{cog}')
-        client.load_extension(f'cogs.{cog}')
-    except Exception as e:
-        await ctx.send(f'Relaoding of {cog} failed. Reason: {e}')
-    else:
-        await ctx.send(f'{cog} successfully reloaded.')
 
 client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0")
