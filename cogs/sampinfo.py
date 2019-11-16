@@ -7,11 +7,7 @@ from discord.ext import commands
 class SampinfoCog(commands.Cog, name="SA-MP Server Info"):
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_ready(self):
         self.bot.loop.create_task(UpdateSAMPInfo(self))
-
 
 async def UpdateSAMPInfo(self):
     while 1:

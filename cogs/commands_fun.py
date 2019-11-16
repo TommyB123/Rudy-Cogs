@@ -1,9 +1,16 @@
 import discord
 import time
-from random import randint
+import random
 from string import ascii_lowercase
 from discord.ext import commands
 from cogs.utility import *
+
+gaslinks = [
+    'https://i.imgur.com/iuuFvBb.jpg',
+    'https://cdn.discordapp.com/attachments/477293251737550861/577684575388565541/tWzddexCr7NKfzYKafUY33wUuzYw56GvwVsOiEyrGMQ.png',
+    'https://cdn.discordapp.com/attachments/639337212424617994/645094552222433280/tumblr_nw2t03DKNH1ufq0ayo1_1280.png',
+    'https://cdn.discordapp.com/attachments/639337212424617994/645095656930934784/itsuki-takumi-iketani-at-gas-station-initial-d.png'
+]
 
 class FunCmdsCog(commands.Cog, name="Fun Commands"):
     def __init__(self, bot):
@@ -46,16 +53,22 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
     @commands.command(hidden = True)
     @commands.cooldown(1, 60)
     async def gasgasgas(self, ctx):
-        choice = randint(1, 2)
-        if choice == 1:
-            await ctx.send('https://i.imgur.com/iuuFvBb.jpg')
-        else:
-            await ctx.send('https://cdn.discordapp.com/attachments/477293251737550861/577684575388565541/tWzddexCr7NKfzYKafUY33wUuzYw56GvwVsOiEyrGMQ.png')
+        await ctx.send(random.choice(gaslinks))
 
     @commands.command(hidden = True)
     @commands.cooldown(1, 60)
     async def dozed(self, ctx):
-        await ctx.send(file=discord.File('dozed.mp3'))
+        await ctx.send(file = discord.File('dozed.mp3'))
+
+    @commands.command(hidden = True)
+    @commands.cooldown(1, 60)
+    async def cunt(self, ctx):
+        await ctx.send(file = discord.File('cunt.mp3'))
+
+    @commands.command(hidden = True)
+    @commands.cooldown(1, 60)
+    async def wheels(self, ctx):
+        await ctx.send(file = discord.File('wheels.mp3'))
 
     @commands.command(help = "Give Rudy some pets")
     async def pet(self, ctx, *, location: str = 'None'):

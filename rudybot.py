@@ -21,15 +21,15 @@ cogs = [
     'cogs.verification'
 ]
 
-if __name__ == '__main__':
-    for cog in cogs:
-        client.load_extension(cog)
-
 @client.event
 async def on_ready():
     print(f'\nLogged in as {client.user.name}')
     print(client.user.id)
     print('------')
+
+    if __name__ == '__main__':
+        for cog in cogs:
+            client.load_extension(cog)
 
 @client.event
 async def on_message(message):

@@ -8,9 +8,6 @@ from cogs.mysqlinfo import mysqlconfig
 class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_ready(self):
         self.bot.loop.create_task(ProcessMessageQueue(self))
 
     @commands.Cog.listener()
