@@ -70,6 +70,16 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
     async def wheels(self, ctx):
         await ctx.send(file = discord.File('wheels.mp3'))
 
+    @commands.command(hidden = True)
+    @commands.cooldown(1, 60)
+    async def valero(self, ctx):
+        await ctx.send(file = discord.File('valero.mp3'))
+
+    @commands.command(hidden = True)
+    @commands.cooldown(1, 60)
+    async def bazinga(self, ctx):
+        await ctx.send(file = discord.File('bazinga.mp3'))
+
     @commands.command(help = "Give Rudy some pets")
     async def pet(self, ctx, *, location: str = 'None'):
         if location == 'head' or location == 'ears':

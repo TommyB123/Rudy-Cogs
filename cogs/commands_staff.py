@@ -11,8 +11,9 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
 
     @commands.command(hidden = True)
     @commands.check(rcrp_utility.is_admin)
-    async def clear(self, ctx, *, amount : int = 0):
-        if amount == 0:
+    async def clear(self, ctx, *, amount : int = None):
+        if amount == None or amount <= 0:
+            await ctx.send("Usage: !clear [number of messages (1-10)]")
             return
 
         if amount > 10:
@@ -31,8 +32,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
     @commands.command(hidden = True)
     @commands.check(rcrp_utility.is_admin)
     async def whois(self, ctx, user: discord.User=None):
-        if not user:
-            await ctx.send("Invalid user.")
+        if user == None:
+            await ctx.send("Usage: !whois [discord user]")
             return
 
         sql = await aiomysql.connect(** mysqlconfig)
@@ -58,8 +59,9 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
 
     @commands.command(hidden = True)
     @commands.check(rcrp_utility.is_admin)
-    async def find(self, ctx, name : str = 'None'):
-        if name == 'None':
+    async def find(self, ctx, name : str = None):
+        if name == None:
+            await ctx.send("Usage: !find [Master Account Name]")
             return
 
         sql = await aiomysql.connect(** mysqlconfig)
@@ -184,60 +186,6 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
 
         await member.remove_roles(ctx.guild.get_role(mutedrole))
         await ctx.send(f"{member.mention} has been unmuted.")
-
-    @commands.command(hidden = True)
-    @commands.check(rcrp_utility.is_management)
-    async def manualverify(self, ctx, member: discord.Member = None, masteraccount: str = " "):
-        if not member:
-            await ctx.send("Invalid user.")
-            return
-
-        if rcrp_utility.isverified(member):
-            await ctx.send(f"{member.mention} is already verified.")
-            return
-
-        if rcrp_utility.isValidMasterAccountName(masteraccount) == False:
-            await ctx.send("Invalid MA name")
-            return
-
-        if rcrp_utility.isMasterAccountVerified(masteraccount):
-            await ctx.send("MA is already verified")
-            return
-
-        sql = await aiomysql.connect(** mysqlconfig)
-        cursor = await sql.cursor()
-        await cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE Username = %s", (member.id, masteraccount))
-        await cursor.close()
-        sql.close()
-
-        await member.add_roles(ctx.guild.get_role(verifiedrole))
-        await ctx.send(f"{member.mention} has been manually verified as {masteraccount}")
-
-    @commands.command(hidden = True)
-    @commands.check(rcrp_utility.is_management)
-    async def unverify(self, ctx, member: discord.Member = None):
-        if not member:
-            await ctx.send("Invalid user.")
-            return
-
-        if not rcrp_utility.isverified(member):
-            await ctx.send("This user is not verified")
-            return
-
-        sql = await aiomysql.connect(** mysqlconfig)
-        cursor = await sql.cursor()
-        await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
-        await cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (member.id, ))
-        await cursor.close()
-        sql.close()
-
-        roles = []
-        for role in member.roles:
-            if role.id == rcrpguild: #check to see if the role is @everyone, skip it if so
-                continue
-            roles.append(role)
-        await ctx.send(f"{member.mention} has been unverified.")
-        await member.remove_roles(*roles)
 
     @commands.command(hidden = True)
     @commands.check(rcrp_utility.is_management)

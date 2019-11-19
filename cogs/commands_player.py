@@ -85,14 +85,14 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
     async def factiononline(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
-        await cursor.execute("SELECT COUNT(players.id) AS members, COUNT(IF(Online = 1, 1, NULL)) AS onlinemembers, factions.FactionName AS name FROM players JOIN factions ON players.Faction = factions.id WHERE Faction != 0 GROUP BY Faction ORDER BY Faction ASC")
+        await cursor.execute("SELECT COUNT(players.id) AS members, COUNT(IF(Online = 1, 1, NULL)) AS onlinemembers, factions.FNameShort AS name FROM players JOIN factions ON players.Faction = factions.id WHERE Faction != 0 GROUP BY Faction ORDER BY Faction ASC")
         factiondata = await cursor.fetchall()
         await cursor.close()
         sql.close()
 
         embed = discord.Embed(title = "Faction List", color = 0xe74c3c, timestamp = ctx.message.created_at)
         for factioninfo in factiondata:
-            embed.add_field(name = factioninfo['name'], value = '{0}/{1}'.format(factioninfo['onlinemembers'], factioninfo['members']), inline = False)
+            embed.add_field(name = factioninfo['name'], value = '{0}/{1}'.format(factioninfo['onlinemembers'], factioninfo['members']), inline = True)
         await ctx.send(embed = embed)
 
 def setup(bot):
