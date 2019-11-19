@@ -16,7 +16,8 @@ class WeebCog(commands.Cog, name = "Weeb Commands"):
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.command()
+	@commands.command(help = "Bad")
+	@commands.guild_only()
 	@commands.check(isweeb)
 	@commands.cooldown(1, 60)
 	async def weeb(self, ctx, category:str = ''):

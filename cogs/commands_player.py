@@ -8,7 +8,8 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Collects a list of in-game administrators (60 sec cooldown)")
+    @commands.guild_only()
     @commands.cooldown(1, 60)
     async def admins(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
@@ -31,7 +32,8 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
         sql.close()
         await ctx.send(embed = embed)
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Collects a list of in-game helpers (60 sec cooldown)")
+    @commands.guild_only()
     @commands.cooldown(1, 60)
     async def helpers(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
@@ -54,7 +56,8 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
         sql.close()
         await ctx.send(embed = embed)
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Lists all in-game players (60 sec cooldown)")
+    @commands.guild_only()
     @commands.cooldown(1, 60)
     async def players(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
@@ -80,7 +83,8 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
         embed.add_field(name = 'Online Players ({0})'.format(cursor.rowcount), value = players, inline = False)
         await ctx.send(embed = embed)
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Lists all current official factions and how many members they have online")
+    @commands.guild_only()
     @commands.cooldown(1, 60)
     async def factiononline(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)

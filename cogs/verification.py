@@ -8,7 +8,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(hidden = True)
+    @commands.command()
     @commands.dm_only()
     async def verify(self, ctx, masteraccount:str = None):
         if masteraccount is None:
@@ -36,7 +36,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
         await ctx.send(f"Your verification code has been set! Log in on our website and look for 'Discord Verification Code' at your dashboard page. ({dashboardurl})\nOnce you have found your verification code, send '!validate [code]' to confirm your account.")
 
-    @commands.command(hidden = True)
+    @commands.command()
     @commands.dm_only()
     async def validate(self, ctx, code:int = -1):
         if code == -1:
@@ -73,7 +73,8 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
         await ctx.send("Your account is now verified!")
 
-    @commands.command(hidden = True)
+    @commands.command()
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_management)
     async def manualverify(self, ctx, member: discord.Member = None, masteraccount: str = " "):
         if not member:
@@ -101,7 +102,8 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
         await member.add_roles(ctx.guild.get_role(verifiedrole))
         await ctx.send(f"{member.mention} has been manually verified as {masteraccount}")
 
-    @commands.command(hidden = True)
+    @commands.command()
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_management)
     async def unverify(self, ctx, member: discord.Member = None):
         if not member:
@@ -128,7 +130,8 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
         await ctx.send(f"{member.mention} has been unverified.")
         await member.remove_roles(*roles)
 
-    @commands.command(hidden = True)
+    @commands.command()
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_management)
     async def softunverify(self, ctx, discordid:int = None):
         if discordid == None:

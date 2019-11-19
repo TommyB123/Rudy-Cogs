@@ -7,12 +7,14 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Why I don't have my god damn DMs open")
+    @commands.guild_only()
     @commands.is_owner()
     async def dms(self, ctx):
         await ctx.send("<https://imgur.com/a/yYK5dnZ>")
 
-    @commands.command()
+    @commands.command(help = "Collects statistics about the server's economy")
+    @commands.guild_only()
     @commands.is_owner()
     async def economy(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
@@ -40,7 +42,8 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         embed.add_field(name = 'Total', value = '${:,}'.format(cashsum))
         await ctx.send(embed = embed)
 
-    @commands.command(hidden = True)
+    @commands.command()
+    @commands.guild_only()
     @commands.is_owner()
     async def loadcog(self, ctx, *, cog:str):
         try:
@@ -50,7 +53,8 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         else:
             await ctx.send(f'{cog} loaded successfully.')
 
-    @commands.command(hidden = True)
+    @commands.command()
+    @commands.guild_only()
     @commands.is_owner()
     async def unloadcog(self, ctx, *, cog:str):
         try:
@@ -60,7 +64,8 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         else:
             await ctx.send(f'{cog} unloaded successfully.')
 
-    @commands.command(hidden = True)
+    @commands.command()
+    @commands.guild_only()
     @commands.is_owner()
     async def reloadcog(self, ctx, *, cog:str):
         try:

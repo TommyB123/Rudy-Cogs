@@ -9,7 +9,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Clear up to the last 10 messages")
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_admin)
     async def clear(self, ctx, *, amount : int = None):
         if amount == None or amount <= 0:
@@ -23,13 +24,15 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         messages = await ctx.channel.history(limit = amount + 1).flatten()
         await ctx.channel.delete_messages(messages)
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Clears all of the applications in the applications channel")
+    @commands.guild_only()
     async def clearapps(self, ctx):
         if ctx.channel.id == 445668156824879123:
             messages = await ctx.channel.history().filter(rcrp_utility.appfilter).flatten()
             await ctx.channel.delete_messages(messages)
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Fetches MA info of a verified discord member")
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_admin)
     async def whois(self, ctx, user: discord.User=None):
         if user == None:
@@ -57,7 +60,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
         await ctx.send(embed = embed)
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Fetches the discord account of a member based on their MA name")
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_admin)
     async def find(self, ctx, name : str = None):
         if name == None:
@@ -91,7 +95,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
         await ctx.send(embed = embed)
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Bans a member from the RCRP discord")
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_admin)
     async def ban(self, ctx, user: discord.User = None, *, banreason):
         if not user:
@@ -119,7 +124,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         await ctx.guild.ban(bannedmember, reason = baninfo, delete_message_days = 0)
         await ctx.send(f"{bannedmember.mention} has been successfully banned.")
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Unbans a member from the RCRP discord")
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_admin)
     async def unban(self, ctx, target):
         banned_user = await self.bot.fetch_user(target)
@@ -136,7 +142,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
 
         await ctx.send("Could not find any bans for that user.")
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Searches all existing bans for a banned user.")
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_admin)
     async def baninfo(self, ctx, target: str = ""):
         banned_user = await self.bot.fetch_user(target)
@@ -151,7 +158,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
                 return
         await ctx.send("Could not find any ban info for that user.")
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Mutes a member")
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_admin)
     async def mute(self, ctx, member: discord.Member = None):
         if not member:
@@ -169,7 +177,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         await member.add_roles(ctx.guild.get_role(mutedrole))
         await ctx.send(f"{member.mention} has been muted.")
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Unmutes a member")
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_admin)
     async def unmute(self, ctx, member: discord.Member = None):
         if not member:
@@ -187,7 +196,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         await member.remove_roles(ctx.guild.get_role(mutedrole))
         await ctx.send(f"{member.mention} has been unmuted.")
 
-    @commands.command(hidden = True)
+    @commands.command(help = "Sends a message as Rudy")
+    @commands.guild_only()
     @commands.check(rcrp_utility.is_management)
     async def speak(self, ctx, *, copymessage):
         if len(copymessage) == 0:
