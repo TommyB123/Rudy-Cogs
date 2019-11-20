@@ -15,15 +15,18 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send("Usage: !verify [Master account name]")
             return
 
-        if rcrp_utility.IsDiscordIDLinked(ctx.author.id) == True:
+        linked = await rcrp_utility.IsDiscordIDLinked(ctx.author.id)
+        if linked == True:
             await ctx.send("This Discord account is already linked to an RCRP account.")
             return
 
-        if rcrp_utility.isValidMasterAccountName(masteraccount) == False:
+        validname = await rcrp_utility.isValidMasterAccountName(masteraccount)
+        if validname == False:
             await ctx.send("Invalid account name.")
             return
 
-        if rcrp_utility.IsAcceptedMasterAccount(masteraccount) == False:
+        acceptedma = await rcrp_utility.IsAcceptedMasterAccount(masteraccount)
+        if acceptedma == False:
             await ctx.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
             return
 
@@ -38,8 +41,8 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
     @commands.command()
     @commands.dm_only()
-    async def validate(self, ctx, code:int = -1):
-        if code == -1:
+    async def validate(self, ctx, code:int = None):
+        if code == None:
             await ctx.send("Usage: !validate [code]")
 
         sql = await aiomysql.connect(** mysqlconfig)
