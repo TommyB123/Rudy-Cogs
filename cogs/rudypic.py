@@ -31,7 +31,7 @@ class RudypicCog(commands.Cog, name="rudypic"):
     @commands.check(isrudyfriend)
     async def sammypic(self, ctx):
         pictures = []
-        for image in imclient.get_album_images('WLCguFk'):
+        for image in imclient.get_album_images('VfKwj4H'):
             pictures.append(image.link)
         await ctx.send(random.choice(pictures))
 
