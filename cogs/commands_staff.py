@@ -199,12 +199,87 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
     @commands.command(help = "Sends a message as Rudy")
     @commands.guild_only()
     @commands.check(rcrp_utility.is_management)
-    async def speak(self, ctx, *, copymessage):
+    async def speak(self, ctx, *, copymessage:str):
         if len(copymessage) == 0:
             return
 
         await ctx.message.delete()
         await ctx.send(copymessage)
+
+    @commands.command(help = "Fetches the information of a user specified house")
+    @commands.guild_only()
+    @commands.check(rcrp_utility.is_admin)
+    async def house(self, ctx, *, address:str = None):
+        if address is None:
+            await ctx.send("Usage: !house [house address]")
+            return
+
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        await cursor.execute("SELECT houses.id, OwnerSQLID, Description, players.Name AS OwnerName, InsideID, ExteriorFurnLimit, Price FROM houses LEFT JOIN players ON players.id = houses.OwnerSQLID WHERE Description = %s", (address, ))
+
+        if cursor.rowcount == 0:
+            await cursor.close()
+            sql.close()
+            ctx.send("Invalid house address.")
+            return
+
+        house = await cursor.fetchone()
+        await cursor.close()
+        sql.close()
+
+        if house['OwnerName'] is None:
+            if house['OwnerSQLID'] == -5:
+                house['OwnerName'] = "Silver Trading"
+            else:
+                house['OwnerName'] = "Unowned"
+
+        embed = discord.Embed(title = house['Description'], color = 0xe74c3c)
+        embed.set_thumbnail(url = f"https://redcountyrp.com/images/houses/{house['id']}.png")
+        embed.add_field(name = "ID", value = house['id'], inline = False)
+        embed.add_field(name = "Owner", value = house['OwnerName'], inline = False)
+        embed.add_field(name = "Price", value = '${:,}'.format(house['Price']), inline = False)
+        embed.add_field(name = "Interior", value = house['InsideID'], inline = False)
+        embed.add_field(name = "Ext Furn Limit", value = house['ExteriorFurnLimit'], inline = False)
+        await ctx.send(embed = embed)
+
+    @commands.command(help = "Fetches the information of a user specified business")
+    @commands.guild_only()
+    @commands.check(rcrp_utility.is_admin)
+    async def business(self, ctx, *, description:str = None):
+        if description is None:
+            await ctx.send("Usage: !business [business name]")
+            return
+
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        await cursor.execute("SELECT bizz.id, OwnerSQLID, Description, players.Name AS OwnerName, Price, BizzEarnings, IsSpecial, Loaned FROM bizz LEFT JOIN players ON players.id = bizz.OwnerSQLID WHERE Description = %s", (description, ))
+
+        if cursor.rowcount == 0:
+            await cursor.close()
+            sql.close()
+            ctx.send("Invalid business.")
+            return
+
+        bizz = await cursor.fetchone()
+        await cursor.close()
+        sql.close()
+
+        if bizz['OwnerName'] is None:
+            if bizz['OwnerSQLID'] == -5:
+                bizz['OwnerName'] = "Silver Trading"
+            else:
+                bizz['OwnerName'] = "Unowned"
+
+        embed = discord.Embed(title = bizz['Description'], color = 0xe74c3c)
+        embed.set_thumbnail(url = f"https://redcountyrp.com/images/businesses/{bizz['id']}.png")
+        embed.add_field(name = "ID", value = bizz['id'], inline = False)
+        embed.add_field(name = "Owner", value = bizz['OwnerName'], inline = False)
+        embed.add_field(name = "Price", value = '${:,}'.format(bizz['Price']), inline = False)
+        embed.add_field(name = "Earnings", value = '${:,}'.format(bizz['BizzEarnings']), inline = False)
+        embed.add_field(name = "Special Int", value = 'Yes' if bizz['IsSpecial'] == 1 else 'No', inline = False)
+        embed.add_field(name = "Loaned", value = 'Yes' if bizz['Loaned'] == 1 else 'No', inline = False)
+        await ctx.send(embed = embed)
 
 def setup(bot):
     bot.add_cog(StaffCmdsCog(bot))
