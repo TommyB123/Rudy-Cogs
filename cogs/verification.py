@@ -15,18 +15,15 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send("Usage: !verify [Master account name]")
             return
 
-        linked = await rcrp_utility.IsDiscordIDLinked(ctx.author.id)
-        if linked == True:
+        if await rcrp_utility.IsDiscordIDLinked(ctx.author.id) == True:
             await ctx.send("This Discord account is already linked to an RCRP account.")
             return
 
-        validname = await rcrp_utility.isValidMasterAccountName(masteraccount)
-        if validname == False:
+        if await rcrp_utility.isValidMasterAccountName(masteraccount) == False:
             await ctx.send("Invalid account name.")
             return
 
-        acceptedma = await rcrp_utility.IsAcceptedMasterAccount(masteraccount)
-        if acceptedma == False:
+        if await rcrp_utility.IsAcceptedMasterAccount(masteraccount) == False:
             await ctx.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
             return
 

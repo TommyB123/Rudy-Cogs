@@ -221,7 +221,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         if cursor.rowcount == 0:
             await cursor.close()
             sql.close()
-            ctx.send("Invalid house address.")
+            await ctx.send("Invalid house address.")
             return
 
         house = await cursor.fetchone()
@@ -258,7 +258,7 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         if cursor.rowcount == 0:
             await cursor.close()
             sql.close()
-            ctx.send("Invalid business.")
+            await ctx.send("Invalid business.")
             return
 
         bizz = await cursor.fetchone()
@@ -280,6 +280,17 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         embed.add_field(name = "Special Int", value = 'Yes' if bizz['IsSpecial'] == 1 else 'No', inline = False)
         embed.add_field(name = "Loaned", value = 'Yes' if bizz['Loaned'] == 1 else 'No', inline = False)
         await ctx.send(embed = embed)
+
+    @commands.command(help = "Get the URL of a discord user's avatar")
+    @commands.guild_only()
+    @commands.check(rcrp_utility.is_admin)
+    async def avatar(self, ctx, member:discord.Member = None):
+        if member is None:
+            await ctx.send("Usage: /avatarurl [member]")
+            return
+
+        await ctx.send(f'Avatar of {member.mention}: {member.avatar_url}')
+
 
 def setup(bot):
     bot.add_cog(StaffCmdsCog(bot))
