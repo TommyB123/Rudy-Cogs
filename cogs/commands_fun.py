@@ -71,11 +71,11 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
     async def cunt(self, ctx):
         await ctx.send(file = discord.File('cunt.mp3'))
 
-    @commands.command(help = "never put wheels on your pc")
+    @commands.command(help = "a tragic tale")
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def wheels(self, ctx):
-        await ctx.send(file = discord.File('wheels.mp3'))
+        await ctx.send("Never put wheels on your PC", file = discord.File('wheels.mp3'))
 
     @commands.command(help = "Hey guys, Valero here")
     @commands.guild_only()
@@ -153,7 +153,7 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
     @commands.cooldown(1, 60)
     @commands.guild_only()
     async def rabbits(self, ctx):
-       await ctx.send("Once upon a time, there was a rabbit that kept intruding in the back yard every once in a while. Every time I noticed it, I would sprint off towards it for reasons my dog brain can't explain. One day I was sniffing around the yard and noticed a bunch of little baby rabbits in a hole dug in MY YARD. My instinctive dog reaction was to murder every single little rabbit that I could find. I even ripped two of them in half with my dog teeth.")
+        await ctx.send("Once upon a time, there was a rabbit that kept intruding in the back yard every once in a while. Every time I noticed it, I would sprint off towards it for reasons my dog brain can't explain. One day I was sniffing around the yard and noticed a bunch of little baby rabbits in a hole dug in MY YARD. My instinctive dog reaction was to murder every single little rabbit that I could find. I even ripped two of them in half with my dog teeth.")
 
     @commands.command(help = "Give Rudy a bath!")
     @commands.cooldown(1, 60)
