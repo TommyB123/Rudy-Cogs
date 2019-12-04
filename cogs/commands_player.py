@@ -62,28 +62,41 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
     async def players(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor()
-        await cursor.execute("SELECT Name FROM players WHERE Online = 1 ORDER BY Name ASC")
+        await cursor.execute("SELECT SUM(Online) FROM players WHERE Online = 1")
 
         if cursor.rowcount == 0:
             await cursor.close()
             sql.close()
             await ctx.send("There are currently no players in-game.")
 
-        results = await cursor.fetchall()
+        results = await cursor.fetchone()
         await cursor.close()
         sql.close()
 
-        players = []
-        for playerinfo in results:
-            players.append(playerinfo[0])
-        players = ','.join(players)
-        players = players.replace(',', '\n')
+        if results[0] == None:
+            results[0] = 0
 
-        embed = discord.Embed(title = 'In-Game Players', color = 0xe74c3c, timestamp = ctx.message.created_at)
-        embed.add_field(name = 'Online Players ({0})'.format(cursor.rowcount), value = players, inline = False)
+        embed = discord.Embed(title = f'In-Game Players ({results[0]})', description = 'To see if a particular player is in-game, use !player', color = 0xe74c3c, timestamp = ctx.message.created_at)
         await ctx.send(embed = embed)
 
-    @commands.command(help = "Lists all current official factions and how many members they have online")
+    @commands.command(help = "See if a character is in-game")
+    @commands.guild_only()
+    @commands.cooldown(1, 60)
+    async def player(self, ctx, *, playername:str = None):
+        if playername is None:
+            await ctx.send("Usage: !player [full character name]")
+            return
+    
+        sql = await aiomysql.connect(** mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM players WHERE Name = %s AND Online = 1", (playername, ))
+
+        if cursor.rowcount == 0: #player is not in-game
+            await ctx.send(f'{playername} is not currently in-game.')
+        else:
+            await ctx.send(f'{playername} is currently in-game.')
+
+    @commands.command(help = "Lists all official factions and their member counts")
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def factiononline(self, ctx):
