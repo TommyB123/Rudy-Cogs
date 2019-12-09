@@ -73,10 +73,11 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
         await cursor.close()
         sql.close()
 
-        if results[0] == None:
-            results[0] = 0
+        players = results[0]
+        if players == None:
+            players = 0
 
-        embed = discord.Embed(title = f'In-Game Players - {results[0]}', description = 'To see if a particular player is in-game, use !player', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        embed = discord.Embed(title = f'In-Game Players - {players}', description = 'To see if a particular player is in-game, use !player', color = 0xe74c3c, timestamp = ctx.message.created_at)
         await ctx.send(embed = embed)
 
     @commands.command(help = "See if a character is in-game")

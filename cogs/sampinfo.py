@@ -19,7 +19,11 @@ async def UpdateSAMPInfo(self):
             await cursor.close()
             sql.close()
 
-            game = discord.Game(f'RCRP ({data[0]}/150 players)')
+            players = data[0]
+            if players == None:
+                players = 0
+
+            game = discord.Game(f'RCRP ({players}/150 players)')
             await self.bot.change_presence(activity = game)
         except:
             print("Error while updating player count.")
