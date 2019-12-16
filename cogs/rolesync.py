@@ -53,15 +53,6 @@ class RoleSyncCog(commands.Cog, name="Fun Commands"):
         await cursor.close()
         sql.close()
 
-    @commands.Cog.listener()
-    async def on_member_ban(self, guild, user):
-        sql = await aiomysql.connect(** mysqlconfig)
-        cursor = await sql.cursor()
-        await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (user.id, ))
-        await cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (user.id, ))
-        await cursor.close()
-        sql.close()
-
 async def SyncMemberRoles(self):
     while 1:
         discordguild = self.bot.get_guild(rcrpguild)
