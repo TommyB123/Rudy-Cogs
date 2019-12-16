@@ -3,6 +3,17 @@ import aiomysql
 from cogs.mysqlinfo import mysqlconfig
 from discord.ext import commands
 
+drugtypes = {
+    47: "Low Grade Cocaine",
+    48: "Medium Grade Cocaine",
+    49: "High Grade Cocaine",
+    51: "Low Grade Crack",
+    52: "Medium Grade Crack",
+    53: "High Grade Crack",
+    55: "Marijuana",
+    57: "Heroin"
+}
+
 class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
     def __init__(self, bot):
         self.bot = bot
@@ -40,6 +51,20 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         embed.add_field(name = 'Stored Business Cash', value = '${:,}'.format(storedcash[2]['dollars']))
         embed.add_field(name = 'Stored Vehicle Cash', value = '${:,}'.format(storedcash[3]['dollars']))
         embed.add_field(name = 'Total', value = '${:,}'.format(cashsum))
+        await ctx.send(embed = embed)
+    
+    @commands.command(help = "Collects statistics of drugs")
+    @commands.guild_only()
+    @commands.is_owner()
+    async def drugs(self, ctx):
+        sql = await aiomysql.connect( ** mysqlconfig)
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        await cursor.execute("SELECT SUM(itemval) AS items, item FROM inventory WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
+        results = await cursor.fetchall()
+
+        embed = discord.Embed(title = 'RCRP Drug Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        for drug in results:
+            embed.add_field(name = drugtypes[drug['item']], value = '{:,}'.format(drug['items']))
         await ctx.send(embed = embed)
 
     @commands.command()
