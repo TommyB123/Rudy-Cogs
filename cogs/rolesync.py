@@ -19,15 +19,13 @@ class RoleSyncCog(commands.Cog, name="Fun Commands"):
 
         roles = []
         results = await cursor.fetchall()
-        for roleid in results:
-            role = int(roleid[0])
-            if role == rcrpguild: ##check to see if the role is @everyone, skip it if so
-                continue
-            roles.append(discordguild.get_role(int(roleid[0])))
-        await member.add_roles(*roles)
-
         await cursor.close()
         sql.close()
+        for role in results:
+            if role[0] == rcrpguild: #check to see if the role is @everyone, skip it if so
+                continue
+            roles.append(discordguild.get_role(role[0]))
+        await member.add_roles(*roles)
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
@@ -69,7 +67,7 @@ async def SyncMemberRoles(self):
         discordguild = self.bot.get_guild(rcrpguild)
         sql = await aiomysql.connect(** mysqlconfig)
         for member in self.bot.get_all_members():
-            if not rcrp_utility.isverified(member):
+            if rcrp_utility.ismanagement(member) == True:
                 continue
 
             cursor = await sql.cursor(aiomysql.DictCursor)
@@ -78,9 +76,6 @@ async def SyncMemberRoles(self):
             await cursor.close()
 
             if data is None:
-                continue
-
-            if rcrp_utility.ismanagement(member):
                 continue
 
             banned = await rcrp_utility.isbanned(data['id'])
@@ -112,6 +107,8 @@ async def SyncMemberRoles(self):
                 addroles.append(discordguild.get_role(premiumrole))
             if bannedrole not in [role.id for role in member.roles] and banned is True: #member isn't banned but has the role
                 addroles.append(discordguild.get_role(bannedrole))
+            if verifiedrole not in [role.id for role in member.roles]:
+                addroles.append(discordguild.get_role(verifiedrole))
             if addroles:
                 await member.add_roles(*addroles)
         sql.close()
