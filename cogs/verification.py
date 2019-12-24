@@ -27,6 +27,10 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
             return
 
+        if await rcrp_utility.isMasterAccountVerified(masteraccount) == True:
+            await ctx.send("This master account has already been verified before. If you are trying to verify a new discord account, please create a support ticket at https://redcountyrp.com/user/tickets.")
+            return
+
         code = rcrp_utility.random_with_N_digits(10)
         sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor()
@@ -85,11 +89,11 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send(f"{member.mention} is already verified.")
             return
 
-        if rcrp_utility.isValidMasterAccountName(masteraccount) == False:
+        if await rcrp_utility.isValidMasterAccountName(masteraccount) == False:
             await ctx.send("Invalid MA name")
             return
 
-        if rcrp_utility.isMasterAccountVerified(masteraccount) == True:
+        if await rcrp_utility.isMasterAccountVerified(masteraccount) == True:
             await ctx.send("MA is already verified")
             return
 
