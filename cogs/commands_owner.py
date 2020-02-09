@@ -34,22 +34,30 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         playerdata = await cursor.fetchone()
         await cursor.execute("SELECT SUM(BankBalance) AS FBank FROM factions WHERE id != 3")
         factionbank = await cursor.fetchone()
-        await cursor.execute("SELECT SUM(itemval) AS dollars FROM inventory WHERE item = 45 GROUP BY type ORDER BY type ASC")
-        storedcash = await cursor.fetchall()
-        cashsum = storedcash[0]['dollars'] + playerdata['Bank'] + playerdata['CheckSlot1'] + playerdata['CheckSlot2'] + playerdata['CheckSlot3'] + factionbank['FBank'] + storedcash[1]['dollars'] + storedcash[2]['dollars'] + storedcash[3]['dollars']
+        await cursor.execute("SELECT SUM(itemval) AS dollars FROM inventory_player WHERE item = 45")
+        inhandcash = await cursor.fetchall()
+        await cursor.execute("SELECT SUM(itemval) AS dollars FROM inventory_house WHERE item = 45")
+        housecash = await cursor.fetchall()
+        await cursor.execute("SELECT SUM(itemval) AS dollars FROM inventory_bizz WHERE item = 45")
+        bizzcash = await cursor.fetchall()
+        await cursor.execute("SELECT SUM(itemval) AS dollars FROM inventory_vehicle WHERE item = 45")
+        vehiclecash = await cursor.fetchall()
+        await ctx.send(bizzcash)
+        cashsum = inhandcash['dollars'] + playerdata['Bank'] + playerdata['CheckSlot1'] + playerdata['CheckSlot2'] + playerdata['CheckSlot3'] + factionbank['FBank'] + housecash['dollars'] + bizzcash['dollars'] + vehiclecash['dollars']
         await cursor.close()
         sql.close()
 
+
         embed = discord.Embed(title = 'RCRP Economy Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
-        embed.add_field(name = "In-Hand Cash", value = '${:,}'.format(storedcash[0]['dollars']))
+        embed.add_field(name = "In-Hand Cash", value = '${:,}'.format(inhandcash['dollars']))
         embed.add_field(name = "Player Banks", value = '${:,}'.format(playerdata['Bank']))
         embed.add_field(name = "Check Slot 1", value = '${:,}'.format(playerdata['CheckSlot1']))
         embed.add_field(name = "Check Slot 2", value = '${:,}'.format(playerdata['CheckSlot2']))
         embed.add_field(name = "Check Slot 3", value = '${:,}'.format(playerdata['CheckSlot3']))
         embed.add_field(name = 'Faction Banks (excluding ST)', value = '${:,}'.format(factionbank['FBank']))
-        embed.add_field(name = 'Stored House Cash', value = '${:,}'.format(storedcash[1]['dollars']))
-        embed.add_field(name = 'Stored Business Cash', value = '${:,}'.format(storedcash[2]['dollars']))
-        embed.add_field(name = 'Stored Vehicle Cash', value = '${:,}'.format(storedcash[3]['dollars']))
+        embed.add_field(name = 'Stored House Cash', value = '${:,}'.format(housecash['dollars']))
+        embed.add_field(name = 'Stored Business Cash', value = '${:,}'.format(bizzcash['dollars']))
+        embed.add_field(name = 'Stored Vehicle Cash', value = '${:,}'.format(vehiclecash['dollars']))
         embed.add_field(name = 'Total', value = '${:,}'.format(cashsum))
         await ctx.send(embed = embed)
     
@@ -57,14 +65,42 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
     @commands.guild_only()
     @commands.is_owner()
     async def drugs(self, ctx):
-        sql = await aiomysql.connect( ** mysqlconfig)
+        drugs = {47:0, 48:0, 49:0, 51:0, 52:0, 53:0, 55:0, 57:0}
+        sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
-        await cursor.execute("SELECT SUM(itemval) AS items, item FROM inventory WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
+        await cursor.execute("SELECT SUM(itemval) AS items, item FROM inventory_player WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
         results = await cursor.fetchall()
 
-        embed = discord.Embed(title = 'RCRP Drug Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
         for drug in results:
-            embed.add_field(name = drugtypes[drug['item']], value = '{:,}'.format(drug['items']))
+            drugs[drug['item']] += drug['items']
+
+        await cursor.execute("SELECT SUM(itemval) AS items, item FROM inventory_house WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
+        results = await cursor.fetchall()
+
+        for drug in results:
+            drugs[drug['item']] += drug['items']
+
+        await cursor.execute("SELECT SUM(itemval) AS items, item FROM inventory_bizz WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
+        results = await cursor.fetchall()
+
+        for drug in results:
+            drugs[drug['item']] += drug['items']
+
+        await cursor.execute("SELECT SUM(itemval) AS items, item FROM inventory_vehicle WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
+        results = await cursor.fetchall()
+
+        for drug in results:
+            drugs[drug['item']] += drug['items']
+
+        embed = discord.Embed(title = 'RCRP Drug Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        embed.add_field(name = 'Low Grade Cocaine', value = '{:,}'.format(drugs[47]))
+        embed.add_field(name = 'Medium Grade Cocaine', value = '{:,}'.format(drugs[48]))
+        embed.add_field(name = 'High Grade Cocaine', value = '{:,}'.format(drugs[49]))
+        embed.add_field(name = 'Low Grade Crack', value = '{:,}'.format(drugs[51]))
+        embed.add_field(name = 'Medium Grade Crack', value = '{:,}'.format(drugs[52]))
+        embed.add_field(name = 'High Grade Crack', value = '{:,}'.format(drugs[53]))
+        embed.add_field(name = 'Marijuana', value = '{:,}'.format(drugs[55]))
+        embed.add_field(name = 'Heroin', value = '{:,}'.format(drugs[57]))
         await ctx.send(embed = embed)
 
     @commands.command()
