@@ -24,13 +24,6 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         messages = await ctx.channel.history(limit = amount + 1).flatten()
         await ctx.channel.delete_messages(messages)
 
-    @commands.command(help = "Clears all of the applications in the applications channel")
-    @commands.guild_only()
-    async def clearapps(self, ctx):
-        if ctx.channel.id == 445668156824879123:
-            messages = await ctx.channel.history().filter(rcrp_utility.appfilter).flatten()
-            await ctx.channel.delete_messages(messages)
-
     @commands.command(help = "Fetches MA info of a verified discord member")
     @commands.guild_only()
     @commands.check(rcrp_utility.is_admin)

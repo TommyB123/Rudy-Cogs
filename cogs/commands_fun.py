@@ -164,8 +164,13 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
     @commands.command(help = "Sends the unix timestamp for Melvin (It's not -1)")
     @commands.guild_only()
     async def unixtimestamp(self, ctx):
-        time = int(time.time())
-        await ctx.send(f"CURRENT UNIX TIMESTAMP VALUE: {time}")
+        value = int(time.time())
+        await ctx.send(f"CURRENT UNIX TIMESTAMP VALUE: {value}")
+
+    @commands.command(help = "Bruh")
+    @commands.guild_only()
+    async def bruh(self, ctx):
+        await ctx.send("https://i.imgur.com/7QWYKgO.jpg")
 
 def setup(bot):
     bot.add_cog(FunCmdsCog(bot))

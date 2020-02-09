@@ -91,9 +91,6 @@ class rcrp_utility:
         else:
             return True
 
-    def appfilter(message):
-        return not message.pinned
-
     def random_with_N_digits(n):
         range_start = 10**(n-1)
         range_end = (10**n)-1
