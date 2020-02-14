@@ -279,11 +279,26 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
     @commands.check(rcrp_utility.is_admin)
     async def avatar(self, ctx, member:discord.Member = None):
         if member is None:
-            await ctx.send("Usage: /avatarurl [member]")
+            await ctx.send("Usage: !avatarurl [member]")
             return
 
         await ctx.send(f'Avatar of {member.mention}: {member.avatar_url}')
 
+    @commands.command(help = "Add or remove Faction Consultant from a member")
+    @commands.guild_only()
+    @commands.check(rcrp_utility.is_admin)
+    async def makefc(self, ctx, member:discord.Member = None):
+        if member is None:
+            await ctx.send("Usage: !makefc [member]")
+            return
+
+        fcrole = ctx.guild.get_role(393186381306003466)
+        if fcrole in [role for role in member.roles]: #remove
+            await member.remove_roles(fcrole)
+            await ctx.send(f'{member.mention} no longer has the faction consultant role.')
+        else:
+            await member.add_roles(fcrole)
+            await ctx.send(f'{member.mention} now has the faction consultant role.')
 
 def setup(bot):
     bot.add_cog(StaffCmdsCog(bot))

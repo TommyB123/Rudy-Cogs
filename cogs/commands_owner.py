@@ -106,6 +106,15 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
+    async def roles(self, ctx):
+        embed = discord.Embed(title = 'RCRP Discord Roles', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        for role in ctx.guild.roles:
+            embed.add_field(name = role.name, value = role.id)
+        await ctx.send(embed = embed)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.is_owner()
     async def loadcog(self, ctx, *, cog:str):
         try:
             self.bot.load_extension(f'cogs.{cog}')
