@@ -300,5 +300,89 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             await member.add_roles(fcrole)
             await ctx.send(f'{member.mention} now has the faction consultant role.')
 
+    @commands.command(help = "Hire or fire someone from the tester team")
+    @commands.guild_only()
+    @commands.check(rcrp_utility.is_admin)
+    async def maketester(self, ctx, member:discord.Member = None):
+        if member is None:
+            await ctx.send("Usage: !maketester [member]")
+            return
+
+        if rcrp_utility.isverified(member) == False:
+            await ctx.send("The target must be verified.")
+
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT Tester FROM masters WHERE discordid = %s", (member.id, ))
+        data = await cursor.fetchone()
+        tester = ctx.guild.get_role(testerrole)
+
+        if data[0] == 0: #they're not a tester, let's make them one
+            await cursor.execute("UPDATE masters SET Tester = 1 WHERE discordid = %s", (member.id, ))
+            await member.add_roles(tester)
+            await ctx.send(f'{member.mention} is now a tester!')
+        else:
+            await cursor.execute("UPDATE masters SET Tester = 0 WHERE discordid = %s", (member.id, ))
+            await member.remove_roles(tester)
+            await ctx.send(f'{member.mention} is no longer a tester!')
+
+        await cursor.close()
+        sql.close()
+
+    @commands.command(help = "Hire or fire someone from the helper team")
+    @commands.guild_only()
+    @commands.check(rcrp_utility.is_admin)
+    async def makehelper(self, ctx, member:discord.Member = None):
+        if member is None:
+            await ctx.send("Usage: !makehelper [member]")
+            return
+
+        if rcrp_utility.isverified(member) == False:
+            await ctx.send("The target must be verified.")
+
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT Helper FROM masters WHERE discordid = %s", (member.id, ))
+        data = await cursor.fetchone()
+        helper = ctx.guild.get_role(helperrole)
+
+        if data[0] == 0: #they're not a tester, let's make them one
+            await cursor.execute("UPDATE masters SET Helper = 1 WHERE discordid = %s", (member.id, ))
+            await member.add_roles(helper)
+            await ctx.send(f'{member.mention} is now a helper!')
+        else:
+            await cursor.execute("UPDATE masters SET Helper = 0 WHERE discordid = %s", (member.id, ))
+            await member.remove_roles(helper)
+            await ctx.send(f'{member.mention} is no longer a helper!')
+
+        await cursor.close()
+        sql.close()
+
+    @commands.command(help = "Set a user's admin level")
+    @commands.guild_only()
+    @commands.check(rcrp_utility.is_management)
+    async def makeadmin(self, ctx, member:discord.Member = None, level:int = 0):
+        if member is None:
+            await ctx.send("Usage: !makeadmin [member] [admin level]")
+            return
+
+        if level > 5 or level < 0:
+            await ctx.send("Invalid admin level.")
+            return
+
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("UPDATE masters SET AdminLevel = %s WHERE discordid = %s", (level, member.id))
+        await cursor.close()
+        sql.close()
+
+        admin = ctx.guild.get_role(adminrole)
+        if level == 0:
+            await member.remove_roles(admin)
+        else:
+            await member.add_roles(admin)
+
+        await ctx.send(f'{member.mention} has been assigned admin level {level}')
+
 def setup(bot):
     bot.add_cog(StaffCmdsCog(bot))
