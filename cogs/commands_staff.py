@@ -227,8 +227,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             else:
                 house['OwnerName'] = "Unowned"
 
-        embed = discord.Embed(title = house['Description'], color = 0xe74c3c)
-        embed.set_thumbnail(url = f"https://redcountyrp.com/images/houses/{house['id']}.png")
+        embed = discord.Embed(title = house['Description'], color = 0xe74c3c, url = f"https://redcountyrp.com/admin/characters/{house['OwnerSQLID']}")
+        embed.set_thumbnail(url = f"https://tommyb.ovh/rcrp/houses/{house['id']}.png")
         embed.add_field(name = "ID", value = house['id'], inline = False)
         embed.add_field(name = "Owner", value = house['OwnerName'], inline = False)
         embed.add_field(name = "Price", value = '${:,}'.format(house['Price']), inline = False)
@@ -264,8 +264,8 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
             else:
                 bizz['OwnerName'] = "Unowned"
 
-        embed = discord.Embed(title = bizz['Description'], color = 0xe74c3c)
-        embed.set_thumbnail(url = f"https://redcountyrp.com/images/businesses/{bizz['id']}.png")
+        embed = discord.Embed(title = bizz['Description'], color = 0xe74c3c, url = f"https://redcountyrp.com/admin/characters/{bizz['OwnerSQLID']}")
+        embed.set_thumbnail(url = f"https://tommyb.ovh/rcrp/bizz/{bizz['id']}.png")
         embed.add_field(name = "ID", value = bizz['id'], inline = False)
         embed.add_field(name = "Owner", value = bizz['OwnerName'], inline = False)
         embed.add_field(name = "Price", value = '${:,}'.format(bizz['Price']), inline = False)
