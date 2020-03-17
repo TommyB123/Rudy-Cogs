@@ -1,6 +1,14 @@
 import discord
 from discord.ext import commands
-from cogs.utility import *
+
+#message delete log channel
+deletelogs = 463595960367579137
+
+#message edit log channel
+editlogs = 463644249108250635
+
+#channels where deletions/edits are not logged
+staffchannels = [412340704187252748, 388002249013460993, 463595960367579137, 463644249108250635, 406166047167741952, 464899293166305291, 445668156824879123, 466946121445539840, 507547199710822400, 639337212424617994]
 
 class LoggingCog(commands.Cog, name="Logging"):
     def __init__(self, bot):

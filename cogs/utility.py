@@ -4,15 +4,6 @@ import aiomysql
 from random import randint
 from cogs.mysqlinfo import mysqlconfig
 
-#channels where deletions/edits are not logged (management, development, deleted-messages, edited-messages, status)
-staffchannels = [412340704187252748, 388002249013460993, 463595960367579137, 463644249108250635, 406166047167741952, 464899293166305291, 445668156824879123, 466946121445539840, 507547199710822400]
-
-#message delete log channel
-deletelogs = 463595960367579137
-
-#message edit log channel
-editlogs = 463644249108250635
-
 #various server roles
 adminrole = 293441894585729024
 bannedrole = 592730783924486168
