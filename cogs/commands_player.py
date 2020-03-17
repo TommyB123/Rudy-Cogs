@@ -115,5 +115,15 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
             embed.add_field(name = factioninfo['name'], value = '{0}/{1}'.format(factioninfo['onlinemembers'], factioninfo['members']), inline = True)
         await ctx.send(embed = embed)
 
+    @commands.command(help = "piracy")
+    @commands.guild_only()
+    async def gta(self, ctx):
+        await ctx.send("https://tommyb.ovh/files/cleangtasa.7z")
+
+    @commands.command(help = "GTA SA fully mipmapped link")
+    @commands.guild_only()
+    async def mipmapped(self, ctx):
+        await ctx.send("https://tommyb.ovh/files/GTA-SA-Fully-Mipmapped.7z")
+
 def setup(bot):
     bot.add_cog(PlayerCmdsCog(bot))

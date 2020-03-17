@@ -24,6 +24,12 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
     async def dms(self, ctx):
         await ctx.send("<https://imgur.com/a/yYK5dnZ>")
 
+    @commands.command(help = "Proof of riches")
+    @commands.guild_only()
+    @commands.is_owner()
+    async def legit(self, ctx):
+        await ctx.send('MY CASH IS LEGIT BABY https://i.imgur.com/z5pwmj4.gifv')
+
     @commands.command(help = "Collects statistics about the server's economy")
     @commands.guild_only()
     @commands.is_owner()
@@ -105,6 +111,14 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
+    async def please(self, ctx, *, message:str):
+        await ctx.message.delete()
+        for channel in ctx.guild.text_channels:
+            await channel.send(message)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.is_owner()
     async def roles(self, ctx):
         embed = discord.Embed(title = 'RCRP Discord Roles', color = 0xe74c3c, timestamp = ctx.message.created_at)
         for role in ctx.guild.roles:
@@ -120,7 +134,7 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         except Exception as e:
             await ctx.send(f'Unable to load {cog}. Reason: {e}')
         else:
-            await ctx.send(f'{cog} loaded successfully.')
+            await ctx.message.add_reaction('\N{OK HAND SIGN}')
 
     @commands.command()
     @commands.guild_only()
@@ -131,7 +145,7 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         except Exception as e:
             await ctx.send(f'Unable to unload {cog}. Reason: {e}')
         else:
-            await ctx.send(f'{cog} unloaded successfully.')
+            await ctx.message.add_reaction('\N{OK HAND SIGN}')
 
     @commands.command()
     @commands.guild_only()
@@ -142,7 +156,7 @@ class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
         except Exception as e:
             await ctx.send(f'Reloading of {cog} failed. Reason: {e}')
         else:
-            await ctx.send(f'{cog} successfully reloaded.')
+            await ctx.message.add_reaction('\N{OK HAND SIGN}')
 
 def setup(bot):
     bot.add_cog(OwnerCmdsCog(bot))
