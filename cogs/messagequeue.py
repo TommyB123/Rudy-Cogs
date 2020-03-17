@@ -33,7 +33,11 @@ async def ProcessMessageQueue(self):
         for message in results:
             channel = self.bot.get_channel(int(message['channel']))
             if message['message']:
-                await channel.send(message['message'])
+                try:
+                    escapedmessage = discord.utils.escape_mentions(message['message'])
+                    await channel.send(escapedmessage)
+                except:
+                    print("invalid message content detected")
             delete.append(message['id'])
 
         for messageid in delete:
