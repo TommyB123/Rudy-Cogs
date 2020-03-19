@@ -118,7 +118,7 @@ class PlayerCmdsCog(commands.Cog, name="Player Commands"):
     @commands.command(help = "piracy")
     @commands.guild_only()
     async def gta(self, ctx):
-        await ctx.send("https://tommyb.ovh/files/cleangtasa.7z")
+        await ctx.send("https://tommyb.ovh/files/cleangtasa.7z - Full game (3.6 GB)\nhttps://tommyb.ovh/files/cleangtasa-small.7z - Compressed/Removed audio (600MB)")
 
     @commands.command(help = "GTA SA fully mipmapped link")
     @commands.guild_only()
