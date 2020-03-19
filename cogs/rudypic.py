@@ -35,5 +35,14 @@ class RudypicCog(commands.Cog, name="rudypic"):
             pictures.append(image.link)
         await ctx.send(random.choice(pictures))
 
+    @commands.command(help = "Sends an adorable picture of Milo")
+    @commands.guild_only()
+    @commands.check(isrudyfriend)
+    async def milopic(self, ctx):
+        pictures = []
+        for image in imclient.get_album_images('h3VORpQ'):
+            pictures.append(image.link)
+        await ctx.send(random.choice(pictures))
+
 def setup(bot):
     bot.add_cog(RudypicCog(bot))
