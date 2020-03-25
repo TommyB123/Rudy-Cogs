@@ -63,31 +63,31 @@ class FunCmdsCog(commands.Cog, name="Fun Commands"):
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def dozed(self, ctx):
-        await ctx.send(file = discord.File('dozed.mp3'))
+        await ctx.send(file = discord.File('files/dozed.mp3'))
 
     @commands.command(help = "unforgiveable")
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def cunt(self, ctx):
-        await ctx.send(file = discord.File('cunt.mp3'))
+        await ctx.send(file = discord.File('files/cunt.mp3'))
 
     @commands.command(help = "a tragic tale")
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def wheels(self, ctx):
-        await ctx.send("Never put wheels on your PC", file = discord.File('wheels.mp3'))
+        await ctx.send("Never put wheels on your PC", file = discord.File('files/wheels.mp3'))
 
     @commands.command(help = "Hey guys, Valero here")
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def valero(self, ctx):
-        await ctx.send(file = discord.File('valero.mp3'))
+        await ctx.send(file = discord.File('files/valero.mp3'))
 
     @commands.command(help = "Bazinga!")
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def bazinga(self, ctx):
-        await ctx.send(file = discord.File('bazinga.mp3'))
+        await ctx.send(file = discord.File('files/bazinga.mp3'))
 
     @commands.command(help = "Give Rudy some pets")
     @commands.cooldown(1, 60)

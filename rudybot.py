@@ -6,17 +6,17 @@ from discord.ext import commands
 client = commands.Bot(command_prefix='!')
 
 cogs = [
-    'cogs.commands_fun',
-    'cogs.commands_player',
-    'cogs.commands_staff',
-    'cogs.commands_owner',
-    'cogs.commands_weeb',
-    'cogs.rudylogging',
-    'cogs.messagequeue',
-    'cogs.rolesync',
-    'cogs.rudypic',
-    'cogs.sampinfo',
-    'cogs.verification'
+    'commands_fun',
+    'commands_player',
+    'commands_staff',
+    'commands_owner',
+    'commands_weeb',
+    'rudylogging',
+    'messagequeue',
+    'rolesync',
+    'rudypic',
+    'sampinfo',
+    'verification'
 ]
 
 @client.event
@@ -26,13 +26,16 @@ async def on_ready():
 
     if __name__ == '__main__':
         for cog in cogs:
-            try: 
-                client.load_extension(cog)
-            except Exception as e:
-                print(f'Failed load {cog}. Reason: {e}')
+            if client.get_cog(cog) == None:
+                try:
+                    client.load_extension(f'cogs.{cog}')
+                except Exception as e:
+                    print(f'Failed load {cog}. Reason: {e}')
+                else:
+                    print(f'Cog {cog} successfully loaded.')
             else:
-                print(f'Cog {cog} successfully loaded.')
-    print('------')
+                print(f'Cog {cog} is already loaded.')
+    print('All cogs successfully loaded. Bot is ready 2 go')
 
 @client.event
 async def on_message(message):
