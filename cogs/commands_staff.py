@@ -75,18 +75,21 @@ class StaffCmdsCog(commands.Cog, name="Staff Commands"):
         await cursor.close()
         sql.close()
 
-        if data[1] == None:
+        if data[1] == None or data[1] == 0:
             await ctx.send(f"{name} does not have a Discord account linked to their MA.")
             return
 
-        matcheduser = await self.bot.fetch_user(data[1])
-        embed = discord.Embed(title = f"{name}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
-        embed.add_field(name = "Discord User", value = matcheduser.mention)
-        embed.add_field(name = "Account ID", value = data[0], inline = False)
-        embed.add_field(name = "Username", value = name, inline = False)
-        embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
-        embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
-        await ctx.send(embed = embed)
+        try:
+            matcheduser = await self.bot.fetch_user(data[1])
+            embed = discord.Embed(title = f"{name}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
+            embed.add_field(name = "Discord User", value = matcheduser.mention)
+            embed.add_field(name = "Account ID", value = data[0], inline = False)
+            embed.add_field(name = "Username", value = name, inline = False)
+            embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
+            embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
+            await ctx.send(embed = embed)
+        except:
+            await ctx.send(f"{name}'s discord account is no longer valid. Here is the raw ID to see if they're banned and etc: {data[1]}")
 
     @commands.command(help = "Bans a member from the RCRP discord")
     @commands.guild_only()
