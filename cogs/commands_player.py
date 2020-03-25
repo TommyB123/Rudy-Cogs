@@ -4,7 +4,7 @@ from cogs.mysqlinfo import mysqlconfig
 from cogs.utility import rcrp_utility
 from discord.ext import commands
 
-class PlayerCmdsCog(commands.Cog, name="Player Commands"):
+class PlayerCmdsCog(commands.Cog, name="Player"):
     def __init__(self, bot):
         self.bot = bot
 

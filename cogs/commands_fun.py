@@ -12,7 +12,7 @@ gaslinks = [
     'https://cdn.discordapp.com/attachments/639337212424617994/645095656930934784/itsuki-takumi-iketani-at-gas-station-initial-d.png'
 ]
 
-class FunCmdsCog(commands.Cog, name="Fun Commands"):
+class FunCmdsCog(commands.Cog, name="Fun"):
     def __init__(self, bot):
         self.bot = bot
 

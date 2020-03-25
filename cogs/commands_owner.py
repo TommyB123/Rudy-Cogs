@@ -14,7 +14,7 @@ drugtypes = {
     57: "Heroin"
 }
 
-class OwnerCmdsCog(commands.Cog, name="Owner Commands"):
+class OwnerCmdsCog(commands.Cog, name="Owner"):
     def __init__(self, bot):
         self.bot = bot
 

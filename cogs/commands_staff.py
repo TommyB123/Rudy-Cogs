@@ -5,7 +5,7 @@ from discord.ext import commands
 from cogs.mysqlinfo import mysqlconfig
 from datetime import datetime
 
-class StaffCmdsCog(commands.Cog, name="Staff Commands"):
+class StaffCmdsCog(commands.Cog, name="Staff"):
     def __init__(self, bot):
         self.bot = bot
 

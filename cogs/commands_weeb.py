@@ -11,7 +11,7 @@ async def isweeb(ctx):
 	else:
 		return False
 
-class WeebCog(commands.Cog, name = "Weeb Commands"):
+class WeebCog(commands.Cog, name = "Weeb"):
 	def __init__(self, bot):
 		self.bot = bot
 
