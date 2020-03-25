@@ -16,7 +16,8 @@ cogs = [
     'rolesync',
     'rudypic',
     'sampinfo',
-    'verification'
+    'verification',
+    'help'
 ]
 
 @client.event
