@@ -5,7 +5,7 @@ from discord.ext import commands
 from cogs.mysqlinfo import mysqlconfig
 from cogs.utility import *
 
-class RoleSyncCog(commands.Cog, name="Fun Commands"):
+class RoleSyncCog(commands.Cog, name="Role sync"):
     def __init__(self, bot):
         self.bot = bot
         self.bot.loop.create_task(SyncMemberRoles(self))
@@ -46,7 +46,7 @@ class RoleSyncCog(commands.Cog, name="Fun Commands"):
         for role in after.roles:
             if role.id not in before.roles:
                 if role.id == rcrpguild: #check to see if role is @everyone, skip it if so
-                    continue;
+                    continue
                 await cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
                 await sql.commit()
 
