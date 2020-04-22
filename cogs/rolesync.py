@@ -57,14 +57,13 @@ async def SyncMemberRoles(self):
     while 1:
         rcrpguild = self.bot.get_guild(rcrpguildid)
         sql = await mysql_connect()
-        for member in rcrpguild.members:
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        async for member in rcrpguild.fetch_members(limit = None):
             if member_is_management(member) == True:
                 continue
 
-            cursor = await sql.cursor(aiomysql.DictCursor)
             await cursor.execute("SELECT id, Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
             data = await cursor.fetchone()
-            await cursor.close()
 
             if data is None:
                 continue
@@ -102,6 +101,8 @@ async def SyncMemberRoles(self):
                 addroles.append(rcrpguild.get_role(verifiedrole))
             if addroles:
                 await member.add_roles(*addroles)
+
+        await cursor.close()
         sql.close()
         await asyncio.sleep(60) #check every minute
 
