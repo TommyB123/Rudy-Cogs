@@ -3,7 +3,7 @@ import asyncio
 import aiomysql
 from discord.ext import commands
 from cogs.mysqlinfo import mysqlconfig
-from cogs.utility import *
+from cogs.utility import member_is_verified, member_is_management, account_is_banned, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole
 
 class RoleSyncCog(commands.Cog, name="Role sync"):
     def __init__(self, bot):
@@ -30,7 +30,7 @@ class RoleSyncCog(commands.Cog, name="Role sync"):
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        if not isverified(after) or before.roles == after.roles or after.guild.id != rcrpguildid:
+        if not member_is_verified(after) or before.roles == after.roles or after.guild.id != rcrpguildid:
             return
 
         sql = await aiomysql.connect(** mysqlconfig)
@@ -59,7 +59,7 @@ async def SyncMemberRoles(self):
         rcrpguild = self.bot.get_guild(rcrpguildid)
         sql = await aiomysql.connect(** mysqlconfig)
         for member in rcrpguild.members:
-            if ismanagement(member) == True:
+            if member_is_management(member) == True:
                 continue
 
             cursor = await sql.cursor(aiomysql.DictCursor)
@@ -70,7 +70,7 @@ async def SyncMemberRoles(self):
             if data is None:
                 continue
 
-            banned = await isbanned(data['id'])
+            banned = await account_is_banned(data['id'])
 
             #remove roles a member shouldn't have
             removeroles = []

@@ -29,9 +29,6 @@ rcrpguildid = 93142223473905664
 #url of the dashboard. sent to players when they try to verify
 dashboardurl = "https://redcountyrp.com/user/dashboard"
 
-#the age of rudy. used for the fancy time delta in the age command
-rudyage = 1409529600
-
 #command check decorators
 def rcrp_check(ctx):
     if ctx.guild.id == rcrpguildid:
@@ -57,31 +54,31 @@ async def management_check(ctx):
     else:
         return True
 
-def isverified(member):
+def member_is_verified(member):
     if verifiedrole in [role.id for role in member.roles]:
         return True
     else:
         return False
 
-def isadmin(member):
+def member_is_admin(member):
     for role in member.roles:
         if role.id in staffroles:
             return True
     return False
 
-def ismanagement(member):
+def member_is_management(member):
     if managementrole in [role.id for role in member.roles] or ownerrole in [role.id for role in member.roles]:
         return True
     else:
         return False
 
-def ismuted(member):
+def member_is_muted(member):
     if mutedrole in [role.id for role in member.roles]:
         return True
     else:
         return False
 
-async def isbanned(accountid):
+async def account_is_banned(accountid):
     sql = await aiomysql.connect(** mysqlconfig)
     cursor = await sql.cursor()
     await cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
@@ -99,25 +96,7 @@ def random_with_N_digits(n):
     range_end = (10**n)-1
     return randint(range_start, range_end)
 
-def pretty_time_delta(seconds):
-    sign_string = '-' if seconds < 0 else ''
-    seconds = abs(int(seconds))
-    years, seconds = divmod(seconds, 31556952)
-    days, seconds = divmod(seconds, 86400)
-    hours, seconds = divmod(seconds, 3600)
-    minutes, seconds = divmod(seconds, 60)
-    if years > 0:
-        return '%s%dy %dd %dh %dm %ds' % (sign_string, years, days, hours, minutes, seconds)
-    elif days > 0:
-        return '%s%dd %dh %dm %ds' % (sign_string, days, hours, minutes, seconds)
-    elif hours > 0:
-        return '%s%dh %dm %ds' % (sign_string, hours, minutes, seconds)
-    elif minutes > 0:
-        return '%s%dm %ds' % (sign_string, minutes, seconds)
-    else:
-        return '%s%ds' % (sign_string, seconds)
-
-async def isValidMasterAccountName(name):
+async def account_name_valid(name):
     sql = await aiomysql.connect(** mysqlconfig)
     cursor = await sql.cursor()
     await cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
@@ -130,7 +109,7 @@ async def isValidMasterAccountName(name):
     else:
         return True
 
-async def isMasterAccountVerified(name):
+async def account_verified(name):
     sql = await aiomysql.connect(** mysqlconfig)
     cursor = await sql.cursor()
     await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
@@ -143,7 +122,7 @@ async def isMasterAccountVerified(name):
     else:
         return True
 
-async def IsDiscordIDLinked(discordid):
+async def account_linked_to_discord(discordid):
     sql = await aiomysql.connect(** mysqlconfig)
     cursor = await sql.cursor()
     await cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
@@ -156,7 +135,7 @@ async def IsDiscordIDLinked(discordid):
     else:
         return True
 
-async def IsAcceptedMasterAccount(mastername):
+async def account_accepted(mastername):
     sql = await aiomysql.connect(** mysqlconfig)
     cursor = await sql.cursor()
     await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))

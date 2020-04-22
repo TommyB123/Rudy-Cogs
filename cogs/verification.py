@@ -1,7 +1,7 @@
 import discord
 import aiomysql
 from discord.ext import commands
-from cogs.utility import *
+from cogs.utility import rcrp_check, management_check, random_with_N_digits, account_name_valid, member_is_verified, account_linked_to_discord, account_accepted, account_verified, dashboardurl, rcrpguildid, testerrole, adminrole, helperrole, verifiedrole, managementrole
 from cogs.mysqlinfo import mysqlconfig
 
 class VerificationCog(commands.Cog, name="RCRP Verification"):
@@ -15,19 +15,19 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send("Usage: !verify [Master account name]")
             return
 
-        if await IsDiscordIDLinked(ctx.author.id) == True:
+        if await account_linked_to_discord(ctx.author.id) == True:
             await ctx.send("This Discord account is already linked to an RCRP account.")
             return
 
-        if await isValidMasterAccountName(masteraccount) == False:
+        if await account_name_valid(masteraccount) == False:
             await ctx.send("Invalid account name.")
             return
 
-        if await IsAcceptedMasterAccount(masteraccount) == False:
+        if await account_accepted(masteraccount) == False:
             await ctx.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
             return
 
-        if await isMasterAccountVerified(masteraccount) == True:
+        if await account_verified(masteraccount) == True:
             await ctx.send("This master account has already been verified before. If you are trying to verify a new discord account, please create a support ticket at https://redcountyrp.com/user/tickets.")
             return
 
@@ -86,15 +86,15 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send("Invalid user.")
             return
 
-        if isverified(member) == True:
+        if member_is_verified(member) == True:
             await ctx.send(f"{member.mention} is already verified.")
             return
 
-        if await isValidMasterAccountName(masteraccount) == False:
+        if await account_name_valid(masteraccount) == False:
             await ctx.send("Invalid MA name")
             return
 
-        if await isMasterAccountVerified(masteraccount) == True:
+        if await account_verified(masteraccount) == True:
             await ctx.send("MA is already verified")
             return
 
@@ -116,7 +116,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send("Invalid user.")
             return
 
-        if not isverified(member):
+        if not account_verified(member):
             await ctx.send("This user is not verified")
             return
 

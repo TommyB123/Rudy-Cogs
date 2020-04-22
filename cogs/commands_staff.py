@@ -1,6 +1,6 @@
 import discord
 import aiomysql
-from cogs.utility import *
+from cogs.utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole
 from discord.ext import commands
 from cogs.mysqlinfo import mysqlconfig
 from datetime import datetime
@@ -108,7 +108,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             return
 
         bannedmember = ctx.guild.get_member(user.id)
-        if isadmin(bannedmember):
+        if member_is_admin(bannedmember):
             await ctx.send("You can't ban other staff idiot boy.")
             return
 
@@ -169,11 +169,11 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await ctx.send("Invalid user.")
             return
 
-        if isadmin(member):
+        if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
             return
 
-        if ismuted(member):
+        if member_is_muted(member):
             await ctx.send(f"{member.mention} is already muted.")
             return
 
@@ -189,11 +189,11 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await ctx.send("Invalid user.")
             return
 
-        if isadmin(member):
+        if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
             return
 
-        if not ismuted(member):
+        if not member_is_muted(member):
             await ctx.send(f"{member.mention} is not muted.")
             return
 
@@ -323,7 +323,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await ctx.send("Usage: !maketester [member]")
             return
 
-        if isverified(member) == False:
+        if member_is_verified(member) == False:
             await ctx.send("The target must be verified.")
 
         sql = await aiomysql.connect(**mysqlconfig)
@@ -353,7 +353,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await ctx.send("Usage: !makehelper [member]")
             return
 
-        if isverified(member) == False:
+        if member_is_verified(member) == False:
             await ctx.send("The target must be verified.")
 
         sql = await aiomysql.connect(**mysqlconfig)

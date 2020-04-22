@@ -1,6 +1,6 @@
 import discord
 import aiomysql
-from cogs.utility import *
+from cogs.utility import rcrp_check
 from cogs.mysqlinfo import mysqlconfig
 from discord.ext import commands
 

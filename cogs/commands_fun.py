@@ -1,9 +1,9 @@
 import discord
 import time
 import random
+from cogs.utility import admin_check
 from string import ascii_lowercase
 from discord.ext import commands
-from cogs.utility import *
 
 gaslinks = [
     'https://i.imgur.com/iuuFvBb.jpg',
@@ -11,6 +11,27 @@ gaslinks = [
     'https://cdn.discordapp.com/attachments/639337212424617994/645094552222433280/tumblr_nw2t03DKNH1ufq0ayo1_1280.png',
     'https://cdn.discordapp.com/attachments/639337212424617994/645095656930934784/itsuki-takumi-iketani-at-gas-station-initial-d.png'
 ]
+
+#the age of rudy. used for the fancy time delta in the age command
+rudyage = 1409529600
+
+def pretty_time_delta(seconds):
+    sign_string = '-' if seconds < 0 else ''
+    seconds = abs(int(seconds))
+    years, seconds = divmod(seconds, 31556952)
+    days, seconds = divmod(seconds, 86400)
+    hours, seconds = divmod(seconds, 3600)
+    minutes, seconds = divmod(seconds, 60)
+    if years > 0:
+        return '%s%dy %dd %dh %dm %ds' % (sign_string, years, days, hours, minutes, seconds)
+    elif days > 0:
+        return '%s%dd %dh %dm %ds' % (sign_string, days, hours, minutes, seconds)
+    elif hours > 0:
+        return '%s%dh %dm %ds' % (sign_string, hours, minutes, seconds)
+    elif minutes > 0:
+        return '%s%dm %ds' % (sign_string, minutes, seconds)
+    else:
+        return '%s%ds' % (sign_string, seconds)
 
 class FunCmdsCog(commands.Cog, name="Fun"):
     def __init__(self, bot):

@@ -7,6 +7,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
 
 class HelpCog(commands.Cog):
     def __init__(self, bot):
+        self.bot = bot
         self._original_help_command = bot.help_command
         bot.help_command = MyHelpCommand()
         bot.help_command.cog = self

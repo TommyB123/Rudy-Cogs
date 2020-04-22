@@ -1,8 +1,8 @@
 import discord
 import aiomysql
 from cogs.mysqlinfo import mysqlconfig
-from cogs.utility import *
 from discord.ext import commands
+from cogs.utility import rcrp_check
 
 class PlayerCmdsCog(commands.Cog, name="Player"):
     def __init__(self, bot):
