@@ -1,7 +1,7 @@
 import discord
 import time
 import random
-from cogs.utility import admin_check
+from utility import admin_check
 from string import ascii_lowercase
 from discord.ext import commands
 

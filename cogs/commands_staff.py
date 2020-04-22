@@ -1,8 +1,7 @@
 import discord
 import aiomysql
-from cogs.utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole
+from utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole, mysql_connect
 from discord.ext import commands
-from cogs.mysqlinfo import mysqlconfig
 from datetime import datetime
 
 class StaffCmdsCog(commands.Cog, name="Staff"):
@@ -34,7 +33,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await ctx.send("Usage: !whois [discord user]")
             return
 
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("SELECT id, Username, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE discordid = %s", (user.id, ))
         data = await cursor.fetchone()
@@ -64,7 +63,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await ctx.send("Usage: !find [Master Account Name]")
             return
 
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("SELECT id, discordid, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE Username = %s", (name, ))
 
@@ -219,7 +218,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await ctx.send("Usage: !house [house address]")
             return
 
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT houses.id, OwnerSQLID, Description, players.Name AS OwnerName, InsideID, ExteriorFurnLimit, Price FROM houses LEFT JOIN players ON players.id = houses.OwnerSQLID WHERE Description = %s", (address, ))
 
@@ -257,7 +256,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await ctx.send("Usage: !business [business name]")
             return
 
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT bizz.id, OwnerSQLID, Description, players.Name AS OwnerName, Price, BizzEarnings, IsSpecial, Loaned FROM bizz LEFT JOIN players ON players.id = bizz.OwnerSQLID WHERE Description = %s", (description, ))
 
@@ -326,7 +325,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
         if member_is_verified(member) == False:
             await ctx.send("The target must be verified.")
 
-        sql = await aiomysql.connect(**mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("SELECT Tester FROM masters WHERE discordid = %s", (member.id, ))
         data = await cursor.fetchone()
@@ -356,7 +355,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
         if member_is_verified(member) == False:
             await ctx.send("The target must be verified.")
 
-        sql = await aiomysql.connect(**mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("SELECT Helper FROM masters WHERE discordid = %s", (member.id, ))
         data = await cursor.fetchone()
@@ -387,7 +386,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await ctx.send("Invalid admin level.")
             return
 
-        sql = await aiomysql.connect(**mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET AdminLevel = %s WHERE discordid = %s", (level, member.id))
         await cursor.close()

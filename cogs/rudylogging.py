@@ -1,5 +1,5 @@
 import discord
-from cogs.utility import rcrpguildid
+from utility import rcrpguildid
 from discord.ext import commands
 
 #message delete log channel

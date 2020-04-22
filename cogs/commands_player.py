@@ -1,8 +1,7 @@
 import discord
 import aiomysql
-from cogs.mysqlinfo import mysqlconfig
 from discord.ext import commands
-from cogs.utility import rcrp_check
+from utility import rcrp_check, mysql_connect
 
 class PlayerCmdsCog(commands.Cog, name="Player"):
     def __init__(self, bot):
@@ -13,7 +12,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.cooldown(1, 60)
     @commands.check(rcrp_check)
     async def admins(self, ctx):
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT masters.Username AS mastername, players.Name AS charactername FROM masters JOIN players ON players.MasterAccount = masters.id WHERE AdminLevel != 0 AND Online = 1")
 
@@ -38,7 +37,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.cooldown(1, 60)
     @commands.check(rcrp_check)
     async def helpers(self, ctx):
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT masters.Username AS mastername, players.Name AS charactername FROM masters JOIN players ON players.MasterAccount = masters.id WHERE Helper != 0 AND Online = 1")
 
@@ -63,7 +62,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.cooldown(1, 60)
     @commands.check(rcrp_check)
     async def players(self, ctx):
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("SELECT SUM(Online) FROM players WHERE Online = 1")
 
@@ -94,7 +93,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     
         playername = playername.replace(' ', '_')
         playername = discord.utils.escape_mentions(playername)
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("SELECT NULL FROM players WHERE Name = %s AND Online = 1", (playername, ))
 
@@ -108,7 +107,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.cooldown(1, 60)
     @commands.check(rcrp_check)
     async def factiononline(self, ctx):
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT COUNT(players.id) AS members, COUNT(IF(Online = 1, 1, NULL)) AS onlinemembers, factions.FNameShort AS name FROM players JOIN factions ON players.Faction = factions.id WHERE Faction != 0 GROUP BY Faction ORDER BY Faction ASC")
         factiondata = await cursor.fetchall()

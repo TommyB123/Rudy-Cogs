@@ -2,8 +2,7 @@ import discord
 import asyncio
 import aiomysql
 from discord.ext import commands
-from cogs.mysqlinfo import mysqlconfig
-from cogs.utility import member_is_verified, member_is_management, account_is_banned, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole
+from utility import member_is_verified, member_is_management, account_is_banned, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole, mysql_connect
 
 class RoleSyncCog(commands.Cog, name="Role sync"):
     def __init__(self, bot):
@@ -14,7 +13,7 @@ class RoleSyncCog(commands.Cog, name="Role sync"):
     async def on_member_join(self, member):
         if member.guild.id == rcrpguildid:
             rcrpguild = self.bot.get_guild(rcrpguildid)
-            sql = await aiomysql.connect(** mysqlconfig)
+            sql = await mysql_connect()
             cursor = await sql.cursor()
             await cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
 
@@ -33,7 +32,7 @@ class RoleSyncCog(commands.Cog, name="Role sync"):
         if not member_is_verified(after) or before.roles == after.roles or after.guild.id != rcrpguildid:
             return
 
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
 
         #check for removed roles and delete them
@@ -57,7 +56,7 @@ class RoleSyncCog(commands.Cog, name="Role sync"):
 async def SyncMemberRoles(self):
     while 1:
         rcrpguild = self.bot.get_guild(rcrpguildid)
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         for member in rcrpguild.members:
             if member_is_management(member) == True:
                 continue

@@ -1,7 +1,7 @@
 import discord
 import asyncio
 import aiomysql
-from cogs.mysqlinfo import mysqlconfig
+from utility import mysql_connect
 from discord.ext import commands
 
 class SampinfoCog(commands.Cog, name="SA-MP Server Info"):
@@ -12,7 +12,7 @@ class SampinfoCog(commands.Cog, name="SA-MP Server Info"):
 async def UpdateSAMPInfo(self):
     while 1:
         try:
-            sql = await aiomysql.connect(** mysqlconfig)
+            sql = await mysql_connect()
             cursor = await sql.cursor()
             await cursor.execute("SELECT SUM(Online) AS playercount FROM players WHERE Online = 1")
             data = await cursor.fetchone()

@@ -1,23 +1,24 @@
 import discord
 import asyncio
 from discord.ext import commands
+from config import bot_token
 
 #discord bot handler
 client = commands.Bot(command_prefix='!')
 
 cogs = [
     'commands_fun',
+    'commands_help',
+    'commands_owner',
     'commands_player',
     'commands_staff',
-    'commands_owner',
     'commands_weeb',
-    'rudylogging',
     'messagequeue',
     'rolesync',
+    'rudylogging',
     'rudypic',
     'sampinfo',
-    'verification',
-    'help'
+    'verification'
 ]
 
 @client.event
@@ -50,4 +51,4 @@ async def on_command_error(context, exception):
     exceptionchannel = client.get_channel(644115120154345472)
     await exceptionchannel.send(f'A command exception was caught: {exception}')
 
-client.run("MzAwMDk4MzYyNTI5NTQ2MjQw.DiIZ3w.pU08PJVTvxqfwF-NpunCEeRigd0")
+client.run(bot_token)

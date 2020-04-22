@@ -2,8 +2,7 @@ import discord
 import asyncio
 import aiomysql
 from discord.ext import commands
-from cogs.utility import rcrpguildid, adminchat, helperchat
-from cogs.mysqlinfo import mysqlconfig
+from utility import rcrpguildid, adminchat, helperchat, mysql_connect
 
 class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
     def __init__(self, bot):
@@ -15,7 +14,7 @@ class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
         if message.guild.id == rcrpguildid and message.author.id != self.bot.user.id:
             if message.channel.id == adminchat or message.channel.id == helperchat:
                 queuemessage = f"{message.author.name} (discord): {message.content}"
-                sql = await aiomysql.connect(** mysqlconfig)
+                sql = await mysql_connect()
                 cursor = await sql.cursor()
                 await cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (%s, %s, 2, UNIX_TIMESTAMP())", (message.channel.id, queuemessage))
                 await sql.commit()
@@ -24,7 +23,7 @@ class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
 
 async def ProcessMessageQueue(self):
     while 1:
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT id, channel, message FROM messagequeue WHERE origin = 1 ORDER BY timestamp ASC")
 

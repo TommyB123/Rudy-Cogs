@@ -2,7 +2,7 @@ import discord
 import random
 import aiomysql
 from random import randint
-from cogs.mysqlinfo import mysqlconfig
+from config import mysqlconfig
 
 #various server roles
 adminrole = 293441894585729024
@@ -147,3 +147,6 @@ async def account_accepted(mastername):
         return False
     else:
         return True
+    
+async def mysql_connect():
+    return await aiomysql.connect( **mysqlconfig)

@@ -1,7 +1,6 @@
 import discord
 import aiomysql
-from cogs.utility import rcrp_check
-from cogs.mysqlinfo import mysqlconfig
+from utility import rcrp_check, mysql_connect
 from discord.ext import commands
 
 drugtypes = {
@@ -38,7 +37,7 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
     @commands.is_owner()
     @commands.check(rcrp_check)
     async def economy(self, ctx):
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT SUM(Bank) AS Bank, SUM(Check1) AS CheckSlot1, SUM(Check2) AS CheckSlot2, SUM(Check3) AS CheckSlot3 FROM players")
         playerdata = await cursor.fetchone()
@@ -76,7 +75,7 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
     @commands.check(rcrp_check)
     async def drugs(self, ctx):
         drugs = {47:0, 48:0, 49:0, 51:0, 52:0, 53:0, 55:0, 57:0}
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT SUM(itemval) AS items, item FROM inventory_player WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
         results = await cursor.fetchall()

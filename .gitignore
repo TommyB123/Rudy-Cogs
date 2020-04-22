@@ -104,8 +104,8 @@ venv.bak/
 .mypy_cache/
 
 
-#mysql connection info
-cogs/mysqlinfo.py
+#bot config (mysql, token)
+config.py
 
 #vscode
 .vscode

@@ -1,8 +1,7 @@
 import discord
 import aiomysql
 from discord.ext import commands
-from cogs.utility import rcrp_check, management_check, random_with_N_digits, account_name_valid, member_is_verified, account_linked_to_discord, account_accepted, account_verified, dashboardurl, rcrpguildid, testerrole, adminrole, helperrole, verifiedrole, managementrole
-from cogs.mysqlinfo import mysqlconfig
+from utility import rcrp_check, management_check, random_with_N_digits, account_name_valid, member_is_verified, account_linked_to_discord, account_accepted, account_verified, dashboardurl, rcrpguildid, testerrole, adminrole, helperrole, verifiedrole, managementrole, mysql_connect
 
 class VerificationCog(commands.Cog, name="RCRP Verification"):
     def __init__(self, bot):
@@ -32,7 +31,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             return
 
         code = random_with_N_digits(10)
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET discordcode = %s, pendingdiscordid = %s WHERE Username = %s AND discordid = 0", (str(code), ctx.author.id, masteraccount))
         await cursor.close()
@@ -46,7 +45,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
         if code == None:
             await ctx.send("Usage: !validate [code]")
 
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT COUNT(*) AS matches, id, Helper, Tester, AdminLevel FROM masters WHERE discordcode = %s AND pendingdiscordid = %s", (code, ctx.author.id))
         data = await cursor.fetchone()
@@ -98,7 +97,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send("MA is already verified")
             return
 
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE Username = %s", (member.id, masteraccount))
         await cursor.close()
@@ -120,7 +119,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send("This user is not verified")
             return
 
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
         await cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (member.id, ))
@@ -145,7 +144,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send('Usage: !softunverify [discord ID]')
             return
 
-        sql = await aiomysql.connect(** mysqlconfig)
+        sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (discordid))
 
