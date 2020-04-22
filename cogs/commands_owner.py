@@ -115,9 +115,8 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    @commands.check(rcrp_check)
     async def roles(self, ctx):
-            embed = discord.Embed(title = 'RCRP Discord Roles', color = 0xe74c3c, timestamp = ctx.message.created_at)
+            embed = discord.Embed(title = 'Discord Roles', color = 0xe74c3c, timestamp = ctx.message.created_at)
             for role in ctx.guild.roles:
                 embed.add_field(name = role.name, value = role.id)
             await ctx.send(embed = embed)

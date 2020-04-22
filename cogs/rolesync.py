@@ -4,6 +4,9 @@ import aiomysql
 from discord.ext import commands
 from utility import member_is_verified, member_is_management, account_is_banned, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole, mysql_connect
 
+async def verified_filter(member):
+    return member_is_verified(member) == True
+
 class RoleSyncCog(commands.Cog, name="Role sync"):
     def __init__(self, bot):
         self.bot = bot
@@ -58,8 +61,8 @@ async def SyncMemberRoles(self):
         rcrpguild = self.bot.get_guild(rcrpguildid)
         sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
-        async for member in rcrpguild.fetch_members(limit = None):
-            if member_is_management(member) == True:
+        async for member in rcrpguild.fetch_members(limit = None).filter(verified_filter):
+            if member_is_management(member) == True or member_is_verified == False:
                 continue
 
             await cursor.execute("SELECT id, Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
