@@ -13,6 +13,12 @@ async def isrudyfriend(ctx):
     else:
         return False
 
+async def SendRandomAlbumPicture(ctx, album):
+    pictures = []
+    for image in imclient.get_album_images(album):
+        pictures.append(image.link)
+    await ctx.send(random.choice(pictures))
+
 class RudypicCog(commands.Cog, name="rudypic"):
     def __init__(self, bot):
         self.bot = bot
@@ -21,28 +27,25 @@ class RudypicCog(commands.Cog, name="rudypic"):
     @commands.guild_only()
     @commands.check(isrudyfriend)
     async def rudypic(self, ctx):
-        pictures = []
-        for image in imclient.get_album_images('WLQku0l'):
-            pictures.append(image.link)
-        await ctx.send(random.choice(pictures))
+        await SendRandomAlbumPicture(ctx, 'WLQku0l')
 
     @commands.command(help = "Sends an adorable picture of Sammy")
     @commands.guild_only()
     @commands.check(isrudyfriend)
     async def sammypic(self, ctx):
-        pictures = []
-        for image in imclient.get_album_images('VfKwj4H'):
-            pictures.append(image.link)
-        await ctx.send(random.choice(pictures))
+        await SendRandomAlbumPicture(ctx, 'VfKwj4H')
 
     @commands.command(help = "Sends an adorable picture of Milo")
     @commands.guild_only()
     @commands.check(isrudyfriend)
     async def milopic(self, ctx):
-        pictures = []
-        for image in imclient.get_album_images('h3VORpQ'):
-            pictures.append(image.link)
-        await ctx.send(random.choice(pictures))
+        await SendRandomAlbumPicture(ctx, 'h3VORpQ')
+
+    @commands.command(help = "Sends a legendary gizmo quote.")
+    @commands.is_owner()
+    async def gizmo(self, ctx):
+        await SendRandomAlbumPicture(ctx, 'SlgjJJu')
+    
 
 def setup(bot):
     bot.add_cog(RudypicCog(bot))
