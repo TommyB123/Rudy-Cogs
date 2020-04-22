@@ -31,7 +31,7 @@ class FunCmdsCog(commands.Cog, name="Fun"):
 
     @commands.command(help = "Sends a stupid message entirely of emojis")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(admin_check)
     async def emojisay(self, ctx, *, message:str = None):
         if str is None:
             await ctx.send("Usage: !emojisay [message]")
@@ -104,7 +104,7 @@ class FunCmdsCog(commands.Cog, name="Fun"):
     @commands.cooldown(1, 60)
     @commands.guild_only()
     async def age(self, ctx):
-        rudy_age = rcrp_utility.pretty_time_delta(int(time.time()) - rudyage)
+        rudy_age = pretty_time_delta(int(time.time()) - rudyage)
         await ctx.send(f"Rudy's age: {rudy_age}")
 
     @commands.command(help = "Gives a kind response about Rudy's weight")

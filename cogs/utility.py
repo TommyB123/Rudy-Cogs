@@ -24,7 +24,7 @@ helperchat = 609053396204257290
 staffroles = [ownerrole, adminrole, managementrole]
 
 #ID of the rcrp guild
-rcrpguild = 93142223473905664
+rcrpguildid = 93142223473905664
 
 #url of the dashboard. sent to players when they try to verify
 dashboardurl = "https://redcountyrp.com/user/dashboard"
@@ -32,127 +32,139 @@ dashboardurl = "https://redcountyrp.com/user/dashboard"
 #the age of rudy. used for the fancy time delta in the age command
 rudyage = 1409529600
 
-class rcrp_utility:
-    def isverified(member):
-        if verifiedrole in [role.id for role in member.roles]:
-            return True
-        else:
-            return False
-
-    def isadmin(member):
-        for role in member.roles:
-            if role.id in staffroles:
-                return True
+#command check decorators
+def rcrp_check(ctx):
+    if ctx.guild.id == rcrpguildid:
+        return True
+    else:
         return False
 
-    def ismanagement(member):
-        if managementrole in [role.id for role in member.roles] or ownerrole in [role.id for role in member.roles]:
-            return True
-        else:
-            return False
-
-    async def is_admin(ctx):
+async def admin_check(ctx):
+    if ctx.guild.id == rcrpguildid:
         for role in ctx.author.roles:
             if role.id in staffroles:
                 return True
         return False
+    else:
+        return True
 
-    async def is_management(ctx):
+async def management_check(ctx):
+    if ctx.guild.id == rcrpguildid:
         if managementrole in [role.id for role in ctx.author.roles] or ownerrole in [role.id for role in ctx.author.roles]:
             return True
         else:
             return False
+    else:
+        return True
 
-    def ismuted(member):
-        if mutedrole in [role.id for role in member.roles]:
+def isverified(member):
+    if verifiedrole in [role.id for role in member.roles]:
+        return True
+    else:
+        return False
+
+def isadmin(member):
+    for role in member.roles:
+        if role.id in staffroles:
             return True
-        else:
-            return False
+    return False
 
-    async def isbanned(accountid):
-        sql = await aiomysql.connect(** mysqlconfig)
-        cursor = await sql.cursor()
-        await cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
-        data = await cursor.fetchone()
-        await cursor.close()
-        sql.close()
+def ismanagement(member):
+    if managementrole in [role.id for role in member.roles] or ownerrole in [role.id for role in member.roles]:
+        return True
+    else:
+        return False
 
-        if data is None:
-            return False
-        else:
-            return True
+def ismuted(member):
+    if mutedrole in [role.id for role in member.roles]:
+        return True
+    else:
+        return False
 
-    def random_with_N_digits(n):
-        range_start = 10**(n-1)
-        range_end = (10**n)-1
-        return randint(range_start, range_end)
+async def isbanned(accountid):
+    sql = await aiomysql.connect(** mysqlconfig)
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
 
-    def pretty_time_delta(seconds):
-        sign_string = '-' if seconds < 0 else ''
-        seconds = abs(int(seconds))
-        years, seconds = divmod(seconds, 31556952)
-        days, seconds = divmod(seconds, 86400)
-        hours, seconds = divmod(seconds, 3600)
-        minutes, seconds = divmod(seconds, 60)
-        if years > 0:
-            return '%s%dy %dd %dh %dm %ds' % (sign_string, years, days, hours, minutes, seconds)
-        elif days > 0:
-            return '%s%dd %dh %dm %ds' % (sign_string, days, hours, minutes, seconds)
-        elif hours > 0:
-            return '%s%dh %dm %ds' % (sign_string, hours, minutes, seconds)
-        elif minutes > 0:
-            return '%s%dm %ds' % (sign_string, minutes, seconds)
-        else:
-            return '%s%ds' % (sign_string, seconds)
+    if data is None:
+        return False
+    else:
+        return True
 
-    async def isValidMasterAccountName(name):
-        sql = await aiomysql.connect(** mysqlconfig)
-        cursor = await sql.cursor()
-        await cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
-        data = await cursor.fetchone()
-        await cursor.close()
-        sql.close()
+def random_with_N_digits(n):
+    range_start = 10**(n-1)
+    range_end = (10**n)-1
+    return randint(range_start, range_end)
 
-        if data is None:
-            return False
-        else:
-            return True
+def pretty_time_delta(seconds):
+    sign_string = '-' if seconds < 0 else ''
+    seconds = abs(int(seconds))
+    years, seconds = divmod(seconds, 31556952)
+    days, seconds = divmod(seconds, 86400)
+    hours, seconds = divmod(seconds, 3600)
+    minutes, seconds = divmod(seconds, 60)
+    if years > 0:
+        return '%s%dy %dd %dh %dm %ds' % (sign_string, years, days, hours, minutes, seconds)
+    elif days > 0:
+        return '%s%dd %dh %dm %ds' % (sign_string, days, hours, minutes, seconds)
+    elif hours > 0:
+        return '%s%dh %dm %ds' % (sign_string, hours, minutes, seconds)
+    elif minutes > 0:
+        return '%s%dm %ds' % (sign_string, minutes, seconds)
+    else:
+        return '%s%ds' % (sign_string, seconds)
 
-    async def isMasterAccountVerified(name):
-        sql = await aiomysql.connect(** mysqlconfig)
-        cursor = await sql.cursor()
-        await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
-        data = await cursor.fetchone()
-        await cursor.close()
-        sql.close()
+async def isValidMasterAccountName(name):
+    sql = await aiomysql.connect(** mysqlconfig)
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
 
-        if data is None:
-            return False
-        else:
-            return True
+    if data is None:
+        return False
+    else:
+        return True
 
-    async def IsDiscordIDLinked(discordid):
-        sql = await aiomysql.connect(** mysqlconfig)
-        cursor = await sql.cursor()
-        await cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
-        data = await cursor.fetchone()
-        await cursor.close()
-        sql.close()
+async def isMasterAccountVerified(name):
+    sql = await aiomysql.connect(** mysqlconfig)
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
 
-        if data is None:
-            return False
-        else:
-            return True
+    if data is None:
+        return False
+    else:
+        return True
 
-    async def IsAcceptedMasterAccount(mastername):
-        sql = await aiomysql.connect(** mysqlconfig)
-        cursor = await sql.cursor()
-        await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))
-        data = await cursor.fetchone()
-        await cursor.close()
-        sql.close()
+async def IsDiscordIDLinked(discordid):
+    sql = await aiomysql.connect(** mysqlconfig)
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
 
-        if data is None:
-            return False
-        else:
-            return True
+    if data is None:
+        return False
+    else:
+        return True
+
+async def IsAcceptedMasterAccount(mastername):
+    sql = await aiomysql.connect(** mysqlconfig)
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True

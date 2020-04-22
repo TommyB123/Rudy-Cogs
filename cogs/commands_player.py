@@ -1,7 +1,7 @@
 import discord
 import aiomysql
 from cogs.mysqlinfo import mysqlconfig
-from cogs.utility import rcrp_utility
+from cogs.utility import *
 from discord.ext import commands
 
 class PlayerCmdsCog(commands.Cog, name="Player"):
@@ -11,6 +11,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.command(help = "Collects a list of in-game administrators (60 sec cooldown)")
     @commands.guild_only()
     @commands.cooldown(1, 60)
+    @commands.check(rcrp_check)
     async def admins(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
@@ -35,6 +36,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.command(help = "Collects a list of in-game helpers (60 sec cooldown)")
     @commands.guild_only()
     @commands.cooldown(1, 60)
+    @commands.check(rcrp_check)
     async def helpers(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
@@ -59,6 +61,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.command(help = "Lists all in-game players (60 sec cooldown)")
     @commands.guild_only()
     @commands.cooldown(1, 60)
+    @commands.check(rcrp_check)
     async def players(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor()
@@ -83,6 +86,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.command(help = "See if a character is in-game")
     @commands.guild_only()
     @commands.cooldown(1, 60)
+    @commands.check(rcrp_check)
     async def player(self, ctx, *, playername:str = None):
         if playername is None:
             await ctx.send("Usage: !player [full character name]")
@@ -102,6 +106,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.command(help = "Lists all official factions and their member counts")
     @commands.guild_only()
     @commands.cooldown(1, 60)
+    @commands.check(rcrp_check)
     async def factiononline(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
@@ -117,11 +122,13 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
 
     @commands.command(help = "piracy")
     @commands.guild_only()
+    @commands.check(rcrp_check)
     async def gta(self, ctx):
         await ctx.send("https://tommyb.ovh/files/cleangtasa.7z - Full game (3.6 GB)\nhttps://tommyb.ovh/files/cleangtasa-small.7z - Compressed/Removed audio (600MB)\n\nhttps://rc-rp.com/03dl - SA-MP 0.3.DL")
 
     @commands.command(help = "GTA SA fully mipmapped link")
     @commands.guild_only()
+    @commands.check(rcrp_check)
     async def mipmapped(self, ctx):
         await ctx.send("https://tommyb.ovh/files/GTA-SA-Fully-Mipmapped.7z")
 

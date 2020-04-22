@@ -1,5 +1,6 @@
 import discord
 import aiomysql
+from cogs.utility import *
 from cogs.mysqlinfo import mysqlconfig
 from discord.ext import commands
 
@@ -21,18 +22,21 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
     @commands.command(help = "Why I don't have my god damn DMs open")
     @commands.guild_only()
     @commands.is_owner()
+    @commands.check(rcrp_check)
     async def dms(self, ctx):
         await ctx.send("<https://imgur.com/a/yYK5dnZ>")
 
     @commands.command(help = "Proof of riches")
     @commands.guild_only()
     @commands.is_owner()
+    @commands.check(rcrp_check)
     async def legit(self, ctx):
         await ctx.send('MY CASH IS LEGIT BABY https://i.imgur.com/z5pwmj4.gifv')
 
     @commands.command(help = "Collects statistics about the server's economy")
     @commands.guild_only()
     @commands.is_owner()
+    @commands.check(rcrp_check)
     async def economy(self, ctx):
         sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
@@ -69,6 +73,7 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
     @commands.command(help = "Collects statistics of drugs")
     @commands.guild_only()
     @commands.is_owner()
+    @commands.check(rcrp_check)
     async def drugs(self, ctx):
         drugs = {47:0, 48:0, 49:0, 51:0, 52:0, 53:0, 55:0, 57:0}
         sql = await aiomysql.connect(** mysqlconfig)
@@ -111,19 +116,12 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def please(self, ctx, *, message:str):
-        await ctx.message.delete()
-        for channel in ctx.guild.text_channels:
-            await channel.send(message)
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.is_owner()
+    @commands.check(rcrp_check)
     async def roles(self, ctx):
-        embed = discord.Embed(title = 'RCRP Discord Roles', color = 0xe74c3c, timestamp = ctx.message.created_at)
-        for role in ctx.guild.roles:
-            embed.add_field(name = role.name, value = role.id)
-        await ctx.send(embed = embed)
+            embed = discord.Embed(title = 'RCRP Discord Roles', color = 0xe74c3c, timestamp = ctx.message.created_at)
+            for role in ctx.guild.roles:
+                embed.add_field(name = role.name, value = role.id)
+            await ctx.send(embed = embed)
 
     @commands.command()
     @commands.guild_only()

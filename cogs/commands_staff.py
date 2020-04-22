@@ -11,7 +11,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Clear up to the last 10 messages")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def clear(self, ctx, *, amount : int = None):
         if amount == None or amount <= 0:
             await ctx.send("Usage: !clear [number of messages (1-10)]")
@@ -26,7 +27,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Fetches MA info of a verified discord member")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def whois(self, ctx, user: discord.User=None):
         if user == None:
             await ctx.send("Usage: !whois [discord user]")
@@ -55,7 +57,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Fetches the discord account of a member based on their MA name")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def find(self, ctx, name : str = None):
         if name == None:
             await ctx.send("Usage: !find [Master Account Name]")
@@ -93,7 +96,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Bans a member from the RCRP discord")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def ban(self, ctx, user: discord.User = None, *, banreason):
         if not user:
             await ctx.send("Invalid user.")
@@ -104,7 +108,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             return
 
         bannedmember = ctx.guild.get_member(user.id)
-        if rcrp_utility.isadmin(bannedmember):
+        if isadmin(bannedmember):
             await ctx.send("You can't ban other staff idiot boy.")
             return
 
@@ -122,7 +126,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Unbans a member from the RCRP discord")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def unban(self, ctx, target):
         banned_user = await self.bot.fetch_user(target)
         if not banned_user:
@@ -140,7 +145,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Searches all existing bans for a banned user.")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def baninfo(self, ctx, target: str = ""):
         banned_user = await self.bot.fetch_user(target)
         if not banned_user:
@@ -156,17 +162,18 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Mutes a member")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def mute(self, ctx, member: discord.Member = None):
         if not member:
             await ctx.send("Invalid user.")
             return
 
-        if rcrp_utility.isadmin(member):
+        if isadmin(member):
             await ctx.send("You can't mute other staff.")
             return
 
-        if rcrp_utility.ismuted(member):
+        if ismuted(member):
             await ctx.send(f"{member.mention} is already muted.")
             return
 
@@ -175,17 +182,18 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Unmutes a member")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def unmute(self, ctx, member: discord.Member = None):
         if not member:
             await ctx.send("Invalid user.")
             return
 
-        if rcrp_utility.isadmin(member):
+        if isadmin(member):
             await ctx.send("You can't mute other staff.")
             return
 
-        if not rcrp_utility.ismuted(member):
+        if not ismuted(member):
             await ctx.send(f"{member.mention} is not muted.")
             return
 
@@ -194,7 +202,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Sends a message as Rudy")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_management)
+    @commands.check(management_check)
     async def speak(self, ctx, *, copymessage:str):
         if len(copymessage) == 0:
             return
@@ -204,7 +212,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Fetches the information of a user specified house")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def house(self, ctx, *, address:str = None):
         if address is None:
             await ctx.send("Usage: !house [house address]")
@@ -241,7 +250,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Fetches the information of a user specified business")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def business(self, ctx, *, description:str = None):
         if description is None:
             await ctx.send("Usage: !business [business name]")
@@ -279,7 +289,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Get the URL of a discord user's avatar")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(admin_check)
     async def avatar(self, ctx, member:discord.Member = None):
         if member is None:
             await ctx.send("Usage: !avatarurl [member]")
@@ -289,7 +299,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Add or remove Faction Consultant from a member")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def makefc(self, ctx, member:discord.Member = None):
         if member is None:
             await ctx.send("Usage: !makefc [member]")
@@ -305,13 +316,14 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Hire or fire someone from the tester team")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def maketester(self, ctx, member:discord.Member = None):
         if member is None:
             await ctx.send("Usage: !maketester [member]")
             return
 
-        if rcrp_utility.isverified(member) == False:
+        if isverified(member) == False:
             await ctx.send("The target must be verified.")
 
         sql = await aiomysql.connect(**mysqlconfig)
@@ -334,13 +346,14 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Hire or fire someone from the helper team")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_admin)
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def makehelper(self, ctx, member:discord.Member = None):
         if member is None:
             await ctx.send("Usage: !makehelper [member]")
             return
 
-        if rcrp_utility.isverified(member) == False:
+        if isverified(member) == False:
             await ctx.send("The target must be verified.")
 
         sql = await aiomysql.connect(**mysqlconfig)
@@ -363,7 +376,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Set a user's admin level")
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_management)
+    @commands.check(rcrp_check)
+    @commands.check(management_check)
     async def makeadmin(self, ctx, member:discord.Member = None, level:int = 0):
         if member is None:
             await ctx.send("Usage: !makeadmin [member] [admin level]")

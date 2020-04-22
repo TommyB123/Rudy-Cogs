@@ -2,16 +2,19 @@ import discord
 import random
 from imgurpython import ImgurClient
 from discord.ext import commands
-from cogs.utility import *
+from cogs.utility import rudyfriend, rcrpguildid
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
 
 async def isrudyfriend(ctx):
-    if rudyfriend in [role.id for role in ctx.author.roles]:
-        return True
+    if ctx.guild.id == rcrpguildid:
+        if rudyfriend in [role.id for role in ctx.author.roles]:
+            return True
+        else:
+            return False
     else:
-        return False
+        return True
 
 async def SendRandomAlbumPicture(ctx, album):
     pictures = []

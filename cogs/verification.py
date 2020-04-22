@@ -15,23 +15,23 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
             await ctx.send("Usage: !verify [Master account name]")
             return
 
-        if await rcrp_utility.IsDiscordIDLinked(ctx.author.id) == True:
+        if await IsDiscordIDLinked(ctx.author.id) == True:
             await ctx.send("This Discord account is already linked to an RCRP account.")
             return
 
-        if await rcrp_utility.isValidMasterAccountName(masteraccount) == False:
+        if await isValidMasterAccountName(masteraccount) == False:
             await ctx.send("Invalid account name.")
             return
 
-        if await rcrp_utility.IsAcceptedMasterAccount(masteraccount) == False:
+        if await IsAcceptedMasterAccount(masteraccount) == False:
             await ctx.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
             return
 
-        if await rcrp_utility.isMasterAccountVerified(masteraccount) == True:
+        if await isMasterAccountVerified(masteraccount) == True:
             await ctx.send("This master account has already been verified before. If you are trying to verify a new discord account, please create a support ticket at https://redcountyrp.com/user/tickets.")
             return
 
-        code = rcrp_utility.random_with_N_digits(10)
+        code = random_with_N_digits(10)
         sql = await aiomysql.connect(** mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET discordcode = %s, pendingdiscordid = %s WHERE Username = %s AND discordid = 0", (str(code), ctx.author.id, masteraccount))
@@ -53,21 +53,21 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
         await cursor.close()
 
         if data['matches'] == 0: #account doesn't match
-            await ct.send("Invalid verification code.")
+            await ctx.send("Invalid verification code.")
             return
 
-        discordguild = self.bot.get_guild(rcrpguild)
-        discordmember = discordguild.get_member(ctx.author.id)
+        rcrpguild = self.bot.get_guild(rcrpguildid)
+        discordmember = rcrpguild.get_member(ctx.author.id)
         discordroles = []
-        discordroles.append(discordguild.get_role(verifiedrole))
+        discordroles.append(rcrpguild.get_role(verifiedrole))
         if data['Helper'] == 1: #guy is helper
-            discordroles.append(discordguild.get_role(helperrole))
+            discordroles.append(rcrpguild.get_role(helperrole))
         if data['Tester'] == 1: #guy is tester
-            discordroles.append(discordguild.get_role(testerrole))
+            discordroles.append(rcrpguild.get_role(testerrole))
         if data['AdminLevel'] != 0: #guy is admin
-            discordroles.append(discordguild.get_role(adminrole))
+            discordroles.append(rcrpguild.get_role(adminrole))
         if data['AdminLevel'] == 4: #guy is management
-            discordroles.append(discordguild.get_role(managementrole))
+            discordroles.append(rcrpguild.get_role(managementrole))
         await discordmember.add_roles(*discordroles)
 
         cursor = await sql.cursor()
@@ -79,21 +79,22 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_management)
+    @commands.check(rcrp_check)
+    @commands.check(management_check)
     async def manualverify(self, ctx, member: discord.Member = None, masteraccount: str = " "):
         if not member:
             await ctx.send("Invalid user.")
             return
 
-        if rcrp_utility.isverified(member) == True:
+        if isverified(member) == True:
             await ctx.send(f"{member.mention} is already verified.")
             return
 
-        if await rcrp_utility.isValidMasterAccountName(masteraccount) == False:
+        if await isValidMasterAccountName(masteraccount) == False:
             await ctx.send("Invalid MA name")
             return
 
-        if await rcrp_utility.isMasterAccountVerified(masteraccount) == True:
+        if await isMasterAccountVerified(masteraccount) == True:
             await ctx.send("MA is already verified")
             return
 
@@ -108,13 +109,14 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_management)
+    @commands.check(rcrp_check)
+    @commands.check(management_check)
     async def unverify(self, ctx, member: discord.Member = None):
         if not member:
             await ctx.send("Invalid user.")
             return
 
-        if not rcrp_utility.isverified(member):
+        if not isverified(member):
             await ctx.send("This user is not verified")
             return
 
@@ -127,7 +129,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
         roles = []
         for role in member.roles:
-            if role.id == rcrpguild: #check to see if the role is @everyone, skip it if so
+            if role.id == rcrpguildid: #check to see if the role is @everyone, skip it if so
                 continue
             roles.append(role)
 
@@ -136,7 +138,8 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(rcrp_utility.is_management)
+    @commands.check(rcrp_check)
+    @commands.check(management_check)
     async def softunverify(self, ctx, discordid:int = None):
         if discordid == None:
             await ctx.send('Usage: !softunverify [discord ID]')
@@ -153,7 +156,6 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
         await cursor.close()
         sql.close()
-
 
 def setup(bot):
     bot.add_cog(VerificationCog(bot))
