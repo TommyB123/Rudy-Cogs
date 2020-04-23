@@ -76,7 +76,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
         await ctx.send("Your account is now verified!")
 
-    @commands.command()
+    @commands.command(help = "Manually link a discord account to an RCRP account.")
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
@@ -106,7 +106,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
         await member.add_roles(ctx.guild.get_role(verifiedrole))
         await ctx.send(f"{member.mention} has been manually verified as {masteraccount}")
 
-    @commands.command()
+    @commands.command(help = "Remove a discord account's verification status and unlink their RCRP account.")
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
@@ -126,16 +126,10 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
         await cursor.close()
         sql.close()
 
-        roles = []
-        for role in member.roles:
-            if role.id == rcrpguildid: #check to see if the role is @everyone, skip it if so
-                continue
-            roles.append(role)
-
+        await member.remove_roles(*member.roles)
         await ctx.send(f"{member.mention} has been unverified.")
-        await member.remove_roles(*roles)
 
-    @commands.command()
+    @commands.command(help = "Remove the assigned discord ID from an RCRP account.")
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
