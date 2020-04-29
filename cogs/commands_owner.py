@@ -89,6 +89,9 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
 
         for drug in results:
             drugs[drug['item']] += drug['items']
+        
+        await cursor.close()
+        sql.close()
 
         embed = discord.Embed(title = 'RCRP Drug Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
         embed.add_field(name = 'Low Grade Cocaine', value = '{:,}'.format(drugs[47]))
