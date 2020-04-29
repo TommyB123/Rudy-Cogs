@@ -52,7 +52,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
 
         results = await cursor.fetchall()
         for helperinfo in results:
-            embed.add_field(name = helperinfo['mastername'], value = helperinfo['charactername'], inline = False)
+            embed.add_field(name = helperinfo['mastername'], value = helperinfo['charactername'])
 
         await cursor.close()
         sql.close()

@@ -1,6 +1,6 @@
 import discord
 import aiomysql
-from utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole, mysql_connect
+from utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole, mysql_connect, weaponnames, fetch_account_id
 from discord.ext import commands
 from datetime import datetime
 
@@ -399,6 +399,38 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             await member.add_roles(admin)
 
         await ctx.send(f'{member.mention} has been assigned admin level {level}')
+    
+    @commands.command(help = "List all guns that a Master Account owns")
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
+    async def checkweapons(self, ctx, master_name:str):
+        master_id = await fetch_account_id(master_name)
+        if master_id == 0:
+            await ctx.send('Invalid account name.')
+            return
+
+        sql = await mysql_connect()
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        await cursor.execute("SELECT WeaponID AS weapon, COUNT(*) AS count FROM weapons WHERE OwnerSQLID IN (SELECT id FROM players WHERE MasterAccount = %s) AND Deleted = 0 GROUP BY WeaponID", (master_id, ))
+
+        if cursor.rowcount == 0:
+            await ctx.send(f'{master_name} does not have any weapons.')
+            await cursor.close()
+            sql.close()
+            return
+
+        data = await cursor.fetchall()
+        await cursor.close()
+        sql.close()
+
+        total = 0
+        embed = discord.Embed(title = f'Weapons of {master_name}', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        for weapon in data:
+            embed.add_field(name = weaponnames[weapon['weapon']], value = '{:,}'.format(weapon['count']))
+            total += weapon['count']
+        embed.add_field(name = 'Total Weapons', value = '{:,}'.format(total))
+        await ctx.send(embed = embed)
 
 def setup(bot):
     bot.add_cog(StaffCmdsCog(bot))

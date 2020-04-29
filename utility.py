@@ -217,6 +217,19 @@ async def account_accepted(mastername):
         return False
     else:
         return True
+
+async def fetch_account_id(mastername):
+    sql = await aiomysql.connect(** mysqlconfig)
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT id FROM masters WHERE Username = %s", (mastername, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+
+    maid = data[0]
+    if maid is None:
+        maid = 0
+    return maid
     
 async def mysql_connect():
     return await aiomysql.connect( **mysqlconfig)
