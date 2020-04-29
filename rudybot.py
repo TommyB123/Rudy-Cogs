@@ -51,4 +51,37 @@ async def on_command_error(context, exception):
     exceptionchannel = client.get_channel(644115120154345472)
     await exceptionchannel.send(f'A command exception was caught: {exception}')
 
+@client.command()
+@commands.guild_only()
+@commands.is_owner()
+async def loadcog(ctx, *, cogname:str):
+    try:
+        client.load_extension(f'cogs.{cogname}')
+    except Exception as e:
+        await ctx.send(f'Unable to load {cogname}. Reason: {e}')
+    else:
+        await ctx.message.add_reaction('\N{OK HAND SIGN}')
+
+@client.command()
+@commands.guild_only()
+@commands.is_owner()
+async def unloadcog(ctx, *, cogname:str):
+    try:
+        client.unload_extension(f'cogs.{cogname}')
+    except Exception as e:
+        await ctx.send(f'Unable to unload {cogname}. Reason: {e}')
+    else:
+        await ctx.message.add_reaction('\N{OK HAND SIGN}')
+
+@client.command()
+@commands.guild_only()
+@commands.is_owner()
+async def reloadcog(ctx, *, cogname:str):
+    try:
+        client.reload_extension(f'cogs.{cogname}')
+    except Exception as e:
+        await ctx.send(f'Reloading of {cogname} failed. Reason: {e}')
+    else:
+        await ctx.message.add_reaction('\N{OK HAND SIGN}')
+
 client.run(bot_token)

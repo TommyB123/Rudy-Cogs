@@ -1,18 +1,7 @@
 import discord
 import aiomysql
-from utility import rcrp_check, mysql_connect
+from utility import rcrp_check, mysql_connect, weaponnames, origins
 from discord.ext import commands
-
-drugtypes = {
-    47: "Low Grade Cocaine",
-    48: "Medium Grade Cocaine",
-    49: "High Grade Cocaine",
-    51: "Low Grade Crack",
-    52: "Medium Grade Crack",
-    53: "High Grade Crack",
-    55: "Marijuana",
-    57: "Heroin"
-}
 
 class OwnerCmdsCog(commands.Cog, name="Owner"):
     def __init__(self, bot):
@@ -111,6 +100,30 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
         embed.add_field(name = 'Marijuana', value = '{:,}'.format(drugs[55]))
         embed.add_field(name = 'Heroin', value = '{:,}'.format(drugs[57]))
         await ctx.send(embed = embed)
+    
+    @commands.command()
+    @commands.guild_only()
+    @commands.is_owner()
+    @commands.check(rcrp_check)
+    async def weapons(self, ctx, origin:int):
+        sql = await mysql_connect()
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        await cursor.execute("SELECT COUNT(*) AS count, WeaponID FROM weapons WHERE WeaponOrigin = %s AND Deleted = 0 GROUP BY WeaponID ORDER BY WeaponID", (origin, ))
+
+        if cursor.rowcount == 0:
+            await ctx.send("Invalid origin type.")
+            await cursor.close()
+            sql.close()
+            return
+
+        results = await cursor.fetchall()
+        await cursor.close()
+        sql.close()
+
+        embed = discord.Embed(title = f'RCRP Weapon Statistics ({origins[origin]})', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        for weapon in results:
+            embed.add_field(name = weaponnames[weapon['WeaponID']], value = '{:,}'.format(weapon['count']))
+        await ctx.send(embed = embed)
 
     @commands.command()
     @commands.guild_only()
@@ -120,39 +133,6 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
             for role in ctx.guild.roles:
                 embed.add_field(name = role.name, value = role.id)
             await ctx.send(embed = embed)
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.is_owner()
-    async def loadcog(self, ctx, *, cog:str):
-        try:
-            self.bot.load_extension(f'cogs.{cog}')
-        except Exception as e:
-            await ctx.send(f'Unable to load {cog}. Reason: {e}')
-        else:
-            await ctx.message.add_reaction('\N{OK HAND SIGN}')
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.is_owner()
-    async def unloadcog(self, ctx, *, cog:str):
-        try:
-            self.bot.unload_extension(f'cogs.{cog}')
-        except Exception as e:
-            await ctx.send(f'Unable to unload {cog}. Reason: {e}')
-        else:
-            await ctx.message.add_reaction('\N{OK HAND SIGN}')
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.is_owner()
-    async def reloadcog(self, ctx, *, cog:str):
-        try:
-            self.bot.reload_extension(f'cogs.{cog}')
-        except Exception as e:
-            await ctx.send(f'Reloading of {cog} failed. Reason: {e}')
-        else:
-            await ctx.message.add_reaction('\N{OK HAND SIGN}')
 
 def setup(bot):
     bot.add_cog(OwnerCmdsCog(bot))

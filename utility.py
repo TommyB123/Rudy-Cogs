@@ -4,6 +4,76 @@ import aiomysql
 from random import randint
 from config import mysqlconfig
 
+#weapon names
+weaponnames = {
+    0: "Fist",
+    1: "Brass Knuckles",
+    2: "Golf Club",
+    3: "Nightstick",
+    4: "Knife",
+    5: "Baseball Bat",
+    6: "Shovel",
+    7: "Pool Cue",
+    8: "Katana",
+    9: "Chainsaw",
+    10: "Purple Dildo",
+    11: "Small White Vibrator",
+    12: "Big White Vibrator",
+    13: "Small Silver Vibrator",
+    14: "Flowers",
+    15: "Cane",
+    16: "Grenade",
+    17: "Teargas",
+    18: "Molotov Cocktail",
+    19: "",
+    20: "",
+    21: "Heavy Armor",
+    22: "9mm",
+    23: "Silenced Pistol",
+    24: "Desert Eagle",
+    25: "Shotgun",
+    26: "Sawn-off Shotgun",
+    27: "SPAS-12",
+    28: "Micro Uzi (Mac 10)",
+    29: "MP5",
+    30: "AK-47",
+    31: "M4",
+    32: "Tec9",
+    33: "Country Rifle",
+    34: "Sniper Rifle",
+    35: "Rocket Launcher (RPG)",
+    36: "Heat-Seeking Rocket Launcher",
+    37: "Flamethrower",
+    38: "Minigun",
+    39: "Satchel Charges",
+    40: "Detonator",
+    41: "Spray Can",
+    42: "Fire Extinguisher",
+    43: "Camera",
+    44: "Night Vision Goggles",
+    45: "Thermal Goggles",
+    46: "Parachute",
+    47: "",
+    48: "",
+    49: "",
+    50: "",
+    51: "",
+    52: "",
+    53: "",
+    54: "",
+    55: "Beanbag Shotgun"
+}
+
+#weapon origins
+origins = {
+  1: "Admin Refunded Weapons",
+  2: "Illegal Weapons",
+  3: "Faction Weapons",
+  4: "Licensed Weapons",
+  7: "Storebought Items",
+  8: "Strawman Weapons"
+}
+
 #various server roles
 adminrole = 293441894585729024
 bannedrole = 592730783924486168
