@@ -2,7 +2,7 @@ import discord
 import random
 from imgurpython import ImgurClient
 from discord.ext import commands
-from utility import rudyfriend, rcrpguildid
+from utility import rudyfriend, rcrpguildid, management_check
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
@@ -44,10 +44,17 @@ class RudypicCog(commands.Cog, name="rudypic"):
     async def milopic(self, ctx):
         await SendRandomAlbumPicture(ctx, 'h3VORpQ')
 
-    @commands.command(help = "Sends a legendary gizmo quote.")
-    @commands.is_owner()
+    @commands.command(help = "Sends a legendary Gizmo quote")
+    @commands.guild_only()
+    @commands.check(management_check)
     async def gizmo(self, ctx):
         await SendRandomAlbumPicture(ctx, 'SlgjJJu')
+
+    @commands.command(help = "Sends a legendary Lylat quote")
+    @commands.guild_only()
+    @commands.check(management_check)
+    async def lylat(self, ctx):
+        await SendRandomAlbumPicture(ctx, 'LF00KOm')
     
 
 def setup(bot):

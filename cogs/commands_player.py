@@ -1,7 +1,7 @@
 import discord
 import aiomysql
 from discord.ext import commands
-from utility import rcrp_check, mysql_connect
+from utility import rcrp_check, mysql_connect, admin_check
 
 class PlayerCmdsCog(commands.Cog, name="Player"):
     def __init__(self, bot):
@@ -11,6 +11,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.guild_only()
     @commands.cooldown(1, 60)
     @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def admins(self, ctx):
         sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
