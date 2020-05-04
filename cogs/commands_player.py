@@ -1,7 +1,7 @@
 import discord
 import aiomysql
 from discord.ext import commands
-from utility import rcrp_check, mysql_connect, admin_check
+from utility import rcrp_check, mysql_connect, admin_check, factiondiscords
 
 class PlayerCmdsCog(commands.Cog, name="Player"):
     def __init__(self, bot):
@@ -131,6 +131,38 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.check(rcrp_check)
     async def mipmapped(self, ctx):
         await ctx.send("https://tommyb.ovh/files/GTA-SA-Fully-Mipmapped.7z")
+    
+    @commands.command(help = "Lists all online members of a faction in verified, faction-specific discords")
+    @commands.guild_only()
+    async def members(self, ctx):
+        if ctx.guild.id not in factiondiscords:
+            await ctx.send('This command can only be used in verified, faction-specific discord servers.')
+            return
+
+        faction = factiondiscords[ctx.guild.id]
+        sql = await mysql_connect()
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT Name, factionranks.rankname, masters.Username FROM players LEFT JOIN factionranks ON players.Faction = factionranks.fid LEFT JOIN masters ON masters.id = players.MasterAccount WHERE Faction = %s AND factionranks.slot = FactionRank AND Online = 1 ORDER BY FactionRank DESC", (faction, ))
+
+        if cursor.rowcount == 0:
+            await cursor.close()
+            sql.close()
+            await ctx.send('There are currently no members online.')
+            return
+        
+        members = await cursor.fetchall()
+        memberstring = []
+        for member in members:
+            memberstring.append(f'{member[1]} {member[0]} ({member[2]})')
+        memberstring = '\n'.join(memberstring)
+        memberstring = memberstring.replace('_', ' ')
+
+        embed = discord.Embed(title = f'Online Members ({cursor.rowcount})', description = memberstring, color = 0xe74c3c, timestamp = ctx.message.created_at)
+        await ctx.send(embed = embed)
+
+        await cursor.close()
+        sql.close()
+
 
 def setup(bot):
     bot.add_cog(PlayerCmdsCog(bot))
