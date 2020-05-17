@@ -201,6 +201,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
 
     @commands.command(help = "Sends a message as Rudy")
     @commands.guild_only()
+    @commands.check(rcrp_check)
     @commands.check(management_check)
     async def speak(self, ctx, *, copymessage:str):
         if len(copymessage) == 0:
