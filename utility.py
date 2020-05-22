@@ -105,6 +105,7 @@ staffroles = [ownerrole, adminrole, managementrole]
 
 #ID of the rcrp guild
 rcrpguildid = 93142223473905664
+frostgamingguild = 93140261797904384
 
 #url of the dashboard. sent to players when they try to verify
 dashboardurl = "https://redcountyrp.com/user/dashboard"
@@ -112,6 +113,12 @@ dashboardurl = "https://redcountyrp.com/user/dashboard"
 #command check decorators
 def rcrp_check(ctx):
     if ctx.guild.id == rcrpguildid:
+        return True
+    else:
+        return False
+
+def rudy_check(ctx):
+    if ctx.guild.id in [rcrpguildid, frostgamingguild]:
         return True
     else:
         return False

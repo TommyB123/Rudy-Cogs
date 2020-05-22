@@ -86,7 +86,6 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
 
     @commands.command(help = "See if a character is in-game")
     @commands.guild_only()
-    @commands.cooldown(1, 60)
     @commands.check(rcrp_check)
     async def player(self, ctx, *, playername:str = None):
         if playername is None:

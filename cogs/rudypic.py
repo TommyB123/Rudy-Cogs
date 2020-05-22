@@ -2,7 +2,7 @@ import discord
 import random
 from imgurpython import ImgurClient
 from discord.ext import commands
-from utility import rudyfriend, rcrpguildid, management_check
+from utility import rudyfriend, rcrpguildid, rudy_check, management_check
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
@@ -28,12 +28,14 @@ class RudypicCog(commands.Cog, name="rudypic"):
 
     @commands.command(help = "Sends an adorable picture of Rudy")
     @commands.guild_only()
+    @commands.check(rudy_check)
     @commands.check(isrudyfriend)
     async def rudypic(self, ctx):
         await SendRandomAlbumPicture(ctx, 'WLQku0l')
 
     @commands.command(help = "Sends an adorable picture of Sammy")
     @commands.guild_only()
+    @commands.check(rudy_check)
     @commands.check(isrudyfriend)
     async def sammypic(self, ctx):
         await SendRandomAlbumPicture(ctx, 'VfKwj4H')
