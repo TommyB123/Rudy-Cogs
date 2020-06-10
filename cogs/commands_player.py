@@ -2,7 +2,7 @@ import discord
 import aiomysql
 import sys
 from discord.ext import commands
-from utility import rcrp_check, mysql_connect, admin_check, factiondiscords
+from utility import rcrp_check, mysql_connect, admin_check
 from config import version
 
 class PlayerCmdsCog(commands.Cog, name="Player"):
