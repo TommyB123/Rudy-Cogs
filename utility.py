@@ -74,16 +74,6 @@ origins = {
   8: "Strawman Weapons"
 }
 
-#discord faction relations
-factiondiscords = {
-    381002103667294208: 1, #sasp
-    434655933524606976: 5, #opb
-    395399076016816128: 7, #argent
-    385228603350188042: 9, #silentium
-    616473772400050186: 12, #bayside crew
-    416338436270587916: 13 #elite trucking
-}
-
 #various server roles
 adminrole = 293441894585729024
 bannedrole = 592730783924486168

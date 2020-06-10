@@ -18,7 +18,8 @@ cogs = [
     'rudylogging',
     'rudypic',
     'sampinfo',
-    'verification'
+    'verification',
+    'factions'
 ]
 
 @client.event
