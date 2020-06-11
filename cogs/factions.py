@@ -7,10 +7,6 @@ factions = None
 with open('files/factions.json', 'r') as file:
     factions = json.load(file)
 
-def UpdateFactionJSON():
-    with open('files/factions.json', 'w') as file:
-        json.dump(factions, file)
-
 class FactionsCog(commands.Cog, name="Faction Commands"):
     def __init__(self, bot):
         self.bot = bot
@@ -68,8 +64,9 @@ class FactionsCog(commands.Cog, name="Faction Commands"):
         sql.close()
 
         factions['factions'].append(dict(discordid = ctx.guild.id, factionid = factionid))
+        with open('files/factions.json', 'w') as file:
+            json.dump(factions, file)
         await ctx.send(f'This discord server is now linked to faction {factionid}!')
-        UpdateFactionJSON()
 
     @commands.command(help = "Removes a discord server as a faction discord.")
     @commands.guild_only()
@@ -78,7 +75,8 @@ class FactionsCog(commands.Cog, name="Faction Commands"):
         for i in range(len(factions['factions'])):
             if factions['factions'][i]['discordid'] == ctx.guild.id:
                 del factions['factions'][i]
-                UpdateFactionJSON()
+                with open('files/factions.json', 'w') as file:
+                    json.dump(factions, file)
                 await ctx.send('This server is no longer linked to a faction.')
                 return
 

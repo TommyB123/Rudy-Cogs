@@ -40,7 +40,7 @@ class FunCmdsCog(commands.Cog, name="Fun"):
     @commands.command(help = "Gives Rudy a number of different items")
     @commands.cooldown(1, 60)
     @commands.guild_only()
-    async def give(self, ctx, item = 'none'):
+    async def give(self, ctx, item:str = None):
         if item == 'poptart':
             await ctx.send("* Rudy enjoys the poptart but vomits it back up about twenty minutes later. * (this actually happened i fucking hate my sister)")
         elif item == 'treat':
@@ -53,11 +53,7 @@ class FunCmdsCog(commands.Cog, name="Fun"):
     @commands.command(help = "Sends a stupid message entirely of emojis")
     @commands.guild_only()
     @commands.check(admin_check)
-    async def emojisay(self, ctx, *, message:str = None):
-        if str is None:
-            await ctx.send("Usage: !emojisay [message]")
-            return
-
+    async def emojisay(self, ctx, *, message: str):
         message = message.lower()
         newmessage = []
         for c in message:
@@ -113,7 +109,7 @@ class FunCmdsCog(commands.Cog, name="Fun"):
     @commands.command(help = "Give Rudy some pets")
     @commands.cooldown(1, 60)
     @commands.guild_only()
-    async def pet(self, ctx, *, location: str = 'None'):
+    async def pet(self, ctx, *, location: str = None):
         if location == 'head' or location == 'ears':
             await ctx.send("* You pet Rudy's head, specifically behind the ears. He enjoys this very much and sticks his nose out directly towards you as a reaction to the affection. *")
         elif location == 'lower back':

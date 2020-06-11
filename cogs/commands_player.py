@@ -87,11 +87,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.command(help = "See if a character is in-game")
     @commands.guild_only()
     @commands.check(rcrp_check)
-    async def player(self, ctx, *, playername:str = None):
-        if playername is None:
-            await ctx.send("Usage: !player [full character name]")
-            return
-    
+    async def player(self, ctx, *, playername: str):
         playername = playername.replace(' ', '_')
         playername = discord.utils.escape_mentions(playername)
         sql = await mysql_connect()

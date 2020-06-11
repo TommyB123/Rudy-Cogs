@@ -108,7 +108,7 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
     @commands.guild_only()
     @commands.is_owner()
     @commands.check(rcrp_check)
-    async def weapons(self, ctx, origin:int):
+    async def weapons(self, ctx, origin: int):
         sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT COUNT(*) AS count, WeaponID FROM weapons WHERE WeaponOrigin = %s AND Deleted = 0 GROUP BY WeaponID ORDER BY WeaponID", (origin, ))

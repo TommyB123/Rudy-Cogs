@@ -9,11 +9,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
     @commands.command()
     @commands.dm_only()
-    async def verify(self, ctx, masteraccount:str = None):
-        if masteraccount is None:
-            await ctx.send("Usage: !verify [Master account name]")
-            return
-
+    async def verify(self, ctx, masteraccount: str):
         if await account_linked_to_discord(ctx.author.id) == True:
             await ctx.send("This Discord account is already linked to an RCRP account.")
             return
@@ -41,10 +37,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
     @commands.command()
     @commands.dm_only()
-    async def validate(self, ctx, code:int = None):
-        if code == None:
-            await ctx.send("Usage: !validate [code]")
-
+    async def validate(self, ctx, code: int):
         sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT COUNT(*) AS matches, id, Helper, Tester, AdminLevel FROM masters WHERE discordcode = %s AND pendingdiscordid = %s", (code, ctx.author.id))
@@ -80,11 +73,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
-    async def manualverify(self, ctx, member: discord.Member = None, masteraccount: str = " "):
-        if not member:
-            await ctx.send("Invalid user.")
-            return
-
+    async def manualverify(self, ctx, member: discord.Member, masteraccount: str):
         if member_is_verified(member) == True:
             await ctx.send(f"{member.mention} is already verified.")
             return
@@ -110,11 +99,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
-    async def unverify(self, ctx, member: discord.Member = None):
-        if not member:
-            await ctx.send("Invalid user.")
-            return
-
+    async def unverify(self, ctx, member: discord.Member):
         if not account_verified(member):
             await ctx.send("This user is not verified")
             return
@@ -133,7 +118,7 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
-    async def softunverify(self, ctx, discordid:int = None):
+    async def softunverify(self, ctx, discordid: int):
         if discordid == None:
             await ctx.send('Usage: !softunverify [discord ID]')
             return

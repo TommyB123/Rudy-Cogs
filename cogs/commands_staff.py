@@ -12,9 +12,9 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def clear(self, ctx, *, amount : int = None):
-        if amount == None or amount <= 0:
-            await ctx.send("Usage: !clear [number of messages (1-10)]")
+    async def clear(self, ctx, amount: int):
+        if amount <= 0:
+            await ctx.send("Invalid clear count.")
             return
 
         if amount > 10:
@@ -28,18 +28,14 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def whois(self, ctx, user: discord.User=None):
-        if user == None:
-            await ctx.send("Usage: !whois [discord user]")
-            return
-
+    async def whois(self, ctx, discord_user: discord.User):
         sql = await mysql_connect()
         cursor = await sql.cursor()
-        await cursor.execute("SELECT id, Username, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE discordid = %s", (user.id, ))
+        await cursor.execute("SELECT id, Username, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE discordid = %s", (discord_user.id, ))
         data = await cursor.fetchone()
 
         if cursor.rowcount == 0:
-            await ctx.send(f"{user} does not have a Master Account linked to their Discord account.")
+            await ctx.send(f"{discord_user} does not have a Master Account linked to their Discord account.")
             await cursor.close()
             sql.close()
             return
@@ -47,7 +43,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
         await cursor.close()
         sql.close()
 
-        embed = discord.Embed(title = f"{data[1]} - {user}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
+        embed = discord.Embed(title = f"{data[1]} - {discord_user}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
         embed.add_field(name = "Account ID", value = data[0], inline = False)
         embed.add_field(name = "Username", value = data[1], inline = False)
         embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
@@ -58,17 +54,13 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def find(self, ctx, name : str = None):
-        if name == None:
-            await ctx.send("Usage: !find [Master Account Name]")
-            return
-
+    async def find(self, ctx, master_name: str):
         sql = await mysql_connect()
         cursor = await sql.cursor()
-        await cursor.execute("SELECT id, discordid, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE Username = %s", (name, ))
+        await cursor.execute("SELECT id, discordid, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE Username = %s", (master_name, ))
 
         if cursor.rowcount == 0:
-            await ctx.send(f"{name} is not a valid account name.")
+            await ctx.send(f"{master_name} is not a valid account name.")
             await cursor.close()
             sql.close()
             return
@@ -78,34 +70,26 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
         sql.close()
 
         if data[1] == None or data[1] == 0:
-            await ctx.send(f"{name} does not have a Discord account linked to their MA.")
+            await ctx.send(f"{master_name} does not have a Discord account linked to their MA.")
             return
 
         try:
             matcheduser = await self.bot.fetch_user(data[1])
-            embed = discord.Embed(title = f"{name}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
+            embed = discord.Embed(title = f"{master_name}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
             embed.add_field(name = "Discord User", value = matcheduser.mention)
             embed.add_field(name = "Account ID", value = data[0], inline = False)
-            embed.add_field(name = "Username", value = name, inline = False)
+            embed.add_field(name = "Username", value = master_name, inline = False)
             embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
             embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
             await ctx.send(embed = embed)
         except:
-            await ctx.send(f"{name}'s discord account is no longer valid. Here is the raw ID to see if they're banned and etc: {data[1]}")
+            await ctx.send(f"{master_name}'s discord account is no longer valid. Here is the raw ID to see if they're banned and etc: {data[1]}")
 
     @commands.command(help = "Bans a member from the RCRP discord")
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def ban(self, ctx, user: discord.User = None, *, banreason):
-        if not user:
-            await ctx.send("Invalid user.")
-            return
-
-        if len(banreason) == 0:
-            await ctx.send("Enter a reason.")
-            return
-
+    async def ban(self, ctx, user: discord.Member, *, banreason: str):
         bannedmember = ctx.guild.get_member(user.id)
         if member_is_admin(bannedmember):
             await ctx.send("You can't ban other staff idiot boy.")
@@ -127,8 +111,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def unban(self, ctx, target):
-        banned_user = await self.bot.fetch_user(target)
+    async def unban(self, ctx, target_discordid: int):
+        banned_user = await self.bot.fetch_user(target_discordid)
         if not banned_user:
             await ctx.send("Invalid user. Enter their discord ID, nothing else.")
             return
@@ -146,8 +130,8 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def baninfo(self, ctx, target: str = ""):
-        banned_user = await self.bot.fetch_user(target)
+    async def baninfo(self, ctx, target_discordid: int):
+        banned_user = await self.bot.fetch_user(target_discordid)
         if not banned_user:
             await ctx.send("Invalid user.")
             return
@@ -163,11 +147,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def mute(self, ctx, member: discord.Member = None):
-        if not member:
-            await ctx.send("Invalid user.")
-            return
-
+    async def mute(self, ctx, member: discord.Member):
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
             return
@@ -183,11 +163,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def unmute(self, ctx, member: discord.Member = None):
-        if not member:
-            await ctx.send("Invalid user.")
-            return
-
+    async def unmute(self, ctx, member: discord.Member):
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
             return
@@ -203,7 +179,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
-    async def speak(self, ctx, *, copymessage:str):
+    async def speak(self, ctx, *, copymessage: str):
         if len(copymessage) == 0:
             return
 
@@ -214,11 +190,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def house(self, ctx, *, address:str = None):
-        if address is None:
-            await ctx.send("Usage: !house [house address]")
-            return
-
+    async def house(self, ctx, *, address: str):
         sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT houses.id, OwnerSQLID, Description, players.Name AS OwnerName, InsideID, ExteriorFurnLimit, Price FROM houses LEFT JOIN players ON players.id = houses.OwnerSQLID WHERE Description = %s", (address, ))
@@ -252,11 +224,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def business(self, ctx, *, description:str = None):
-        if description is None:
-            await ctx.send("Usage: !business [business name]")
-            return
-
+    async def business(self, ctx, *, description: str):
         sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT bizz.id, OwnerSQLID, Description, players.Name AS OwnerName, Price, BizzEarnings, IsSpecial, Loaned FROM bizz LEFT JOIN players ON players.id = bizz.OwnerSQLID WHERE Description = %s", (description, ))
@@ -290,22 +258,14 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.command(help = "Get the URL of a discord user's avatar")
     @commands.guild_only()
     @commands.check(admin_check)
-    async def avatar(self, ctx, member:discord.Member = None):
-        if member is None:
-            await ctx.send("Usage: !avatarurl [member]")
-            return
-
+    async def avatar(self, ctx, member: discord.Member):
         await ctx.send(f'Avatar of {member.mention}: {member.avatar_url}')
 
     @commands.command(help = "Add or remove Faction Consultant from a member")
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def makefc(self, ctx, member:discord.Member = None):
-        if member is None:
-            await ctx.send("Usage: !makefc [member]")
-            return
-
+    async def makefc(self, ctx, member: discord.Member):
         fcrole = ctx.guild.get_role(393186381306003466)
         if fcrole in [role for role in member.roles]: #remove
             await member.remove_roles(fcrole)
@@ -318,11 +278,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def maketester(self, ctx, member:discord.Member = None):
-        if member is None:
-            await ctx.send("Usage: !maketester [member]")
-            return
-
+    async def maketester(self, ctx, member: discord.Member):
         if member_is_verified(member) == False:
             await ctx.send("The target must be verified.")
 
@@ -348,11 +304,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def makehelper(self, ctx, member:discord.Member = None):
-        if member is None:
-            await ctx.send("Usage: !makehelper [member]")
-            return
-
+    async def makehelper(self, ctx, member: discord.Member):
         if member_is_verified(member) == False:
             await ctx.send("The target must be verified.")
 
@@ -378,11 +330,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
-    async def makeadmin(self, ctx, member:discord.Member = None, level:int = 0):
-        if member is None:
-            await ctx.send("Usage: !makeadmin [member] [admin level]")
-            return
-
+    async def makeadmin(self, ctx, member: discord.Member, level: int):
         if level > 5 or level < 0:
             await ctx.send("Invalid admin level.")
             return
@@ -405,7 +353,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def checkweapons(self, ctx, master_name:str):
+    async def checkweapons(self, ctx, master_name: str):
         master_id = await fetch_account_id(master_name)
         if master_id == 0:
             await ctx.send('Invalid account name.')
