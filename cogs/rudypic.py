@@ -42,6 +42,7 @@ class RudypicCog(commands.Cog, name="rudypic"):
 
     @commands.command(help = "Sends an adorable picture of Milo")
     @commands.guild_only()
+    @commands.check(rudy_check)
     @commands.check(isrudyfriend)
     async def milopic(self, ctx):
         await SendRandomAlbumPicture(ctx, 'h3VORpQ')

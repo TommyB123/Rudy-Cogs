@@ -9,7 +9,11 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
     @commands.command()
     @commands.dm_only()
-    async def verify(self, ctx, masteraccount: str):
+    async def verify(self, ctx, masteraccount: str = None):
+        if masteraccount == None:
+            await ctx.send("Usage: !verify [Master Account Name]")
+            return
+
         if await account_linked_to_discord(ctx.author.id) == True:
             await ctx.send("This Discord account is already linked to an RCRP account.")
             return
@@ -37,7 +41,11 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
     @commands.command()
     @commands.dm_only()
-    async def validate(self, ctx, code: int):
+    async def validate(self, ctx, code: int = 0):
+        if code == 0:
+            await ctx.send("Usage: !validate [code]")
+            return
+
         sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT COUNT(*) AS matches, id, Helper, Tester, AdminLevel FROM masters WHERE discordcode = %s AND pendingdiscordid = %s", (code, ctx.author.id))
