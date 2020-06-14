@@ -2,6 +2,7 @@ import discord
 import asyncio
 from discord.ext import commands
 from config import bot_token
+from utility import rcrpguildid
 
 #discord bot handler
 client = commands.Bot(command_prefix='!')
@@ -49,6 +50,25 @@ async def on_message(message):
 
 @client.event
 async def on_command_error(context, exception):
+    if isinstance(exception, commands.UserInputError):
+        await context.send(f'Invalid command syntax. Use `!help {context.invoked_with}` to view the valid syntax.')
+        return
+    
+    if isinstance(exception, commands.CheckFailure):
+        if context.guild.id == rcrpguildid:
+            await context.message.add_reaction('\U0001F6AB') #no entry sign
+        return
+
+    if isinstance(exception, commands.CommandNotFound):
+        if context.guild.id == rcrpguildid:
+            await context.message.add_reaction('\u2753') #question mark
+        return
+
+    if context.guild.id == rcrpguildid and isinstance(exception, commands.CommandOnCooldown):
+        await context.message.add_reaction('\U0001F192') #cool
+        await context.message.add_reaction('\u2B07') #down
+        return
+    
     exceptionchannel = client.get_channel(644115120154345472)
     await exceptionchannel.send(f'A command exception was caught: {exception}')
 
