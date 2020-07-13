@@ -132,10 +132,34 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
     @commands.guild_only()
     @commands.is_owner()
     async def roles(self, ctx):
-            embed = discord.Embed(title = 'Discord Roles', color = 0xe74c3c, timestamp = ctx.message.created_at)
-            for role in ctx.guild.roles:
-                embed.add_field(name = role.name, value = role.id)
-            await ctx.send(embed = embed)
+        embed = discord.Embed(title = 'Discord Roles', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        for role in ctx.guild.roles:
+            embed.add_field(name = role.name, value = role.id)
+        await ctx.send(embed = embed)
+    
+    @commands.command(help = "you already know")
+    @commands.guild_only()
+    @commands.is_owner()
+    async def mysql(self, ctx, *, query: str):
+        sql = await mysql_connect()
+        cursor = await sql.cursor()
+        if query.find("SELECT") != -1:
+            await cursor.execute(query)
+            data = None
+            if cursor.rowcount == 0:
+                await ctx.send("No results.")
+                return
+            elif cursor.rowcount == 1:
+                data = await cursor.fetchone()
+            else:
+                data = await cursor.fetchall()
+            await ctx.send(data)
+        else:
+            await cursor.execute(query)
+            await ctx.send(f'{cursor.rowcount} {"rows" if cursor.rowcount != 1 else "row"} affected.')
+        
+        await cursor.close()
+        sql.close()
 
 def setup(bot):
     bot.add_cog(OwnerCmdsCog(bot))
