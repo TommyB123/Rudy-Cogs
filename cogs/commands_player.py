@@ -140,6 +140,7 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     @commands.command(help = "Fetches player count peaks for the last 14 days")
     @commands.guild_only()
     @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def peaks(self, ctx):
         sql = await mysql_connect()
         cursor = await sql.cursor()
