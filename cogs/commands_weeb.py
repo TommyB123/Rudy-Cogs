@@ -3,14 +3,16 @@ import aiohttp
 import json
 from discord.ext import commands
 
-#tommy, graber, cave & amir
-weebs = [87582156741681152, 253685655471783936, 273956905397911553, 413452980470415361]
+weebs = None
+with open('files/weebs.json', 'r') as file:
+    weebs = json.load(file)
+
+def SaveWeebData():
+	with open('files/weebs.json', 'w') as file:
+		json.dump(weebs, file)
 
 async def isweeb(ctx):
-	if ctx.author.id in weebs:
-		return True
-	else:
-		return False
+	return ctx.author.id in weebs['weebs']
 
 async def fetchweeb(session, url):
 	async with session.get(url) as response:
@@ -48,6 +50,30 @@ class WeebCog(commands.Cog, name = "Weeb"):
 			response = await fetchweeb(session, 'https://neko-love.xyz/api/v1/nekolewd')
 			image = json.loads(response)
 			await ctx.send(image['url'])
+	
+	@commands.command(help = "Register a dude as a weeb :)")
+	@commands.guild_only()
+	@commands.is_owner()
+	async def registerweeb(self, ctx, member: discord.Member):
+		if member.id in weebs['weebs']:
+			await ctx.send("This member is already a weeb.")
+			return
+		
+		weebs['weebs'].append(member.id)
+		SaveWeebData()
+		await ctx.send(f'{member.mention} is now a certified weeb!')
+	
+	@commands.command(help = "Banishes a weeb")
+	@commands.guild_only()
+	@commands.is_owner()
+	async def banishweeb(self, ctx, member: discord.Member):
+		if member.id not in weebs['weebs']:
+			await ctx.send("This member is not a weeb.")
+			return
+		
+		weebs['weebs'].remove(member.id)
+		SaveWeebData()
+		await ctx.send(f'{member.mention} has been banished from the weebs.')
 
 def setup(bot):
 	bot.add_cog(WeebCog(bot))
