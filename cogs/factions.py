@@ -7,6 +7,22 @@ factions = None
 with open('files/factions.json', 'r') as file:
     factions = json.load(file)
 
+async def ReturnFactionName(factionid: int):
+    sql = await mysql_connect()
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT FactionName FROM factions WHERE id = %s", (factionid, ))
+
+    if cursor.rowcount == 0:
+        await cursor.close()
+        sql.close()
+        print(f"An invalid faction ID was passed to ReturnFactionName ({factionid})")
+        return ""
+    
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+    return data[0]
+
 class FactionsCog(commands.Cog, name="Faction Commands"):
     def __init__(self, bot):
         self.bot = bot
@@ -66,18 +82,21 @@ class FactionsCog(commands.Cog, name="Faction Commands"):
         factions['factions'].append(dict(discordid = ctx.guild.id, factionid = factionid))
         with open('files/factions.json', 'w') as file:
             json.dump(factions, file)
-        await ctx.send(f'This discord server is now linked to faction {factionid}!')
+        factionname = await ReturnFactionName(factionid)
+        await ctx.send(f'This discord server is now linked to {factionname}!')
 
     @commands.command(help = "Removes a discord server as a faction discord.")
     @commands.guild_only()
     @commands.is_owner()
-    async def removediscord(self, ctx): 
+    async def unregisterdiscord(self, ctx): 
         for i in range(len(factions['factions'])):
             if factions['factions'][i]['discordid'] == ctx.guild.id:
+                factionid = factions['factions'][i]['factionid']
                 del factions['factions'][i]
                 with open('files/factions.json', 'w') as file:
                     json.dump(factions, file)
-                await ctx.send('This server is no longer linked to a faction.')
+                factionname = await ReturnFactionName(factionid)
+                await ctx.send(f'This server is no longer linked to {factionname}.')
                 return
 
         await ctx.send('This server is not linked to a faction.')

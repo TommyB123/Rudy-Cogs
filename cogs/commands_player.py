@@ -59,31 +59,6 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
         sql.close()
         await ctx.send(embed = embed)
 
-    @commands.command(help = "Lists all in-game players (60 sec cooldown)")
-    @commands.guild_only()
-    @commands.cooldown(1, 60)
-    @commands.check(rcrp_check)
-    async def players(self, ctx):
-        sql = await mysql_connect()
-        cursor = await sql.cursor()
-        await cursor.execute("SELECT SUM(Online) FROM players WHERE Online = 1")
-
-        if cursor.rowcount == 0:
-            await cursor.close()
-            sql.close()
-            await ctx.send("There are currently no players in-game.")
-
-        results = await cursor.fetchone()
-        await cursor.close()
-        sql.close()
-
-        players = results[0]
-        if players == None:
-            players = 0
-
-        embed = discord.Embed(title = f'In-Game Players - {players}', description = 'To see if a particular player is in-game, use !player', color = 0xe74c3c, timestamp = ctx.message.created_at)
-        await ctx.send(embed = embed)
-
     @commands.command(help = "See if a character is in-game")
     @commands.guild_only()
     @commands.check(rcrp_check)
