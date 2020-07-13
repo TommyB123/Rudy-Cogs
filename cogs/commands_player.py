@@ -136,6 +136,24 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
         embed.add_field(name = 'Python Version', value = f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')
         embed.add_field(name = 'Developer', value = '<@87582156741681152>')
         await ctx.send(embed = embed)
+    
+    @commands.command(help = "Fetches player count peaks for the last 14 days")
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    async def peaks(self, ctx):
+        sql = await mysql_connect()
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT * FROM ucpplayerscron ORDER BY Date DESC LIMIT 14")
+        peakdata = await cursor.fetchall()
+        await cursor.close()
+        sql.close()
+
+        message = []
+        for peak in peakdata:
+            message.append(f'{peak[0]} - {peak[1]} players\n')
+
+        message = ''.join(message)
+        await ctx.send(message)
 
 def setup(bot):
     bot.add_cog(PlayerCmdsCog(bot))

@@ -64,9 +64,10 @@ async def on_command_error(context, exception):
             await context.message.add_reaction('\u2753') #question mark
         return
 
-    if context.guild.id == rcrpguildid and isinstance(exception, commands.CommandOnCooldown):
-        await context.message.add_reaction('\U0001F192') #cool
-        await context.message.add_reaction('\u2B07') #down
+    if isinstance(exception, commands.CommandOnCooldown):
+        if context.guild.id == rcrpguildid:
+            await context.message.add_reaction('\U0001F192') #cool
+            await context.message.add_reaction('\u2B07') #down
         return
     
     exceptionchannel = client.get_channel(644115120154345472)
