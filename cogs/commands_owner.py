@@ -156,6 +156,7 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
             await ctx.send(data)
         else:
             await cursor.execute(query)
+            await sql.commit()
             await ctx.send(f'{cursor.rowcount} {"rows" if cursor.rowcount != 1 else "row"} affected.')
         
         await cursor.close()
