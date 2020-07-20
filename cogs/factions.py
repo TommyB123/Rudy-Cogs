@@ -16,7 +16,7 @@ async def ReturnFactionName(factionid: int):
         await cursor.close()
         sql.close()
         print(f"An invalid faction ID was passed to ReturnFactionName ({factionid})")
-        return ""
+        return "Unknown"
     
     data = await cursor.fetchone()
     await cursor.close()
@@ -24,8 +24,17 @@ async def ReturnFactionName(factionid: int):
     return data[0]
 
 class FactionsCog(commands.Cog, name="Faction Commands"):
-    def __init__(self, bot):
+    def __init__(self, bot: discord.Client):
         self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild):            
+        for faction in factions['factions']:
+            if faction['discordid'] == guild.id:
+                factions['factions'].pop(factions['factions'].index(faction))
+                with open('files/factions.json', 'w') as file:
+                    json.dump(factions, file)
+                break
     
     @commands.command(help = "Lists all online members of a faction in verified, faction-specific discords")
     @commands.guild_only()
@@ -67,6 +76,14 @@ class FactionsCog(commands.Cog, name="Faction Commands"):
     @commands.guild_only()
     @commands.is_owner()
     async def registerdiscord(self, ctx, factionid: int):
+        if ctx.guild.id in [faction['discordid'] for faction in factions['factions']]:
+            await ctx.send("This discord server is already linked to a faction.")
+            return
+
+        if factionid in [faction['factionid'] for faction in factions['factions']]:
+            await ctx.send("This faction is already linked to another discord server.")
+            return
+
         sql = await mysql_connect()
         cursor = await sql.cursor()
         await cursor.execute("SELECT NULL FROM factions WHERE id = %s", (factionid, ))
@@ -89,10 +106,10 @@ class FactionsCog(commands.Cog, name="Faction Commands"):
     @commands.guild_only()
     @commands.is_owner()
     async def unregisterdiscord(self, ctx): 
-        for i in range(len(factions['factions'])):
-            if factions['factions'][i]['discordid'] == ctx.guild.id:
-                factionid = factions['factions'][i]['factionid']
-                del factions['factions'][i]
+        for faction in factions['factions']:
+            if faction['discordid'] == ctx.guild.id:
+                factionid = faction['factionid']
+                factions['factions'].pop(factions['factions'].index(faction))
                 with open('files/factions.json', 'w') as file:
                     json.dump(factions, file)
                 factionname = await ReturnFactionName(factionid)
@@ -100,6 +117,27 @@ class FactionsCog(commands.Cog, name="Faction Commands"):
                 return
 
         await ctx.send('This server is not linked to a faction.')
+    
+    @commands.command(help = "Reloads faction data from the json file")
+    @commands.guild_only()
+    @commands.is_owner()
+    async def reloadfactionjson(self, ctx):
+        factions = None
+        with open('files/factions.json', 'r') as file:
+            factions = json.load(file)
+        await ctx.send('Faction data file reloaded.')
+    
+    @commands.command(help = "Lists guild IDs associated with factions")
+    @commands.guild_only()
+    @commands.is_owner()
+    async def factionguilds(self, ctx):
+        embed = discord.Embed(title = 'Linked Factions', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        for faction in factions['factions']:
+            factionid = faction['factionid']
+            guildid = faction['discordid']
+            factionname = await ReturnFactionName(factionid)
+            embed.add_field(name = f'{factionname} ({factionid})', value = guildid)
+        await ctx.send(embed = embed)
 
 def setup(bot):
 	bot.add_cog(FactionsCog(bot))
