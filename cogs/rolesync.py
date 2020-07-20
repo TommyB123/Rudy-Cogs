@@ -42,7 +42,6 @@ class RoleSyncCog(commands.Cog, name="Role sync"):
         for role in before.roles:
             if role.id not in after.roles:
                 await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s AND discordrole = %s", (before.id, role.id))
-        await cursor.close()
 
         #check for added roles and insert them
         cursor = await sql.cursor()
@@ -51,7 +50,6 @@ class RoleSyncCog(commands.Cog, name="Role sync"):
                 if role.id == rcrpguildid: #check to see if role is @everyone, skip it if so
                     continue
                 await cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
-                await sql.commit()
 
         await cursor.close()
         sql.close()

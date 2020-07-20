@@ -17,7 +17,6 @@ class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
                 sql = await mysql_connect()
                 cursor = await sql.cursor()
                 await cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (%s, %s, 2, UNIX_TIMESTAMP())", (message.channel.id, queuemessage))
-                await sql.commit()
                 await cursor.close()
                 sql.close()
 
@@ -42,7 +41,6 @@ async def ProcessMessageQueue(self):
         for messageid in delete:
             await cursor.execute("DELETE FROM messagequeue WHERE id = %s", (messageid, ))
 
-        await sql.commit()
         await cursor.close()
         sql.close()
         await asyncio.sleep(1) #checks every second
