@@ -143,7 +143,7 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
     async def mysql(self, ctx, *, query: str):
         sql = await mysql_connect()
         cursor = await sql.cursor()
-        if query.find("SELECT") != -1:
+        if query.lower().find("select") != -1:
             await cursor.execute(query)
             data = None
             if cursor.rowcount == 0:
