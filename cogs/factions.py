@@ -92,6 +92,7 @@ class FactionsCog(commands.Cog, name="Faction Commands"):
             await cursor.close()
             sql.close()
             await ctx.send('Invalid faction ID.')
+            return
 
         await cursor.close()
         sql.close()
