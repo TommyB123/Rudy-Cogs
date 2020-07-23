@@ -42,6 +42,7 @@ class WeebCog(commands.Cog, name = "Weeb"):
     
     @commands.command(help = "Really bad")
     @commands.guild_only()
+    @commands.is_nsfw()
     @commands.check(isweeb)
     async def lewdweeb(self, ctx):
         async with aiohttp.ClientSession() as session:
@@ -51,6 +52,7 @@ class WeebCog(commands.Cog, name = "Weeb"):
 
     @commands.command(help = "The worst")
     @commands.guild_only()
+    @commands.is_nsfw()
     @commands.check(isweeb)
     async def degenerate(self, ctx, *, category: str = ""):
         if category not in degenerate_categories:
