@@ -153,7 +153,14 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
                 data = await cursor.fetchone()
             else:
                 data = await cursor.fetchall()
-            await ctx.send(data)
+            
+            string = []
+            for row in data:
+                string.append(f'{row}\n')
+            string = ''.join(string)
+            string = string.replace('(', '')
+            string = string.replace(')', '')
+            await ctx.send(string)
         else:
             await cursor.execute(query)
             await ctx.send(f'{cursor.rowcount} {"rows" if cursor.rowcount != 1 else "row"} affected.')
