@@ -1,7 +1,6 @@
 import discord
 import time
 import random
-import os
 from .utility import admin_check
 from string import ascii_lowercase
 from redbot.core import commands
@@ -13,10 +12,12 @@ gaslinks = [
     'https://cdn.discordapp.com/attachments/639337212424617994/645095656930934784/itsuki-takumi-iketani-at-gas-station-initial-d.png'
 ]
 
-path = os.getcwd()
-
 #the age of rudy. used for the fancy time delta in the age command
 rudyage = 1409529600
+
+#lol this is so ghetto
+path = __file__
+path = path.replace('rudyfun.py', '')
 
 def pretty_time_delta(seconds: int):
     sign_string = '-' if seconds < 0 else ''
