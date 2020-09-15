@@ -1,6 +1,7 @@
 import discord
 import random
 import aiomysql
+from redbot.core import commands
 from random import randint
 from .config import mysqlconfig
 
@@ -91,19 +92,19 @@ frostgamingguild = 93140261797904384
 dashboardurl = "https://redcountyrp.com/user/dashboard"
 
 #command check decorators
-def rcrp_check(ctx):
+def rcrp_check(ctx: commands.Context):
     if ctx.guild.id == rcrpguildid:
         return True
     else:
         return False
 
-def rudy_check(ctx):
+def rudy_check(ctx: commands.Context):
     if ctx.guild.id in [rcrpguildid, frostgamingguild]:
         return True
     else:
         return False
 
-async def admin_check(ctx):
+async def admin_check(ctx: commands.Context):
     if ctx.guild.id == rcrpguildid:
         for role in ctx.author.roles:
             if role.id in staffroles:
@@ -112,7 +113,7 @@ async def admin_check(ctx):
     else:
         return True
 
-async def management_check(ctx):
+async def management_check(ctx: commands.Context):
     if ctx.guild.id == rcrpguildid:
         if managementrole in [role.id for role in ctx.author.roles] or ownerrole in [role.id for role in ctx.author.roles]:
             return True
@@ -121,29 +122,26 @@ async def management_check(ctx):
     else:
         return True
 
-def member_is_verified(member):
+def member_is_verified(member: discord.Member):
     if verifiedrole in [role.id for role in member.roles]:
         return True
     else:
         return False
 
-def member_is_admin(member):
+def member_is_admin(member: discord.Member):
     for role in member.roles:
         if role.id in staffroles:
             return True
     return False
 
-def member_is_management(member):
+def member_is_management(member: discord.Member):
     if managementrole in [role.id for role in member.roles] or ownerrole in [role.id for role in member.roles]:
         return True
     else:
         return False
 
-def member_is_muted(member):
+def member_is_muted(member: discord.Member):
     if mutedrole in [role.id for role in member.roles]:
         return True
     else:
         return False
-    
-async def mysql_connect():
-    return await aiomysql.connect( **mysqlconfig)
