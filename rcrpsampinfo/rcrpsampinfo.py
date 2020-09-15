@@ -1,7 +1,7 @@
 import discord
 import asyncio
 import aiomysql
-from .utility import mysql_connect
+from .config import mysqlconfig
 from redbot.core import commands
 
 class RCRPSampInfo(commands.Cog, name="SA-MP Server Info"):
@@ -12,7 +12,7 @@ class RCRPSampInfo(commands.Cog, name="SA-MP Server Info"):
 async def UpdateSAMPInfo(self):
     while 1:
         try:
-            sql = await mysql_connect()
+            sql = await aiomysql.connect(**mysqlconfig)
             cursor = await sql.cursor()
             await cursor.execute("SELECT SUM(Online) AS playercount FROM players WHERE Online = 1")
             data = await cursor.fetchone()

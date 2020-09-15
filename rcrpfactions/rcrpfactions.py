@@ -1,10 +1,12 @@
 import discord
+import aiomysql
 import json
-from .utility import mysql_connect, admin_check, rcrp_check
+from .config import mysqlconfig
+from .utility import admin_check, rcrp_check
 from redbot.core import commands, Config
 
 async def ReturnFactionName(factionid: int):
-    sql = await mysql_connect()
+    sql = await aiomysql.connect(**mysqlconfig)
     cursor = await sql.cursor()
     await cursor.execute("SELECT FactionName FROM factions WHERE id = %s", (factionid, ))
 
@@ -36,7 +38,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
     
     @commands.group()
     @commands.guild_only()
-    async def faction(self, ctx):
+    async def faction(self, ctx: commands.Context):
         """Various faction-related commands"""
         pass
 
@@ -44,9 +46,9 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def factions(self, ctx):
+    async def factions(self, ctx: commands.Context):
         """Lists all of the current factions on the server"""
-        sql = await mysql_connect()
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
 
         await cursor.execute("SELECT id, FactionName FROM factions ORDER BY id ASC", ())
@@ -70,7 +72,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
     @faction.command(help = "Lists guild IDs associated with factions")
     @commands.guild_only()
     @commands.is_owner()
-    async def guilds(self, ctx):
+    async def guilds(self, ctx: commands.Context):
         embed = discord.Embed(title = 'Linked Factions', color = 0xe74c3c, timestamp = ctx.message.created_at)
         guilds = await self.config.all_guilds()
         for guild in guilds:
@@ -82,7 +84,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
     @faction.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def register(self, ctx, factionid: int):
+    async def register(self, ctx: commands.Context, factionid: int):
         """Registers a Discord server as a faction Discord with the provided faction ID."""
         if await self.config.guild(ctx.guild).factionid() != None:
             await ctx.send("This discord server is already linked to a faction.")
@@ -94,7 +96,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
                 await ctx.send("This faction is already linked to another discord server.")
                 return
 
-        sql = await mysql_connect()
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT NULL FROM factions WHERE id = %s", (factionid, ))
 
@@ -114,7 +116,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
     @faction.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def unregister(self, ctx):
+    async def unregister(self, ctx: commands.Context):
         """Removes a Discord's faction association."""
         factionid = await self.config.guild(ctx.guild).factionid()
         if factionid == None:
@@ -127,14 +129,14 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
 
     @faction.command()
     @commands.guild_only()
-    async def members(self, ctx):
+    async def members(self, ctx: commands.Context):
         """Lists all online members of a faction in verified, faction-specific discords"""
         factionid = await self.config.guild(ctx.guild).factionid()
         if factionid == None:
             await ctx.send('This command can only be used in verified, faction-specific Discord servers.')
             return
 
-        sql = await mysql_connect()
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT Name, factionranks.rankname, masters.Username FROM players LEFT JOIN factionranks ON players.Faction = factionranks.fid LEFT JOIN masters ON masters.id = players.MasterAccount WHERE Faction = %s AND factionranks.slot = FactionRank AND Online = 1 ORDER BY FactionRank DESC", (factionid, ))
 
@@ -156,3 +158,21 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
 
         await cursor.close()
         sql.close()
+
+    @faction.command()
+    @commands.guild_only()
+    @commands.cooldown(1, 60)
+    @commands.check(rcrp_check)
+    async def online(self, ctx: commands.Context):
+        """Collects a list of factions and their online member counts"""
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        await cursor.execute("SELECT COUNT(players.id) AS members, COUNT(IF(Online = 1, 1, NULL)) AS onlinemembers, factions.FNameShort AS name FROM players JOIN factions ON players.Faction = factions.id WHERE Faction != 0 GROUP BY Faction ORDER BY Faction ASC")
+        factiondata = await cursor.fetchall()
+        await cursor.close()
+        sql.close()
+
+        embed = discord.Embed(title = "Faction List", color = 0xe74c3c, timestamp = ctx.message.created_at)
+        for factioninfo in factiondata:
+            embed.add_field(name = factioninfo['name'], value = '{0}/{1}'.format(factioninfo['onlinemembers'], factioninfo['members']), inline = True)
+        await ctx.send(embed = embed)

@@ -2,7 +2,8 @@ import discord
 import asyncio
 import aiomysql
 from redbot.core import commands
-from .utility import rcrpguildid, adminchat, helperchat, mysql_connect
+from .config import mysqlconfig
+from .utility import rcrpguildid, adminchat, helperchat
 
 class RCRPMessageQueue(commands.Cog, name="RCRP Message Queue"):
     def __init__(self, bot):
@@ -10,11 +11,11 @@ class RCRPMessageQueue(commands.Cog, name="RCRP Message Queue"):
         self.bot.loop.create_task(ProcessMessageQueue(self))
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if message.guild.id == rcrpguildid and message.author.id != self.bot.user.id:
             if message.channel.id == adminchat or message.channel.id == helperchat:
                 queuemessage = f"{message.author.name} (discord): {message.content}"
-                sql = await mysql_connect()
+                sql = await aiomysql.connect(**mysqlconfig)
                 cursor = await sql.cursor()
                 await cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (%s, %s, 2, UNIX_TIMESTAMP())", (message.channel.id, queuemessage))
                 await cursor.close()
@@ -22,7 +23,7 @@ class RCRPMessageQueue(commands.Cog, name="RCRP Message Queue"):
 
 async def ProcessMessageQueue(self):
     while 1:
-        sql = await mysql_connect()
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT id, channel, message FROM messagequeue WHERE origin = 1 ORDER BY timestamp ASC")
 

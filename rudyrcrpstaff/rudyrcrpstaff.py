@@ -1,11 +1,12 @@
 import discord
 import aiomysql
-from .utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole, mysql_connect, weaponnames, fetch_account_id
+from .config import mysqlconfig
+from .utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole, weaponnames
 from redbot.core import commands
 from datetime import datetime
 
-async def fetch_account_id(mastername):
-    sql = await mysql_connect()
+async def fetch_account_id(mastername: str):
+    sql = await aiomysql.connect( **mysqlconfig)
     cursor = await sql.cursor()
     await cursor.execute("SELECT id FROM masters WHERE Username = %s", (mastername, ))
     data = await cursor.fetchone()
@@ -21,11 +22,12 @@ class RCRPStaffCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(help = "Clear up to the last 10 messages")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def clear(self, ctx, amount: int):
+    async def clear(self, ctx: commands.Context, amount: int):
+        """Clear up to the last 10 messages"""
         if amount <= 0:
             await ctx.send("Invalid clear count.")
             return
@@ -37,12 +39,13 @@ class RCRPStaffCommands(commands.Cog):
         messages = await ctx.channel.history(limit = amount + 1).flatten()
         await ctx.channel.delete_messages(messages)
 
-    @commands.command(help = "Fetches MA info of a verified discord member")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def whois(self, ctx, discord_user: discord.User):
-        sql = await mysql_connect()
+    async def whois(self, ctx: commands.Context, discord_user: discord.User):
+        """Fetches MA info of a verified discord member"""
+        sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT id, Username, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE discordid = %s", (discord_user.id, ))
         data = await cursor.fetchone()
@@ -63,12 +66,13 @@ class RCRPStaffCommands(commands.Cog):
         embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
         await ctx.send(embed = embed)
 
-    @commands.command(help = "Fetches the discord account of a member based on their MA name")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def find(self, ctx, master_name: str):
-        sql = await mysql_connect()
+    async def find(self, ctx: commands.Context, master_name: str):
+        """Fetches the discord account of a member based on their MA name"""
+        sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT id, discordid, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE Username = %s", (master_name, ))
 
@@ -86,24 +90,27 @@ class RCRPStaffCommands(commands.Cog):
             await ctx.send(f"{master_name} does not have a Discord account linked to their MA.")
             return
 
+        matcheduser: discord.User
         try:
             matcheduser = await self.bot.fetch_user(data[1])
-            embed = discord.Embed(title = f"{master_name}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
-            embed.add_field(name = "Discord User", value = matcheduser.mention)
-            embed.add_field(name = "Account ID", value = data[0], inline = False)
-            embed.add_field(name = "Username", value = master_name, inline = False)
-            embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
-            embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
-            await ctx.send(embed = embed)
         except:
             await ctx.send(f"{master_name}'s discord account is no longer valid. Here is the raw ID to see if they're banned and etc: {data[1]}")
+            return
+        
+        embed = discord.Embed(title = f"{master_name}", url = f"https://redcountyrp.com/admin/masters/{data[0]}", color = 0xe74c3c)
+        embed.add_field(name = "Discord User", value = matcheduser.mention)
+        embed.add_field(name = "Account ID", value = data[0], inline = False)
+        embed.add_field(name = "Username", value = master_name, inline = False)
+        embed.add_field(name = "Registration Date", value = datetime.utcfromtimestamp(data[2]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
+        embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
+        await ctx.send(embed = embed)
 
     @commands.command(help = "Bans a member from the RCRP discord")
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def rcrpban(self, ctx, user: discord.Member, *, banreason: str):
-        bannedmember = ctx.guild.get_member(user.id)
+    async def rcrpban(self, ctx: commands.Context, target: discord.Member, *, banreason: str):
+        bannedmember = ctx.guild.get_member(target.id)
         if member_is_admin(bannedmember):
             await ctx.send("You can't ban other staff idiot boy.")
             return
@@ -112,9 +119,9 @@ class RCRPStaffCommands(commands.Cog):
             adminuser = await self.bot.fetch_user(ctx.author.id)
             embed = discord.Embed(title = 'Banned', description = f'You have been banned from the Red County Roleplay Discord server by {adminuser.name}', color = 0xe74c3c, timestamp = ctx.message.created_at)
             embed.add_field(name = 'Ban Reason', value = banreason)
-            await user.send(embed = embed)
-        except:
-            print("couldn't ban user because dms off")
+            await target.send(embed = embed)
+        except: #an exception will be raised if the bot can't DM the target, so we'll just pass and pretend it never happened
+            pass
 
         baninfo = f"{banreason} - Banned by {adminuser.name}"
         await ctx.guild.ban(bannedmember, reason = baninfo, delete_message_days = 0)
@@ -124,7 +131,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def removeban(self, ctx, target_discordid: int):
+    async def removeban(self, ctx: commands.Context, target_discordid: int):
         banned_user = await self.bot.fetch_user(target_discordid)
         if not banned_user:
             await ctx.send("Invalid user. Enter their discord ID, nothing else.")
@@ -139,13 +146,14 @@ class RCRPStaffCommands(commands.Cog):
 
         await ctx.send("Could not find any bans for that user.")
 
-    @commands.command(help = "Searches all existing bans for a banned user.")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def baninfo(self, ctx, target_discordid: int):
-        banned_user = await self.bot.fetch_user(target_discordid)
-        if not banned_user:
+    async def baninfo(self, ctx: commands.Context, target_discordid: int):
+        """Searches all existing bans for a banned user."""
+        banned_user: discord.User = await self.bot.fetch_user(target_discordid)
+        if banned_user == None:
             await ctx.send("Invalid user.")
             return
 
@@ -156,11 +164,12 @@ class RCRPStaffCommands(commands.Cog):
                 return
         await ctx.send("Could not find any ban info for that user.")
 
-    @commands.command(help = "Mutes a member")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def rcrpmute(self, ctx, member: discord.Member):
+    async def rcrpmute(self, ctx: commands.Context, member: discord.Member):
+        """Assigns the muted role to a discord member"""
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
             return
@@ -172,11 +181,12 @@ class RCRPStaffCommands(commands.Cog):
         await member.add_roles(ctx.guild.get_role(mutedrole))
         await ctx.send(f"{member.mention} has been muted.")
 
-    @commands.command(help = "Unmutes a member")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def rcrpunmute(self, ctx, member: discord.Member):
+    async def rcrpunmute(self, ctx: commands.Context, member: discord.Member):
+        """Removes the muted role from a discord member"""
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
             return
@@ -192,19 +202,21 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
-    async def speak(self, ctx, *, copymessage: str):
+    async def speak(self, ctx: commands.Context, *, copymessage: str):
+        """Sends a Discord message as Rudy"""
         if len(copymessage) == 0:
             return
 
         await ctx.message.delete()
         await ctx.send(copymessage)
 
-    @commands.command(help = "Fetches the information of a user specified house")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def house(self, ctx, *, address: str):
-        sql = await mysql_connect()
+    async def house(self, ctx: commands.Context, *, address: str):
+        """Queries the database for information of a house based on user-specified input"""
+        sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT houses.id, OwnerSQLID, Description, players.Name AS OwnerName, InsideID, ExteriorFurnLimit, Price FROM houses LEFT JOIN players ON players.id = houses.OwnerSQLID WHERE Description = %s", (address, ))
 
@@ -233,12 +245,13 @@ class RCRPStaffCommands(commands.Cog):
         embed.add_field(name = "Ext Furn Limit", value = house['ExteriorFurnLimit'], inline = False)
         await ctx.send(embed = embed)
 
-    @commands.command(help = "Fetches the information of a user specified business")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
     async def business(self, ctx, *, description: str):
-        sql = await mysql_connect()
+        """Queries the database for information of a business based on user-specified input"""
+        sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT bizz.id, OwnerSQLID, Description, players.Name AS OwnerName, Price, BizzEarnings, IsSpecial, Loaned FROM bizz LEFT JOIN players ON players.id = bizz.OwnerSQLID WHERE Description = %s", (description, ))
 
@@ -268,35 +281,41 @@ class RCRPStaffCommands(commands.Cog):
         embed.add_field(name = "Loaned", value = 'Yes' if bizz['Loaned'] == 1 else 'No', inline = False)
         await ctx.send(embed = embed)
 
-    @commands.command(help = "Get the URL of a discord user's avatar")
+    @commands.command()
     @commands.guild_only()
     @commands.check(admin_check)
-    async def avatar(self, ctx, member: discord.Member):
+    async def avatar(self, ctx: commands.Context, member: discord.Member):
+        """Fetches the avatar of a Discord member"""
         await ctx.send(f'Avatar of {member.mention}: {member.avatar_url}')
 
     @commands.group()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def assign(self, ctx):
-        """Staff commands for assigning roles"""
+    async def assign(self, ctx: commands.Context):
+        """Commands for assigning various roles and levels via Discord"""
         pass
 
     @assign.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(management_check)
-    async def admin(self, ctx, member: discord.Member, level: int):
-        """Assign an admin level to a member"""
+    async def admin(self, ctx: commands.Context, member: discord.Member, level: int):
+        """Assigns an admin level and the admin role to a Discord member based on their verified MA."""
+        if member_is_verified(member) == False:
+            await ctx.send("This command can only be used on verified members. (How would we know what account to give admin to dummy??)")
+            return
+
         if level > 5 or level < 0:
             await ctx.send("Invalid admin level.")
             return
 
-        sql = await mysql_connect()
+        sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET AdminLevel = %s WHERE discordid = %s", (level, member.id))
         await cursor.close()
         sql.close()
+
 
         admin = ctx.guild.get_role(adminrole)
         if level == 0:
@@ -310,12 +329,13 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def tester(self, ctx, member: discord.Member):
-        """Hire or fire someone from the tester team"""
+    async def tester(self, ctx: commands.Context, member: discord.Member):
+        """Assigns tester status and the tester role to a Discord member based on their verified MA."""
         if member_is_verified(member) == False:
-            await ctx.send("The target must be verified.")
+            await ctx.send("This command can only be used on verified members. (How would we know what account to give tester to dummy??)")
+            return
 
-        sql = await mysql_connect()
+        sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT Tester FROM masters WHERE discordid = %s", (member.id, ))
         data = await cursor.fetchone()
@@ -337,12 +357,13 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def helper(self, ctx, member: discord.Member):
-        """Hire or fire someone from the helper team"""
+    async def helper(self, ctx: commands.Context, member: discord.Member):
+        """Assigns helper status and the helper role to a Discord member based on their verified MA."""
         if member_is_verified(member) == False:
-            await ctx.send("The target must be verified.")
+            await ctx.send("This command can only be used on verified members. (How would we know what account to give helper to dummy??)")
+            return
 
-        sql = await mysql_connect()
+        sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT Helper FROM masters WHERE discordid = %s", (member.id, ))
         data = await cursor.fetchone()
@@ -364,7 +385,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def fc(self, ctx, member: discord.Member):
+    async def fc(self, ctx: commands.Context, member: discord.Member):
         """Add or remove Faction Consultant from a member"""
         fcrole = ctx.guild.get_role(393186381306003466)
         if fcrole in [role for role in member.roles]: #remove
@@ -378,7 +399,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def factionleader(self, ctx, member: discord.Member):
+    async def factionleader(self, ctx: commands.Context, member: discord.Member):
         """Adds or removes Faction Leader from a member"""
         flrole = ctx.guild.get_role(743953759901843568)
         if flrole in member.roles:
@@ -392,13 +413,13 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def checkweapons(self, ctx, master_name: str):
+    async def checkweapons(self, ctx: commands.Context, master_name: str):
         master_id = await fetch_account_id(master_name)
         if master_id == 0:
             await ctx.send('Invalid account name.')
             return
 
-        sql = await mysql_connect()
+        sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT WeaponID AS weapon, COUNT(*) AS count FROM weapons WHERE OwnerSQLID IN (SELECT id FROM players WHERE MasterAccount = %s) AND Deleted = 0 GROUP BY WeaponID", (master_id, ))
 
@@ -419,3 +440,23 @@ class RCRPStaffCommands(commands.Cog):
             total += weapon['count']
         embed.add_field(name = 'Total Weapons', value = '{:,}'.format(total))
         await ctx.send(embed = embed)
+    
+    @commands.command()
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
+    async def peaks(self, ctx: commands.Context):
+        """Fetches player count peaks for the last 14 days"""
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT * FROM ucpplayerscron ORDER BY Date DESC LIMIT 14")
+        peakdata = await cursor.fetchall()
+        await cursor.close()
+        sql.close()
+
+        message = []
+        for peak in peakdata:
+            message.append(f'{peak[0]} - {peak[1]} players\n')
+
+        message = ''.join(message)
+        await ctx.send(message)

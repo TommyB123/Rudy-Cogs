@@ -13,11 +13,11 @@ degenerate_categories = [
     'pwankg', 'eron', 'erokemo'
 ]
 
-async def fetchweeb(session, url):
+async def fetchweeb(session: aiohttp.ClientSession, url: str):
     async with session.get(url) as response:
         return await response.text()
 
-async def isweeb(ctx):
+async def isweeb(ctx: commands.Context):
     weeb = WeebCommands(commands.Cog)
     weeb.config = Config.get_conf(weeb, identifier=45599)
     weebs = await weeb.config.weebs()
@@ -33,30 +33,33 @@ class WeebCommands(commands.Cog, name = "Weeb"):
         self.config = Config.get_conf(self, identifier=45599)
         self.config.register_global(**default_global)
 
-    @commands.command(help = "Bad")
+    @commands.command()
     @commands.guild_only()
     @commands.check(isweeb)
-    async def weeb(self, ctx):
+    async def weeb(self, ctx: commands.Context):
+        """Bad"""
         async with aiohttp.ClientSession() as session:
             response = await fetchweeb(session, 'https://nekos.life/api/v2/img/neko')
             image = json.loads(response)
             await ctx.send(image['url'])
 
-    @commands.command(help = "Really bad")
+    @commands.command()
     @commands.guild_only()
     @commands.is_nsfw()
     @commands.check(isweeb)
-    async def lewdweeb(self, ctx):
+    async def lewdweeb(self, ctx: commands.Context):
+        """Really bad"""
         async with aiohttp.ClientSession() as session:
             response = await fetchweeb(session, 'https://nekos.life/api/v2/img/lewd')
             image = json.loads(response)
             await ctx.send(image['url'])
 
-    @commands.command(help = "The worst")
+    @commands.command()
     @commands.guild_only()
     @commands.is_nsfw()
     @commands.check(isweeb)
-    async def degenerate(self, ctx, *, category: str = ""):
+    async def degenerate(self, ctx: commands.Context, *, category: str = ""):
+        """The worst"""
         if category not in degenerate_categories:
             await ctx.send(f"Not a valid degenerate category. Valid categories: {degenerate_categories}")
             return
@@ -65,31 +68,11 @@ class WeebCommands(commands.Cog, name = "Weeb"):
             response = await fetchweeb(session, f'https://nekos.life/api/v2/img/{category}')
             image = json.loads(response)
             await ctx.send(image['url'])
-
-    @commands.command(help = "Bad (old)")
-    @commands.guild_only()
-    @commands.cooldown(1, 60)
-    @commands.check(isweeb)
-    async def oldweeb(self, ctx):
-        async with aiohttp.ClientSession() as session:
-            response = await fetchweeb(session, 'https://neko-love.xyz/api/v1/neko')
-            image = json.loads(response)
-            await ctx.send(image['url'])
-
-    @commands.command(help = "Really bad (old)")
-    @commands.guild_only()
-    @commands.is_nsfw()
-    @commands.check(isweeb)
-    async def oldlewdweeb(self, ctx):
-            async with aiohttp.ClientSession() as session:
-                response = await fetchweeb(session, 'https://neko-love.xyz/api/v1/nekolewd')
-                image = json.loads(response)
-                await ctx.send(image['url'])
     
     @commands.command(help = "Register a dude as a weeb :)")
     @commands.guild_only()
     @commands.is_owner()
-    async def registerweeb(self, ctx, member: discord.Member):
+    async def registerweeb(self, ctx: commands.Context, member: discord.Member):
         weebs = await self.config.weebs()
         if member.id in weebs:
             await ctx.send("This member is already a weeb.")
@@ -102,7 +85,7 @@ class WeebCommands(commands.Cog, name = "Weeb"):
     @commands.command(help = "Banishes a weeb")
     @commands.guild_only()
     @commands.is_owner()
-    async def banishweeb(self, ctx, member: discord.Member):
+    async def banishweeb(self, ctx: commands.Context, member: discord.Member):
         weebs = await self.config.weebs()
         if member.id not in weebs:
             await ctx.send("This member is not a weeb.")

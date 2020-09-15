@@ -2,13 +2,14 @@ import discord
 import asyncio
 import aiomysql
 from redbot.core import commands
-from .utility import member_is_verified, member_is_management, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole, mysql_connect
+from .config import mysqlconfig
+from .utility import member_is_verified, member_is_management, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole
 
 async def verified_filter(member):
     return member_is_verified(member) == True
 
 async def account_is_banned(accountid):
-    sql = await mysql_connect()
+    sql = await aiomysql.connect(**mysqlconfig)
     cursor = await sql.cursor()
     await cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
     data = await cursor.fetchone()
@@ -29,7 +30,7 @@ class RCRPRoleSync(commands.Cog, name="Role sync"):
     async def on_member_join(self, member: discord.Member):
         if member.guild.id == rcrpguildid:
             rcrpguild = self.bot.get_guild(rcrpguildid)
-            sql = await mysql_connect()
+            sql = await aiomysql.connect(**mysqlconfig)
             cursor = await sql.cursor()
             await cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
 
@@ -48,7 +49,7 @@ class RCRPRoleSync(commands.Cog, name="Role sync"):
         if not member_is_verified(after) or before.roles == after.roles or after.guild.id != rcrpguildid:
             return
 
-        sql = await mysql_connect()
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
 
         #check for removed roles and delete them
@@ -70,7 +71,7 @@ class RCRPRoleSync(commands.Cog, name="Role sync"):
 async def SyncMemberRoles(self):
     while 1:
         rcrpguild = await self.bot.fetch_guild(rcrpguildid)
-        sql = await mysql_connect()
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         async for member in rcrpguild.fetch_members(limit = None).filter(verified_filter):
             if member_is_management(member) == True or member_is_verified(member) == False:

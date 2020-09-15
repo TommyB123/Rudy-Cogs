@@ -1,16 +1,18 @@
 import discord
 import aiomysql
 from redbot.core import commands
-from .utility import rcrp_check, mysql_connect, admin_check
+from .config import mysqlconfig
+from .utility import rcrp_check, admin_check
 
 class RCRPCommands(commands.Cog):
-    @commands.command(help = "Collects a list of in-game administrators (60 sec cooldown)")
+    @commands.command()
     @commands.guild_only()
     @commands.cooldown(1, 60)
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def admins(self, ctx):
-        sql = await mysql_connect()
+    async def admins(self, ctx: commands.Context):
+        """Sends a list of in-game administrators"""
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT masters.Username AS mastername, players.Name AS charactername FROM masters JOIN players ON players.MasterAccount = masters.id WHERE AdminLevel != 0 AND Online = 1")
 
@@ -29,12 +31,13 @@ class RCRPCommands(commands.Cog):
         sql.close()
         await ctx.send(embed = embed)
 
-    @commands.command(help = "Collects a list of in-game helpers (60 sec cooldown)")
+    @commands.command()
     @commands.guild_only()
     @commands.cooldown(1, 60)
     @commands.check(rcrp_check)
-    async def helpers(self, ctx):
-        sql = await mysql_connect()
+    async def helpers(self, ctx: commands.Context):
+        """Sends a list of in-game helpers"""
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT masters.Username AS mastername, players.Name AS charactername FROM masters JOIN players ON players.MasterAccount = masters.id WHERE Helper != 0 AND Online = 1")
 
@@ -54,13 +57,14 @@ class RCRPCommands(commands.Cog):
         sql.close()
         await ctx.send(embed = embed)
 
-    @commands.command(help = "See if a character is in-game")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
-    async def player(self, ctx, *, playername: str):
+    async def player(self, ctx: commands.Context, *, playername: str):
+        """Queries the SA-MP server to see if a player with the specified name is in-game"""
         playername = playername.replace(' ', '_')
         playername = discord.utils.escape_mentions(playername)
-        sql = await mysql_connect()
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT NULL FROM players WHERE Name = %s AND Online = 1", (playername, ))
 
@@ -69,49 +73,15 @@ class RCRPCommands(commands.Cog):
         else:
             await ctx.send(f'{playername} is currently in-game.')
 
-    @commands.command(help = "Lists all official factions and their member counts")
+    @commands.command()
     @commands.guild_only()
-    @commands.cooldown(1, 60)
-    @commands.check(rcrp_check)
-    async def factiononline(self, ctx):
-        sql = await mysql_connect()
-        cursor = await sql.cursor(aiomysql.DictCursor)
-        await cursor.execute("SELECT COUNT(players.id) AS members, COUNT(IF(Online = 1, 1, NULL)) AS onlinemembers, factions.FNameShort AS name FROM players JOIN factions ON players.Faction = factions.id WHERE Faction != 0 GROUP BY Faction ORDER BY Faction ASC")
-        factiondata = await cursor.fetchall()
-        await cursor.close()
-        sql.close()
-
-        embed = discord.Embed(title = "Faction List", color = 0xe74c3c, timestamp = ctx.message.created_at)
-        for factioninfo in factiondata:
-            embed.add_field(name = factioninfo['name'], value = '{0}/{1}'.format(factioninfo['onlinemembers'], factioninfo['members']), inline = True)
-        await ctx.send(embed = embed)
-
-    @commands.command(help = "piracy")
-    @commands.guild_only()
-    async def gta(self, ctx):
+    async def gta(self, ctx: commands.Context):
+        """Sends two links providing clean copies of GTA SA. Useful for when modded games break and etc""" 
         await ctx.send("https://tommyb.ovh/files/cleangtasa.7z - Full game (3.6 GB)\nhttps://tommyb.ovh/files/cleangtasa-small.7z - Compressed/Removed audio (600MB)\n\nhttps://rc-rp.com/03dl - SA-MP 0.3.DL")
 
-    @commands.command(help = "GTA SA fully mipmapped link")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
-    async def mipmapped(self, ctx):
+    async def mipmapped(self, ctx: commands.Context):
+        """Sends a link with the GTA SA mipmapped mod"""
         await ctx.send("https://tommyb.ovh/files/GTA-SA-Fully-Mipmapped.7z")
-    
-    @commands.command(help = "Fetches player count peaks for the last 14 days")
-    @commands.guild_only()
-    @commands.check(rcrp_check)
-    @commands.check(admin_check)
-    async def peaks(self, ctx):
-        sql = await mysql_connect()
-        cursor = await sql.cursor()
-        await cursor.execute("SELECT * FROM ucpplayerscron ORDER BY Date DESC LIMIT 14")
-        peakdata = await cursor.fetchall()
-        await cursor.close()
-        sql.close()
-
-        message = []
-        for peak in peakdata:
-            message.append(f'{peak[0]} - {peak[1]} players\n')
-
-        message = ''.join(message)
-        await ctx.send(message)

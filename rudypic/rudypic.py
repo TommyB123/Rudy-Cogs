@@ -7,7 +7,7 @@ from .utility import rudyfriend, rcrpguildid, rudy_check, management_check
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
 
-async def isrudyfriend(ctx):
+async def isrudyfriend(ctx: commands.Context):
     if ctx.guild.id == rcrpguildid:
         if rudyfriend in [role.id for role in ctx.author.roles]:
             return True
@@ -16,45 +16,51 @@ async def isrudyfriend(ctx):
     else:
         return True
 
-async def SendRandomAlbumPicture(ctx, album):
-    pictures = []
-    for image in imclient.get_album_images(album):
-        pictures.append(image.link)
-    await ctx.send(random.choice(pictures))
+async def SendRandomAlbumPicture(ctx: commands.Context, album: str):
+    async with ctx.typing():
+        pictures = []
+        for image in imclient.get_album_images(album):
+            pictures.append(image.link)
+        await ctx.send(random.choice(pictures))
 
-class RudyPic(commands.Cog, name="rudypic"):
+class RudyPic(commands.Cog, name = "rudypic"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(help = "Sends an adorable picture of Rudy")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rudy_check)
     @commands.check(isrudyfriend)
-    async def rudypic(self, ctx):
+    async def rudypic(self, ctx: commands.Context):
+        """Sends an adorable picture of Rudy"""
         await SendRandomAlbumPicture(ctx, 'WLQku0l')
 
-    @commands.command(help = "Sends an adorable picture of Sammy")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rudy_check)
     @commands.check(isrudyfriend)
-    async def sammypic(self, ctx):
+    async def sammypic(self, ctx: commands.Context):
+        """Sends an adorable picture of Sammy"""
         await SendRandomAlbumPicture(ctx, 'VfKwj4H')
 
-    @commands.command(help = "Sends an adorable picture of Milo")
+    @commands.command()
     @commands.guild_only()
     @commands.check(rudy_check)
     @commands.check(isrudyfriend)
-    async def milopic(self, ctx):
+    async def milopic(self, ctx: commands.Context):
+        """Sends an adorable picture of Milo"""
         await SendRandomAlbumPicture(ctx, 'h3VORpQ')
 
-    @commands.command(help = "Sends a legendary Gizmo quote")
+    @commands.command()
     @commands.guild_only()
     @commands.check(management_check)
-    async def gizmo(self, ctx):
+    async def gizmo(self, ctx: commands.Context):
+        """Sends a legendary Gizmo quote"""
         await SendRandomAlbumPicture(ctx, 'SlgjJJu')
 
-    @commands.command(help = "Sends a legendary Lylat quote")
+    @commands.command()
     @commands.guild_only()
     @commands.check(management_check)
-    async def lylat(self, ctx):
+    async def lylat(self, ctx: commands.Context):
+        """Sends a legendary Lylat quote"""
         await SendRandomAlbumPicture(ctx, 'LF00KOm')

@@ -2,10 +2,10 @@ import discord
 import asyncio
 import aiomysql
 from redbot.core import commands
-from .utility import mysql_connect
+from .config import mysqlconfig
 
 prisonguildid = 558036120743706625
-async def prison_check(ctx):
+async def prison_check(ctx: commands.Context):
     return ctx.guild.id == prisonguildid
 
 class RCRPPrison(commands.Cog, name = "RCRP Prison"):
@@ -15,16 +15,16 @@ class RCRPPrison(commands.Cog, name = "RCRP Prison"):
     @commands.group()
     @commands.guild_only()
     @commands.check(prison_check)
-    async def prison(self, ctx):
+    async def prison(self, ctx: commands.Context):
         """Various prison-related commands"""
         pass
 
     @prison.command()
     @commands.guild_only()
     @commands.check(prison_check)
-    async def inmates(self, ctx):
+    async def inmates(self, ctx: commands.Context):
         """Fetches a list of inmates that are currently in-game"""
-        sql = await mysql_connect()
+        sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
 
         await cursor.execute("SELECT players.Name, masters.Username, settingval, extra1 FROM psettings LEFT JOIN players ON psettings.sqlid = players.id LEFT JOIN masters ON players.MasterAccount = masters.id WHERE setting = 6 AND players.Online = 1")
@@ -51,6 +51,6 @@ class RCRPPrison(commands.Cog, name = "RCRP Prison"):
     @prison.command()
     @commands.guild_only()
     @commands.check(prison_check)
-    async def guards(self, ctx):
+    async def guards(self, ctx: commands.Context):
         """Fetches a list of guards that are currently in-game"""
         await ctx.send("wip")
