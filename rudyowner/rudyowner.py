@@ -1,17 +1,27 @@
 import discord
 import aiomysql
-from utility import rcrp_check, mysql_connect, weaponnames, origins
-from discord.ext import commands
+from redbot.core import commands
+from .utility import rcrp_check, mysql_connect, weaponnames
 
-class OwnerCmdsCog(commands.Cog, name="Owner"):
-    def __init__(self, bot):
-        self.bot = bot
+#weapon origins
+origins = {
+    1: "Admin Refunded Weapons",
+    2: "Illegal Weapons",
+    3: "Faction Weapons",
+    4: "Licensed Weapons",
+    7: "Storebought Items",
+    8: "Strawman Weapons"
+}
 
-    @commands.command(help = "Why I don't have my god damn DMs open")
+class OwnerCog(commands.Cog):
+    """Cog containing owner commands for the RCRP discord"""
+
+    @commands.command()
     @commands.guild_only()
     @commands.is_owner()
     @commands.check(rcrp_check)
     async def dms(self, ctx):
+        """Gives an imgur album showing why my DMs are not open."""
         await ctx.send("<https://imgur.com/a/yYK5dnZ>")
 
     @commands.command(help = "Proof of riches")
@@ -167,6 +177,3 @@ class OwnerCmdsCog(commands.Cog, name="Owner"):
         
         await cursor.close()
         sql.close()
-
-def setup(bot):
-    bot.add_cog(OwnerCmdsCog(bot))

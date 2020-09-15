@@ -1,19 +1,32 @@
 import discord
 import asyncio
 import aiomysql
-from discord.ext import commands
-from utility import member_is_verified, member_is_management, account_is_banned, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole, mysql_connect
+from redbot.core import commands
+from .utility import member_is_verified, member_is_management, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole, mysql_connect
 
 async def verified_filter(member):
     return member_is_verified(member) == True
 
-class RoleSyncCog(commands.Cog, name="Role sync"):
-    def __init__(self, bot):
+async def account_is_banned(accountid):
+    sql = await mysql_connect()
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
+
+class RCRPRoleSync(commands.Cog, name="Role sync"):
+    def __init__(self, bot: discord.Client):
         self.bot = bot
         self.bot.loop.create_task(SyncMemberRoles(self))
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: discord.Member):
         if member.guild.id == rcrpguildid:
             rcrpguild = self.bot.get_guild(rcrpguildid)
             sql = await mysql_connect()
@@ -56,11 +69,11 @@ class RoleSyncCog(commands.Cog, name="Role sync"):
 
 async def SyncMemberRoles(self):
     while 1:
-        rcrpguild = self.bot.get_guild(rcrpguildid)
+        rcrpguild = await self.bot.fetch_guild(rcrpguildid)
         sql = await mysql_connect()
         cursor = await sql.cursor(aiomysql.DictCursor)
         async for member in rcrpguild.fetch_members(limit = None).filter(verified_filter):
-            if member_is_management(member) == True or member_is_verified == False:
+            if member_is_management(member) == True or member_is_verified(member) == False:
                 continue
 
             await cursor.execute("SELECT id, Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
@@ -106,6 +119,3 @@ async def SyncMemberRoles(self):
         await cursor.close()
         sql.close()
         await asyncio.sleep(60) #check every minute
-
-def setup(bot):
-    bot.add_cog(RoleSyncCog(bot))

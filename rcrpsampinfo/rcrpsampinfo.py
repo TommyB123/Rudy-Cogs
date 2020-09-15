@@ -1,10 +1,10 @@
 import discord
 import asyncio
 import aiomysql
-from utility import mysql_connect
-from discord.ext import commands
+from .utility import mysql_connect
+from redbot.core import commands
 
-class SampinfoCog(commands.Cog, name="SA-MP Server Info"):
+class RCRPSampInfo(commands.Cog, name="SA-MP Server Info"):
     def __init__(self, bot):
         self.bot = bot
         self.bot.loop.create_task(UpdateSAMPInfo(self))
@@ -26,9 +26,6 @@ async def UpdateSAMPInfo(self):
             game = discord.Game(f'RCRP ({players}/150 players)')
             await self.bot.change_presence(activity = game)
         except:
-            print("Error while updating player count.")
+            pass
 
         await asyncio.sleep(1) #run every second
-
-def setup(bot):
-    bot.add_cog(SampinfoCog(bot))

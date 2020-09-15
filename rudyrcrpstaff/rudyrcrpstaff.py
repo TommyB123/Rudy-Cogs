@@ -1,10 +1,23 @@
 import discord
 import aiomysql
-from utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole, mysql_connect, weaponnames, fetch_account_id
-from discord.ext import commands
+from .utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole, mysql_connect, weaponnames, fetch_account_id
+from redbot.core import commands
 from datetime import datetime
 
-class StaffCmdsCog(commands.Cog, name="Staff"):
+async def fetch_account_id(mastername):
+    sql = await mysql_connect()
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT id FROM masters WHERE Username = %s", (mastername, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+
+    maid = data[0]
+    if maid is None:
+        maid = 0
+    return maid
+
+class RCRPStaffCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -89,7 +102,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def ban(self, ctx, user: discord.Member, *, banreason: str):
+    async def rcrpban(self, ctx, user: discord.Member, *, banreason: str):
         bannedmember = ctx.guild.get_member(user.id)
         if member_is_admin(bannedmember):
             await ctx.send("You can't ban other staff idiot boy.")
@@ -111,7 +124,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def unban(self, ctx, target_discordid: int):
+    async def removeban(self, ctx, target_discordid: int):
         banned_user = await self.bot.fetch_user(target_discordid)
         if not banned_user:
             await ctx.send("Invalid user. Enter their discord ID, nothing else.")
@@ -147,7 +160,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def mute(self, ctx, member: discord.Member):
+    async def rcrpmute(self, ctx, member: discord.Member):
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
             return
@@ -163,7 +176,7 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def unmute(self, ctx, member: discord.Member):
+    async def rcrpunmute(self, ctx, member: discord.Member):
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
             return
@@ -261,24 +274,44 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
     async def avatar(self, ctx, member: discord.Member):
         await ctx.send(f'Avatar of {member.mention}: {member.avatar_url}')
 
-    @commands.command(help = "Add or remove Faction Consultant from a member")
+    @commands.group()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def makefc(self, ctx, member: discord.Member):
-        fcrole = ctx.guild.get_role(393186381306003466)
-        if fcrole in [role for role in member.roles]: #remove
-            await member.remove_roles(fcrole)
-            await ctx.send(f'{member.mention} no longer has the faction consultant role.')
-        else:
-            await member.add_roles(fcrole)
-            await ctx.send(f'{member.mention} now has the faction consultant role.')
+    async def assign(self, ctx):
+        """Staff commands for assigning roles"""
+        pass
 
-    @commands.command(help = "Hire or fire someone from the tester team")
+    @assign.command()
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    @commands.check(management_check)
+    async def admin(self, ctx, member: discord.Member, level: int):
+        """Assign an admin level to a member"""
+        if level > 5 or level < 0:
+            await ctx.send("Invalid admin level.")
+            return
+
+        sql = await mysql_connect()
+        cursor = await sql.cursor()
+        await cursor.execute("UPDATE masters SET AdminLevel = %s WHERE discordid = %s", (level, member.id))
+        await cursor.close()
+        sql.close()
+
+        admin = ctx.guild.get_role(adminrole)
+        if level == 0:
+            await member.remove_roles(admin)
+        else:
+            await member.add_roles(admin)
+
+        await ctx.send(f'{member.mention} has been assigned admin level {level}')
+    
+    @assign.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def maketester(self, ctx, member: discord.Member):
+    async def tester(self, ctx, member: discord.Member):
+        """Hire or fire someone from the tester team"""
         if member_is_verified(member) == False:
             await ctx.send("The target must be verified.")
 
@@ -300,11 +333,12 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
         await cursor.close()
         sql.close()
 
-    @commands.command(help = "Hire or fire someone from the helper team")
+    @assign.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def makehelper(self, ctx, member: discord.Member):
+    async def helper(self, ctx, member: discord.Member):
+        """Hire or fire someone from the helper team"""
         if member_is_verified(member) == False:
             await ctx.send("The target must be verified.")
 
@@ -326,28 +360,33 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
         await cursor.close()
         sql.close()
 
-    @commands.command(help = "Set a user's admin level")
+    @assign.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
-    @commands.check(management_check)
-    async def makeadmin(self, ctx, member: discord.Member, level: int):
-        if level > 5 or level < 0:
-            await ctx.send("Invalid admin level.")
-            return
-
-        sql = await mysql_connect()
-        cursor = await sql.cursor()
-        await cursor.execute("UPDATE masters SET AdminLevel = %s WHERE discordid = %s", (level, member.id))
-        await cursor.close()
-        sql.close()
-
-        admin = ctx.guild.get_role(adminrole)
-        if level == 0:
-            await member.remove_roles(admin)
+    @commands.check(admin_check)
+    async def fc(self, ctx, member: discord.Member):
+        """Add or remove Faction Consultant from a member"""
+        fcrole = ctx.guild.get_role(393186381306003466)
+        if fcrole in [role for role in member.roles]: #remove
+            await member.remove_roles(fcrole)
+            await ctx.send(f'{member.mention} no longer has the faction consultant role.')
         else:
-            await member.add_roles(admin)
-
-        await ctx.send(f'{member.mention} has been assigned admin level {level}')
+            await member.add_roles(fcrole)
+            await ctx.send(f'{member.mention} now has the faction consultant role.')
+    
+    @assign.command()
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
+    async def factionleader(self, ctx, member: discord.Member):
+        """Adds or removes Faction Leader from a member"""
+        flrole = ctx.guild.get_role(743953759901843568)
+        if flrole in member.roles:
+            await member.remove_roles(flrole)
+            await ctx.send(f'{member.mention} no longer has the faction leader role.')
+        else:
+            await member.add_roles(flrole)
+            await ctx.send(f'{member.mention} now has the faction leader role')
     
     @commands.command(help = "List all guns that a Master Account owns")
     @commands.guild_only()
@@ -380,6 +419,3 @@ class StaffCmdsCog(commands.Cog, name="Staff"):
             total += weapon['count']
         embed.add_field(name = 'Total Weapons', value = '{:,}'.format(total))
         await ctx.send(embed = embed)
-
-def setup(bot):
-    bot.add_cog(StaffCmdsCog(bot))

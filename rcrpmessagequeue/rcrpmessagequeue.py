@@ -1,10 +1,10 @@
 import discord
 import asyncio
 import aiomysql
-from discord.ext import commands
-from utility import rcrpguildid, adminchat, helperchat, mysql_connect
+from redbot.core import commands
+from .utility import rcrpguildid, adminchat, helperchat, mysql_connect
 
-class MsgQueueCog(commands.Cog, name="RCRP Message Queue"):
+class RCRPMessageQueue(commands.Cog, name="RCRP Message Queue"):
     def __init__(self, bot):
         self.bot = bot
         self.bot.loop.create_task(ProcessMessageQueue(self))
@@ -44,6 +44,3 @@ async def ProcessMessageQueue(self):
         await cursor.close()
         sql.close()
         await asyncio.sleep(1) #checks every second
-
-def setup(bot):
-    bot.add_cog(MsgQueueCog(bot))

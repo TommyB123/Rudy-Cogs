@@ -1,9 +1,9 @@
 import discord
 import time
 import random
-from utility import admin_check
+from .utility import admin_check
 from string import ascii_lowercase
-from discord.ext import commands
+from redbot.core import commands
 
 gaslinks = [
     'https://i.imgur.com/iuuFvBb.jpg',
@@ -33,10 +33,7 @@ def pretty_time_delta(seconds):
     else:
         return '%s%ds' % (sign_string, seconds)
 
-class FunCmdsCog(commands.Cog, name="Fun"):
-    def __init__(self, bot):
-        self.bot = bot
-
+class FunCommands(commands.Cog):
     @commands.command(help = "Gives Rudy a number of different items")
     @commands.cooldown(1, 60)
     @commands.guild_only()
@@ -188,6 +185,3 @@ class FunCmdsCog(commands.Cog, name="Fun"):
     @commands.guild_only()
     async def bruh(self, ctx):
         await ctx.send("https://i.imgur.com/7QWYKgO.jpg")
-
-def setup(bot):
-    bot.add_cog(FunCmdsCog(bot))

@@ -2,7 +2,7 @@ import discord
 import random
 import aiomysql
 from random import randint
-from config import mysqlconfig
+from .config import mysqlconfig
 
 #weapon names
 weaponnames = {
@@ -62,16 +62,6 @@ weaponnames = {
     53: "",
     54: "",
     55: "Beanbag Shotgun"
-}
-
-#weapon origins
-origins = {
-  1: "Admin Refunded Weapons",
-  2: "Illegal Weapons",
-  3: "Faction Weapons",
-  4: "Licensed Weapons",
-  7: "Storebought Items",
-  8: "Strawman Weapons"
 }
 
 #various server roles
@@ -154,89 +144,6 @@ def member_is_muted(member):
         return True
     else:
         return False
-
-async def account_is_banned(accountid):
-    sql = await aiomysql.connect(** mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    if data is None:
-        return False
-    else:
-        return True
-
-def random_with_N_digits(n):
-    range_start = 10**(n-1)
-    range_end = (10**n)-1
-    return randint(range_start, range_end)
-
-async def account_name_valid(name):
-    sql = await aiomysql.connect(** mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    if data is None:
-        return False
-    else:
-        return True
-
-async def account_verified(name):
-    sql = await aiomysql.connect(** mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    if data is None:
-        return False
-    else:
-        return True
-
-async def account_linked_to_discord(discordid):
-    sql = await aiomysql.connect(** mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    if data is None:
-        return False
-    else:
-        return True
-
-async def account_accepted(mastername):
-    sql = await aiomysql.connect(** mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    if data is None:
-        return False
-    else:
-        return True
-
-async def fetch_account_id(mastername):
-    sql = await aiomysql.connect(** mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT id FROM masters WHERE Username = %s", (mastername, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    maid = data[0]
-    if maid is None:
-        maid = 0
-    return maid
     
 async def mysql_connect():
     return await aiomysql.connect( **mysqlconfig)

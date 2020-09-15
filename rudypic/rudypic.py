@@ -1,8 +1,8 @@
 import discord
 import random
 from imgurpython import ImgurClient
-from discord.ext import commands
-from utility import rudyfriend, rcrpguildid, rudy_check, management_check
+from redbot.core import commands
+from .utility import rudyfriend, rcrpguildid, rudy_check, management_check
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
@@ -22,7 +22,7 @@ async def SendRandomAlbumPicture(ctx, album):
         pictures.append(image.link)
     await ctx.send(random.choice(pictures))
 
-class RudypicCog(commands.Cog, name="rudypic"):
+class RudyPic(commands.Cog, name="rudypic"):
     def __init__(self, bot):
         self.bot = bot
 
@@ -58,7 +58,3 @@ class RudypicCog(commands.Cog, name="rudypic"):
     @commands.check(management_check)
     async def lylat(self, ctx):
         await SendRandomAlbumPicture(ctx, 'LF00KOm')
-    
-
-def setup(bot):
-    bot.add_cog(RudypicCog(bot))

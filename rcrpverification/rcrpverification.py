@@ -1,15 +1,72 @@
 import discord
 import aiomysql
-from discord.ext import commands
-from utility import rcrp_check, management_check, random_with_N_digits, account_name_valid, member_is_verified, account_linked_to_discord, account_accepted, account_verified, dashboardurl, rcrpguildid, testerrole, adminrole, helperrole, verifiedrole, managementrole, mysql_connect
+from redbot.core import commands
+from .utility import rcrp_check, management_check, member_is_verified, dashboardurl, rcrpguildid, testerrole, adminrole, helperrole, verifiedrole, managementrole, mysql_connect
 
-class VerificationCog(commands.Cog, name="RCRP Verification"):
+async def account_accepted(mastername):
+    sql = await mysql_connect()
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
+
+async def account_verified(name):
+    sql = await mysql_connect()
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
+    
+async def account_name_valid(name):
+    sql = await mysql_connect()
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
+
+async def account_linked_to_discord(discordid):
+    sql = await mysql_connect()
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+
+    if data is None:
+        return False
+    else:
+        return True
+
+def random_with_N_digits(n):
+    range_start = 10**(n-1)
+    range_end = (10**n)-1
+    return randint(range_start, range_end)
+
+class RCRPVerification(commands.Cog, name="RCRP Verification"):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
     @commands.dm_only()
-    async def verify(self, ctx, masteraccount: str = None):
+    async def verify(self, ctx, masteraccount: str):
         if masteraccount == None:
             await ctx.send("Usage: !verify [Master Account Name]")
             return
@@ -142,6 +199,3 @@ class VerificationCog(commands.Cog, name="RCRP Verification"):
 
         await cursor.close()
         sql.close()
-
-def setup(bot):
-    bot.add_cog(VerificationCog(bot))

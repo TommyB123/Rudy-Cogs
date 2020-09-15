@@ -1,14 +1,9 @@
 import discord
 import aiomysql
-import sys
-from discord.ext import commands
-from utility import rcrp_check, mysql_connect, admin_check
-from config import version
+from redbot.core import commands
+from .utility import rcrp_check, mysql_connect, admin_check
 
-class PlayerCmdsCog(commands.Cog, name="Player"):
-    def __init__(self, bot):
-        self.bot = bot
-
+class RCRPCommands(commands.Cog):
     @commands.command(help = "Collects a list of in-game administrators (60 sec cooldown)")
     @commands.guild_only()
     @commands.cooldown(1, 60)
@@ -102,16 +97,6 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
     async def mipmapped(self, ctx):
         await ctx.send("https://tommyb.ovh/files/GTA-SA-Fully-Mipmapped.7z")
     
-    @commands.command(help = "Displays information related to the discord bot.")
-    @commands.guild_only()
-    async def rudyinfo(self, ctx):
-        embed = discord.Embed(title = 'Rudy', color = 0xe74c3c, timestamp = ctx.message.created_at)
-        embed.add_field(name = 'Version', value = version)
-        embed.add_field(name = 'discord.py Version', value = f'{discord.version_info.major}.{discord.version_info.minor}.{discord.version_info.micro}')
-        embed.add_field(name = 'Python Version', value = f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')
-        embed.add_field(name = 'Developer', value = '<@87582156741681152>')
-        await ctx.send(embed = embed)
-    
     @commands.command(help = "Fetches player count peaks for the last 14 days")
     @commands.guild_only()
     @commands.check(rcrp_check)
@@ -130,6 +115,3 @@ class PlayerCmdsCog(commands.Cog, name="Player"):
 
         message = ''.join(message)
         await ctx.send(message)
-
-def setup(bot):
-    bot.add_cog(PlayerCmdsCog(bot))
