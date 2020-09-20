@@ -8,7 +8,7 @@ from .utility import rcrpguildid, adminchat, helperchat
 class RCRPMessageQueue(commands.Cog, name="RCRP Message Queue"):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.loop.create_task(self.process_message_queue)
+        self.bot.loop.create_task(self.process_message_queue())
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):

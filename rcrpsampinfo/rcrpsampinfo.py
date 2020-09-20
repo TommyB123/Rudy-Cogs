@@ -7,7 +7,7 @@ from redbot.core import commands
 class RCRPSampInfo(commands.Cog, name="SA-MP Server Info"):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.loop.create_task(self.update_samp_info)
+        self.bot.loop.create_task(self.update_samp_info())
     
     async def update_samp_info(self):
         while 1:

@@ -8,7 +8,7 @@ from .utility import member_is_verified, member_is_management, rcrpguildid, help
 class RCRPRoleSync(commands.Cog, name="Role sync"):
     def __init__(self, bot: discord.Client):
         self.bot = bot
-        self.bot.loop.create_task(self.sync_member_roles)
+        self.bot.loop.create_task(self.sync_member_roles())
 
     async def verified_filter(self, member):
         return member_is_verified(member) == True
