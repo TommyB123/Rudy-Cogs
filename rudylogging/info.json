@@ -1,0 +1,8 @@
+
+{
+    "name": "Rudy Logging",
+    "author": ["TommyB"],
+    "description": "Logging utility for sending various Discord events to guild-owner-specified channels",
+    "short": "Logging utilities",
+    "end_user_data_statement": "This cog may log messages edited or deleted by Discord users, however this data only persists within the Discord server itself and is not saved by the bot itself."
+}

@@ -1,0 +1,8 @@
+
+{
+    "name": "RCRP Weeb",
+    "author": ["TommyB"],
+    "description": "Stupid RCRP weeb commands",
+    "short": "Stupid RCRP weeb commands",
+    "end_user_data_statement": "This cog stores unique Discord identifiers for members that have access to its commands. If you can't use its commands, your identifier is not stored."
+}

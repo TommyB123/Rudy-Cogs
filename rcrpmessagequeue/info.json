@@ -1,0 +1,8 @@
+
+{
+    "name": "RCRP Message Queue",
+    "author": ["TommyB"],
+    "description": "Cog for delivering messages between the RCRP game server and the RCRP Discord server",
+    "short": "Sends messages between the RCRP discord and game server",
+    "end_user_data_statement": "This cog does not collect data pertaining to any Discord user."
+}

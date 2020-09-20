@@ -1,0 +1,8 @@
+
+{
+    "name": "RCRP Role Sync",
+    "author": ["TommyB"],
+    "description": "Retrieves information of verified users from the MySQL data and assigns them appropriate server roles",
+    "short": "RCRP role sync",
+    "end_user_data_statement": "This cog uses your unique Discord identifier to fetch information tied to your Red County Roleplay account. If you have not verified via our bot, no information is collected. The RCRP privacy policy can be found at https://redcountyrp.com/privacypolicy"
+}

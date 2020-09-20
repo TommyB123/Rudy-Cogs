@@ -1,0 +1,8 @@
+
+{
+    "name": "RCRP Verification",
+    "author": ["TommyB"],
+    "description": "Commands used to verify ownership between a Discord and RCRP account",
+    "short": "RCRP account verification",
+    "end_user_data_statement": "This cog stores your unique Discord identifier on our database when a successful RCRP account verification is done. Otherwise, no information is collected or stored. The RCRP privacy policy can be found at https://redcountyrp.com/privacypolicy"
+}

@@ -1,0 +1,8 @@
+
+{
+    "name": "Rudypic",
+    "author": ["TommyB"],
+    "description": "Commands for fetching random photos from various imgur albums, but mostly dog albums",
+    "short": "dogs",
+    "end_user_data_statement": "This cog does not collect data pertaining to any Discord user."
+}
