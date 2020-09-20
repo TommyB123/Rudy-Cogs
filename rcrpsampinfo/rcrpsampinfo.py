@@ -5,9 +5,9 @@ from .config import mysqlconfig
 from redbot.core import commands
 
 class RCRPSampInfo(commands.Cog, name="SA-MP Server Info"):
-    def __init__(self, bot):
+    def __init__(self, bot: discord.Client):
         self.bot = bot
-        self.bot.loop.create_task(self.update_samp_info())
+        self.info_task = self.bot.loop.create_task(self.update_samp_info())
     
     async def update_samp_info(self):
         while 1:
@@ -29,3 +29,6 @@ class RCRPSampInfo(commands.Cog, name="SA-MP Server Info"):
                 pass
 
             await asyncio.sleep(1) #run every second
+    
+    def __unload(self):
+        self.info_task.cancel()

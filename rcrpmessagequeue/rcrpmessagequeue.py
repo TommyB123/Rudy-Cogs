@@ -6,9 +6,9 @@ from .config import mysqlconfig
 from .utility import rcrpguildid, adminchat, helperchat
 
 class RCRPMessageQueue(commands.Cog, name="RCRP Message Queue"):
-    def __init__(self, bot):
+    def __init__(self, bot: discord.Client):
         self.bot = bot
-        self.bot.loop.create_task(self.process_message_queue())
+        self.queue_task = self.bot.loop.create_task(self.process_message_queue())
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -45,3 +45,6 @@ class RCRPMessageQueue(commands.Cog, name="RCRP Message Queue"):
             await cursor.close()
             sql.close()
             await asyncio.sleep(1) #checks every second
+    
+    def __unload(self):
+        self.queue_task.cancel()
