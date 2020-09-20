@@ -5,7 +5,7 @@ from redbot.core import commands
 from .config import mysqlconfig
 from .utility import rcrpguildid, adminchat, helperchat
 
-class RCRPMessageQueue(commands.Cog, name="RCRP Message Queue"):
+class RCRPMessageQueue(commands.Cog, name = "RCRP Message Queue"):
     def __init__(self, bot: discord.Client):
         self.bot = bot
         self.queue_task = self.bot.loop.create_task(self.process_message_queue())

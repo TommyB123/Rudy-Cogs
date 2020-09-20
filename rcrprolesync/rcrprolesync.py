@@ -5,7 +5,7 @@ from redbot.core import commands
 from .config import mysqlconfig
 from .utility import member_is_verified, member_is_management, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole
 
-class RCRPRoleSync(commands.Cog, name="Role sync"):
+class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
     def __init__(self, bot: discord.Client):
         self.bot = bot
         self.sync_task = self.bot.loop.create_task(self.sync_member_roles())
