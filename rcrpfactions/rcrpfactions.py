@@ -5,22 +5,6 @@ from .config import mysqlconfig
 from .utility import admin_check, rcrp_check
 from redbot.core import commands, Config
 
-async def ReturnFactionName(factionid: int):
-    sql = await aiomysql.connect(**mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT FactionName FROM factions WHERE id = %s", (factionid, ))
-
-    if cursor.rowcount == 0:
-        await cursor.close()
-        sql.close()
-        print(f"An invalid faction ID was passed to ReturnFactionName ({factionid})")
-        return "Unknown"
-    
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-    return data[0]
-
 class RCRPFactions(commands.Cog, name="Faction Commands"):
     def __init__(self, bot: discord.Client):
         default_guild = {
@@ -30,6 +14,22 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
         self.bot = bot
         self.config = Config.get_conf(self, 45599)
         self.config.register_guild(**default_guild)
+    
+    async def return_faction_name(self, factionid: int):
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT FactionName FROM factions WHERE id = %s", (factionid, ))
+
+        if cursor.rowcount == 0:
+            await cursor.close()
+            sql.close()
+            print(f"An invalid faction ID was passed to return_faction_name ({factionid})")
+            return "Unknown"
+        
+        data = await cursor.fetchone()
+        await cursor.close()
+        sql.close()
+        return data[0]
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
@@ -77,7 +77,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
         guilds = await self.config.all_guilds()
         for guild in guilds:
             factionid = guilds[guild]['factionid']
-            factionname = await ReturnFactionName(factionid)
+            factionname = await self.return_faction_name(factionid)
             embed.add_field(name = f'{factionname} ({factionid})', value = guild)
         await ctx.send(embed = embed)
     
@@ -110,7 +110,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
         sql.close()
 
         await self.config.guild(ctx.guild).factionid.set(factionid)
-        factionname = await ReturnFactionName(factionid)
+        factionname = await self.return_faction_name(factionid)
         await ctx.send(f'This discord server is now linked to {factionname}!')
 
     @faction.command()
@@ -124,7 +124,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
             return
         
         await self.config.guild(ctx.guild).factionid.set(None)
-        factionname = await ReturnFactionName(factionid)
+        factionname = await self.return_faction_name(factionid)
         await ctx.send(f'This server is no longer linked to {factionname}.')
 
     @faction.command()
