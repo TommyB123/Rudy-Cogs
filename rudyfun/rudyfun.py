@@ -114,6 +114,12 @@ class FunCommands(commands.Cog):
     async def bazinga(self, ctx: commands.Context):
         """Bazinga!"""
         await ctx.send(file = discord.File(f'{path}/files/bazinga.mp3'))
+    
+    @commands.command()
+    @commands.guild_only()
+    async def ygay(self, ctx: commands.Context, target: discord.Member):
+        await ctx.message.delete()
+        await ctx.send(f'{target.mention}, why are you gay?', file = discord.File(f'{path}/files/why-are-you-gay.mp3'))
 
     @commands.command()
     @commands.cooldown(1, 60)
