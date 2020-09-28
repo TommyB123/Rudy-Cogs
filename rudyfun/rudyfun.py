@@ -118,6 +118,7 @@ class FunCommands(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def ygay(self, ctx: commands.Context, target: discord.Member):
+        """Ask why someone is in fact gay"""
         await ctx.message.delete()
         await ctx.send(f'{target.mention}, why are you gay?', file = discord.File(f'{path}/files/why-are-you-gay.mp3'))
 
