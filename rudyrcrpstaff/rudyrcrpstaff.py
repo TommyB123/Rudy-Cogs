@@ -211,7 +211,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def ban(self, ctx: commands.Context, target: discord.Member, *, banreason: str):
+    async def issueban(self, ctx: commands.Context, target: discord.Member, *, banreason: str):
         """Issues a ban to a member of the RCRP discord"""
         bannedmember = ctx.guild.get_member(target.id)
         if member_is_admin(bannedmember):
@@ -234,7 +234,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def unban(self, ctx: commands.Context, target_discordid: int):
+    async def removeban(self, ctx: commands.Context, target_discordid: int):
         """Removes a ban from the ban list"""
         banned_user = await self.bot.fetch_user(target_discordid)
         if not banned_user:
@@ -272,7 +272,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def mute(self, ctx: commands.Context, member: discord.Member):
+    async def issuemute(self, ctx: commands.Context, member: discord.Member):
         """Assigns the muted role to a discord member"""
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
@@ -289,7 +289,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def unmute(self, ctx: commands.Context, member: discord.Member):
+    async def removemute(self, ctx: commands.Context, member: discord.Member):
         """Removes the muted role from a discord member"""
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
