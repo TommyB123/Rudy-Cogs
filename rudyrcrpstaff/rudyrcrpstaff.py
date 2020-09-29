@@ -34,7 +34,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def discord(self, ctx: commands.Context, discord_user: discord.User):
+    async def discordname(self, ctx: commands.Context, discord_user: discord.User):
         """Fetches Master Account info for a verified Discord member"""
         sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor()
@@ -205,13 +205,14 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(rcrp_check)
     @commands.check(admin_check)
     async def punish(self, ctx: commands.Context):
+        """Issues various punishments to Discord members"""
         pass
 
     @punish.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def issueban(self, ctx: commands.Context, target: discord.Member, *, banreason: str):
+    async def ban(self, ctx: commands.Context, target: discord.Member, *, banreason: str):
         """Issues a ban to a member of the RCRP discord"""
         bannedmember = ctx.guild.get_member(target.id)
         if member_is_admin(bannedmember):
@@ -234,7 +235,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def removeban(self, ctx: commands.Context, target_discordid: int):
+    async def unban(self, ctx: commands.Context, target_discordid: int):
         """Removes a ban from the ban list"""
         banned_user = await self.bot.fetch_user(target_discordid)
         if not banned_user:
@@ -272,7 +273,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def issuemute(self, ctx: commands.Context, member: discord.Member):
+    async def mute(self, ctx: commands.Context, member: discord.Member):
         """Assigns the muted role to a discord member"""
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
@@ -289,7 +290,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def removemute(self, ctx: commands.Context, member: discord.Member):
+    async def unmute(self, ctx: commands.Context, member: discord.Member):
         """Removes the muted role from a discord member"""
         if member_is_admin(member):
             await ctx.send("You can't mute other staff.")
