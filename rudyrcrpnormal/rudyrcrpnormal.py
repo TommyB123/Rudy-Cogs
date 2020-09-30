@@ -2,7 +2,27 @@ import discord
 import aiomysql
 from redbot.core import commands
 from .config import mysqlconfig
-from .utility import rcrp_check, admin_check
+
+#rcrp guild ID
+rcrpguildid = 93142223473905664
+
+#roles
+adminrole = 293441894585729024
+managementrole = 310927289317588992
+ownerrole = 293303836125298690
+staffroles = [ownerrole, adminrole, managementrole]
+
+async def rcrp_check(ctx: commands.Context):
+    return (ctx.guild.id == rcrpguildid)
+
+async def admin_check(ctx: commands.Context):
+    if ctx.guild.id == rcrpguildid:
+        for role in ctx.author.roles:
+            if role.id in staffroles:
+                return True
+        return False
+    else:
+        return True
 
 class RCRPCommands(commands.Cog):
     @commands.command()

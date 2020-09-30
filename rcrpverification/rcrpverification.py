@@ -3,7 +3,37 @@ import aiomysql
 from random import randint
 from redbot.core import commands
 from .config import mysqlconfig
-from .utility import rcrp_check, management_check, member_is_verified, dashboardurl, rcrpguildid, testerrole, adminrole, helperrole, verifiedrole, managementrole
+
+#rcrp guild ID
+rcrpguildid = 93142223473905664
+
+#various role IDs
+ownerrole = 293303836125298690
+managementrole = 310927289317588992
+verifiedrole = 293441047244308481
+helperrole = 293441873945821184
+adminrole = 293441894585729024
+testerrole = 293441807055060993
+
+#url of the dashboard. sent to players when they try to verify
+dashboardurl = "https://redcountyrp.com/user/dashboard"
+
+#command checks
+async def rcrp_check(ctx: commands.Context):
+    return (ctx.guild.id == rcrpguildid)
+
+async def management_check(ctx: commands.Context):
+    if ctx.guild.id == rcrpguildid:
+        role_ids = [role.id for role in ctx.author.roles]
+        if managementrole in role_ids or ownerrole in role_ids:
+            return True
+        else:
+            return False
+    else:
+        return True
+
+def member_is_verified(member: discord.Member):
+    return verifiedrole in [role.id for role in member.roles]
 
 async def account_accepted(mastername: str):
     sql = await aiomysql.connect(**mysqlconfig)
@@ -13,10 +43,7 @@ async def account_accepted(mastername: str):
     await cursor.close()
     sql.close()
 
-    if data is None:
-        return False
-    else:
-        return True
+    return (data != None)
 
 async def account_verified(name: str):
     sql = await aiomysql.connect(**mysqlconfig)
@@ -26,11 +53,8 @@ async def account_verified(name: str):
     await cursor.close()
     sql.close()
 
-    if data is None:
-        return False
-    else:
-        return True
-    
+    return (data != None)
+
 async def account_name_valid(name: str):
     sql = await aiomysql.connect(**mysqlconfig)
     cursor = await sql.cursor()
@@ -39,10 +63,7 @@ async def account_name_valid(name: str):
     await cursor.close()
     sql.close()
 
-    if data is None:
-        return False
-    else:
-        return True
+    return (data != None)
 
 async def account_linked_to_discord(discordid: int):
     sql = await aiomysql.connect(**mysqlconfig)
@@ -52,10 +73,7 @@ async def account_linked_to_discord(discordid: int):
     await cursor.close()
     sql.close()
 
-    if data is None:
-        return False
-    else:
-        return True
+    return (data != None)
 
 def random_with_N_digits(n: int):
     range_start = 10**(n-1)

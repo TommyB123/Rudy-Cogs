@@ -1,7 +1,6 @@
 import discord
 import time
 import random
-from .utility import admin_check
 from string import ascii_lowercase
 from redbot.core import commands
 
@@ -12,12 +11,30 @@ gaslinks = [
     'https://cdn.discordapp.com/attachments/639337212424617994/645095656930934784/itsuki-takumi-iketani-at-gas-station-initial-d.png'
 ]
 
+#rcrp guild ID
+rcrpguildid = 93142223473905664
+
+#roles
+adminrole = 293441894585729024
+managementrole = 310927289317588992
+ownerrole = 293303836125298690
+staffroles = [ownerrole, adminrole, managementrole]
+
 #the age of rudy. used for the fancy time delta in the age command
 rudyage = 1409529600
 
 #lol this is so ghetto
 path = __file__
 path = path.replace('rudyfun.py', '')
+
+async def admin_check(ctx: commands.Context):
+    if ctx.guild.id == rcrpguildid:
+        for role in ctx.author.roles:
+            if role.id in staffroles:
+                return True
+        return False
+    else:
+        return True
 
 def pretty_time_delta(seconds: int):
     sign_string = '-' if seconds < 0 else ''

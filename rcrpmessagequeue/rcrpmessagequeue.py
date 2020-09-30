@@ -3,7 +3,13 @@ import asyncio
 import aiomysql
 from redbot.core import commands
 from .config import mysqlconfig
-from .utility import rcrpguildid, adminchat, helperchat
+
+#ID of RCRP guild
+rcrpguildid = 93142223473905664
+
+#helper and admin chat channel IDs for echo
+adminchat = 397566940723281922
+helperchat = 609053396204257290
 
 class RCRPMessageQueue(commands.Cog, name = "RCRP Message Queue"):
     def __init__(self, bot: discord.Client):

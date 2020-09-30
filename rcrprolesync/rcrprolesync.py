@@ -3,14 +3,36 @@ import asyncio
 import aiomysql
 from redbot.core import commands
 from .config import mysqlconfig
-from .utility import member_is_verified, member_is_management, rcrpguildid, helperrole, testerrole, adminrole, premiumrole, bannedrole, verifiedrole
+
+#rcrp guild ID
+rcrpguildid = 93142223473905664
+
+#various role IDs for syncing
+adminrole = 293441894585729024
+bannedrole = 592730783924486168
+helperrole = 293441873945821184
+managementrole = 310927289317588992
+ownerrole = 293303836125298690
+premiumrole = 534479263966167069
+testerrole = 293441807055060993
+verifiedrole = 293441047244308481
+
+def member_is_verified(member: discord.Member):
+    return (verifiedrole in [role.id for role in member.roles])
+
+def member_is_management(member: discord.Member):
+    role_ids = [role.id for role in member.roles]
+    if managementrole in role_ids or ownerrole in role_ids:
+        return True
+    else:
+        return False
 
 class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
     def __init__(self, bot: discord.Client):
         self.bot = bot
         self.sync_task = self.bot.loop.create_task(self.sync_member_roles())
 
-    async def verified_filter(self, member):
+    async def verified_filter(self, member: discord.Member):
         return member_is_verified(member) == True
 
     async def account_is_banned(self, accountid):

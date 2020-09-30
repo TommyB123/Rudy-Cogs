@@ -2,7 +2,6 @@ import discord
 import aiomysql
 from redbot.core import commands
 from .config import mysqlconfig
-from .utility import rcrp_check, weaponnames
 
 #weapon origins
 origins = {
@@ -14,13 +13,72 @@ origins = {
     8: "Strawman Weapons"
 }
 
+#weapon names
+weaponnames = {
+    0: "Fist",
+    1: "Brass Knuckles",
+    2: "Golf Club",
+    3: "Nightstick",
+    4: "Knife",
+    5: "Baseball Bat",
+    6: "Shovel",
+    7: "Pool Cue",
+    8: "Katana",
+    9: "Chainsaw",
+    10: "Purple Dildo",
+    11: "Small White Vibrator",
+    12: "Big White Vibrator",
+    13: "Small Silver Vibrator",
+    14: "Flowers",
+    15: "Cane",
+    16: "Grenade",
+    17: "Teargas",
+    18: "Molotov Cocktail",
+    19: "",
+    20: "",
+    21: "Heavy Armor",
+    22: "9mm",
+    23: "Silenced Pistol",
+    24: "Desert Eagle",
+    25: "Shotgun",
+    26: "Sawn-off Shotgun",
+    27: "SPAS-12",
+    28: "Micro Uzi (Mac 10)",
+    29: "MP5",
+    30: "AK-47",
+    31: "M4",
+    32: "Tec9",
+    33: "Country Rifle",
+    34: "Sniper Rifle",
+    35: "Rocket Launcher (RPG)",
+    36: "Heat-Seeking Rocket Launcher",
+    37: "Flamethrower",
+    38: "Minigun",
+    39: "Satchel Charges",
+    40: "Detonator",
+    41: "Spray Can",
+    42: "Fire Extinguisher",
+    43: "Camera",
+    44: "Night Vision Goggles",
+    45: "Thermal Goggles",
+    46: "Parachute",
+    47: "",
+    48: "",
+    49: "",
+    50: "",
+    51: "",
+    52: "",
+    53: "",
+    54: "",
+    55: "Beanbag Shotgun"
+}
+
 class OwnerCog(commands.Cog):
     """Cog containing owner commands for the RCRP discord"""
 
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    @commands.check(rcrp_check)
     async def dms(self, ctx: commands.Context):
         """Gives an imgur album showing why my DMs are not open."""
         await ctx.send("<https://imgur.com/a/yYK5dnZ>")
@@ -28,7 +86,6 @@ class OwnerCog(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    @commands.check(rcrp_check)
     async def legit(self, ctx: commands.Context):
         """Proof of riches"""
         await ctx.send('MY CASH IS LEGIT BABY https://i.imgur.com/z5pwmj4.gifv')
@@ -36,7 +93,6 @@ class OwnerCog(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    @commands.check(rcrp_check)
     async def economy(self, ctx: commands.Context):
         """Collects statistics about the server's economy"""
         async with ctx.typing():
@@ -74,7 +130,6 @@ class OwnerCog(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    @commands.check(rcrp_check)
     async def drugs(self, ctx: commands.Context):
         """Collects statistics related to how many drugs are on the server"""
         async with ctx.typing():
@@ -122,7 +177,6 @@ class OwnerCog(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    @commands.check(rcrp_check)
     async def weapons(self, ctx: commands.Context, origin: int):
         """Queries the database for weapon statistics depending on its origin"""
         sql = await aiomysql.connect(**mysqlconfig)

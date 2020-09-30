@@ -1,9 +1,122 @@
 import discord
 import aiomysql
 from .config import mysqlconfig
-from .utility import rcrp_check, admin_check, management_check, member_is_admin, member_is_muted, member_is_verified, mutedrole, testerrole, helperrole, adminrole, weaponnames
 from redbot.core import commands
 from datetime import datetime
+
+#weapon names
+weaponnames = {
+    0: "Fist",
+    1: "Brass Knuckles",
+    2: "Golf Club",
+    3: "Nightstick",
+    4: "Knife",
+    5: "Baseball Bat",
+    6: "Shovel",
+    7: "Pool Cue",
+    8: "Katana",
+    9: "Chainsaw",
+    10: "Purple Dildo",
+    11: "Small White Vibrator",
+    12: "Big White Vibrator",
+    13: "Small Silver Vibrator",
+    14: "Flowers",
+    15: "Cane",
+    16: "Grenade",
+    17: "Teargas",
+    18: "Molotov Cocktail",
+    19: "",
+    20: "",
+    21: "Heavy Armor",
+    22: "9mm",
+    23: "Silenced Pistol",
+    24: "Desert Eagle",
+    25: "Shotgun",
+    26: "Sawn-off Shotgun",
+    27: "SPAS-12",
+    28: "Micro Uzi (Mac 10)",
+    29: "MP5",
+    30: "AK-47",
+    31: "M4",
+    32: "Tec9",
+    33: "Country Rifle",
+    34: "Sniper Rifle",
+    35: "Rocket Launcher (RPG)",
+    36: "Heat-Seeking Rocket Launcher",
+    37: "Flamethrower",
+    38: "Minigun",
+    39: "Satchel Charges",
+    40: "Detonator",
+    41: "Spray Can",
+    42: "Fire Extinguisher",
+    43: "Camera",
+    44: "Night Vision Goggles",
+    45: "Thermal Goggles",
+    46: "Parachute",
+    47: "",
+    48: "",
+    49: "",
+    50: "",
+    51: "",
+    52: "",
+    53: "",
+    54: "",
+    55: "Beanbag Shotgun"
+}
+
+#various role IDs
+adminrole = 293441894585729024
+managementrole = 310927289317588992
+ownerrole = 293303836125298690
+mutedrole = 347541774883094529
+verifiedrole = 293441047244308481
+helperrole = 293441873945821184
+testerrole = 293441807055060993
+staffroles = [ownerrole, adminrole, managementrole]
+
+#ID of the rcrp guild
+rcrpguildid = 93142223473905664
+
+async def rcrp_check(ctx: commands.Context):
+    return (ctx.guild.id == rcrpguildid)
+
+async def admin_check(ctx: commands.Context):
+    if ctx.guild.id == rcrpguildid:
+        for role in ctx.author.roles:
+            if role.id in staffroles:
+                return True
+        return False
+    else:
+        return True
+
+async def management_check(ctx: commands.Context):
+    if ctx.guild.id == rcrpguildid:
+        role_ids = [role.id for role in ctx.author.roles]
+        if managementrole in role_ids or ownerrole in role_ids:
+            return True
+        else:
+            return False
+    else:
+        return True
+
+def member_is_admin(member: discord.Member):
+    for role in member.roles:
+        if role.id in staffroles:
+            return True
+    return False
+
+def member_is_muted(member: discord.Member):
+    if mutedrole in [role.id for role in member.roles]:
+        return True
+    else:
+        return False
+
+def member_is_verified(member: discord.Member):
+    if verifiedrole in [role.id for role in member.roles]:
+        return True
+    else:
+        return False
+
 
 async def fetch_account_id(mastername: str):
     sql = await aiomysql.connect( **mysqlconfig)

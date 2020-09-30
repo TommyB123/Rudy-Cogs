@@ -4,7 +4,9 @@ import aiomysql
 from redbot.core import commands
 from .config import mysqlconfig
 
+#guild id for the prison guild
 prisonguildid = 558036120743706625
+
 async def prison_check(ctx: commands.Context):
     return ctx.guild.id == prisonguildid
 

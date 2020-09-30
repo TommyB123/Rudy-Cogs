@@ -2,17 +2,23 @@ import discord
 import random
 from imgurpython import ImgurClient
 from redbot.core import commands
-from .utility import rudyfriend, rcrpguildid, rudy_check, management_check
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
 
+#ID of the rcrp & FG guilds
+rcrpguildid = 93142223473905664
+frostgamingguild = 93140261797904384
+
+#rudy friend role ID
+rudyfriend = 460848362111893505
+
+async def rudy_check(ctx: commands.Context):
+    return ctx.guild.id in [rcrpguildid, frostgamingguild]
+
 async def isrudyfriend(ctx: commands.Context):
     if ctx.guild.id == rcrpguildid:
-        if rudyfriend in [role.id for role in ctx.author.roles]:
-            return True
-        else:
-            return False
+        return rudyfriend in [role.id for role in ctx.author.roles]
     else:
         return True
 
@@ -53,14 +59,12 @@ class RudyPic(commands.Cog, name = "rudypic"):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(management_check)
     async def gizmo(self, ctx: commands.Context):
         """Sends a legendary Gizmo quote"""
         await SendRandomAlbumPicture(ctx, 'SlgjJJu')
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(management_check)
     async def lylat(self, ctx: commands.Context):
         """Sends a legendary Lylat quote"""
         await SendRandomAlbumPicture(ctx, 'LF00KOm')
