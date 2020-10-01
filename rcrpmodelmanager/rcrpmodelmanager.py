@@ -274,8 +274,8 @@ class RCRPModelManager(commands.Cog):
         cursor = await sql.cursor()
         async with ctx.typing():
             for model in model_list:
-                await cursor.execute("INSERT INTO models (modelid, modeltype, dff_name, txd_name, folder) VALUES (%s, %s, %s, %s, %s)",
-                    (model.model_id, self.model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
+                await cursor.execute("INSERT INTO models (modelid, reference_model, modeltype, dff_name, txd_name, folder) VALUES (%s, %s, %s, %s, %s, %s)",
+                    (model.model_id, model.reference_model, self.model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
                 originfolder = f'{self.rcrp_model_path}/temp'
                 destinationfolder = f'{self.rcrp_model_path}/{self.get_model_type_folder(model.model_type)}/{model.model_path}'
 
