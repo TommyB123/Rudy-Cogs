@@ -62,7 +62,7 @@ class RCRPModelManager(commands.Cog):
         elif type == 1:
             return 'OBJECT'
         else:
-            return ''
+            return 'INVALID'
     
     async def is_valid_model(self, modelid: int):
         """Queries the MySQL database to see if a model ID exists"""
@@ -165,7 +165,7 @@ class RCRPModelManager(commands.Cog):
         cursor = await sql.cursor(aiomysql.DictCursor)
 
         if deletefiles == True:
-            await cursor.execute("DELETE * FROM motels WHERE modelid = %s", (modelid, ))
+            await cursor.execute("SELECT * FROM models WHERE modelid = %s", (modelid, ))
             data = await cursor.fetchone()
             typefolder = self.get_model_type_folder(self.model_type_name(data['modeltype']))
             modelfolder = data['folder']
@@ -228,7 +228,7 @@ class RCRPModelManager(commands.Cog):
 
         embed = discord.Embed(title = f'Model Information ({modelid})', color = ctx.author.color)
         embed.add_field(name = 'TXD', value = data['txd_name'], inline = False)
-        embed.add_field(name = 'DF', value = data['dff_name'], inline = False)
+        embed.add_field(name = 'DFF', value = data['dff_name'], inline = False)
         embed.add_field(name = 'Model Type', value = self.model_type_name(data['modeltype']), inline = False)
         embed.add_field(name = 'Model Path', value = data['folder'], inline = False)
         await ctx.send(embed = embed)
