@@ -23,11 +23,13 @@ async def isrudyfriend(ctx: commands.Context):
         return True
 
 async def SendRandomAlbumPicture(ctx: commands.Context, album: str):
+    final_url = None
     async with ctx.typing():
         pictures = []
         for image in imclient.get_album_images(album):
             pictures.append(image.link)
-        await ctx.send(random.choice(pictures))
+        final_url = random.choice(pictures)
+    await ctx.send(final_url)
 
 class RudyPic(commands.Cog, name = "rudypic"):
     def __init__(self, bot):
