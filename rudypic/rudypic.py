@@ -1,26 +1,16 @@
 import discord
 import random
 from imgurpython import ImgurClient
-from redbot.core import commands
+from redbot.core import commands, Config
 
 #imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
 
-#ID of the rcrp & FG guilds
-rcrpguildid = 93142223473905664
-frostgamingguild = 93140261797904384
-
-#rudy friend role ID
-rudyfriend = 460848362111893505
-
-async def rudy_check(ctx: commands.Context):
-    return ctx.guild.id in [rcrpguildid, frostgamingguild]
-
 async def isrudyfriend(ctx: commands.Context):
-    if ctx.guild.id == rcrpguildid:
-        return rudyfriend in [role.id for role in ctx.author.roles]
-    else:
-        return True
+    rudy = RudyPic(commands.Cog)
+    rudy.config = Config.get_conf(rudy, identifier = 45599)
+    rudyfriends = await rudy.config.rudy_friends()
+    return ctx.author.id in rudyfriends
 
 async def SendRandomAlbumPicture(ctx: commands.Context, album: str):
     final_url = None
@@ -34,10 +24,15 @@ async def SendRandomAlbumPicture(ctx: commands.Context, album: str):
 class RudyPic(commands.Cog, name = "rudypic"):
     def __init__(self, bot):
         self.bot = bot
+        default_global = {
+            "rudy_friends": []
+        }
+
+        self.config = Config.get_conf(self, identifier=45599)
+        self.config.register_global(**default_global)
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(rudy_check)
     @commands.check(isrudyfriend)
     async def rudypic(self, ctx: commands.Context):
         """Sends an adorable picture of Rudy"""
@@ -45,7 +40,6 @@ class RudyPic(commands.Cog, name = "rudypic"):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(rudy_check)
     @commands.check(isrudyfriend)
     async def sammypic(self, ctx: commands.Context):
         """Sends an adorable picture of Sammy"""
@@ -53,7 +47,6 @@ class RudyPic(commands.Cog, name = "rudypic"):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(rudy_check)
     @commands.check(isrudyfriend)
     async def milopic(self, ctx: commands.Context):
         """Sends an adorable picture of Milo"""
@@ -70,3 +63,19 @@ class RudyPic(commands.Cog, name = "rudypic"):
     async def lylat(self, ctx: commands.Context):
         """Sends a legendary Lylat quote"""
         await SendRandomAlbumPicture(ctx, 'LF00KOm')
+    
+    @commands.command()
+    @commands.guild_only()
+    @commands.is_owner()
+    async def rudyfriend(self, ctx: commands.Context, target: discord.Member):
+        rudyfriends: list = await self.config.rudy_friends()
+
+        if target.id in rudyfriends:
+            rudyfriends.remove(target.id)
+            await ctx.send(f'{target.mention} is no longer a Rudy friend!')
+        else:
+            rudyfriends.append(target.id)
+            await ctx.send(f'{target.mention} is now a Rudy friend!')
+        
+        await self.config.rudy_friends.set(rudyfriends)
+
