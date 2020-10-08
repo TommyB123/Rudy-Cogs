@@ -65,7 +65,7 @@ class WeebCommands(commands.Cog, name = "Weeb"):
             category = random.choice(degenerate_categories)
 
         if category not in degenerate_categories:
-            await ctx.send(f"Not a valid degenerate category '*' can be used to grab a random category. Valid categories: {humanize_list(degenerate_categories)}")
+            await ctx.send(f"Not a valid degenerate category. '*' can be used to grab a random category. Valid categories: {humanize_list(degenerate_categories)}")
             return
 
         async with aiohttp.ClientSession() as session:
@@ -112,7 +112,7 @@ class WeebCommands(commands.Cog, name = "Weeb"):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def makeweeb(self, ctx: commands.Context, member: discord.Member):
+    async def makeweeb(self, ctx: commands.Context, target: discord.Member):
         """Certifies or banishes a dude from the weebs"""
         weebs: list = await self.config.weebs()
 
