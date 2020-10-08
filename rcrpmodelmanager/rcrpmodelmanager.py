@@ -7,6 +7,7 @@ import re
 import os
 from .config import mysqlconfig
 from redbot.core import commands
+from redbot.core.utils.chat_formatting import humanize_list
 
 class pending_model():
     """Pending model data"""
@@ -242,6 +243,9 @@ class RCRPModelManager(commands.Cog):
             await ctx.send('There are currently no pending models.')
             return
 
+        #list of inserted model IDs to be sent to the RCRP game server
+        model_id_list = []
+
         #convert models dict to a list for easier iterating, then clear the dict
         model_list = list(self.models.values())
         model_count = len(model_list)
@@ -274,6 +278,7 @@ class RCRPModelManager(commands.Cog):
         cursor = await sql.cursor()
         async with ctx.typing():
             for model in model_list:
+                model_id_list.append(model.model_id)
                 await cursor.execute("INSERT INTO models (modelid, reference_model, modeltype, dff_name, txd_name, folder) VALUES (%s, %s, %s, %s, %s, %s)",
                     (model.model_id, model.reference_model, self.model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
                 originfolder = f'{self.rcrp_model_path}/temp'
@@ -292,7 +297,9 @@ class RCRPModelManager(commands.Cog):
         await aiofiles.os.rmdir(f'{self.rcrp_model_path}/temp')
 
         #tap into the RCRP message queue system to tell the server to check for new models
-        await cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (-1, 'model', 2, UNIX_TIMESTAMP())")
+        message = humanize_list(model_id_list)
+        message = message.replace(', and', ',')
+        await cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (-1, '%s', 2, UNIX_TIMESTAMP())", (message, ))
 
         await cursor.close()
         sql.close()
