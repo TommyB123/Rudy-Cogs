@@ -1,7 +1,6 @@
 import discord
 import aiomysql
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import humanize_number
 from .config import mysqlconfig
 
 #weapon origins
@@ -116,16 +115,16 @@ class OwnerCog(commands.Cog):
             sql.close()
 
             embed = discord.Embed(title = 'RCRP Economy Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
-            embed.add_field(name = "In-Hand Cash", value = f'${humanize_number(inhandcash['dollars'])}')
-            embed.add_field(name = "Player Banks", value = f'${humanize_number(playerdata['Bank'])}')
-            embed.add_field(name = "Check Slot 1", value = f'${humanize_number(playerdata['CheckSlot1'])}')
-            embed.add_field(name = "Check Slot 2", value = f'${humanize_number(playerdata['CheckSlot2'])}')
-            embed.add_field(name = "Check Slot 3", value = f'${humanize_number(playerdata['CheckSlot3'])}')
-            embed.add_field(name = 'Faction Banks (excluding ST)', value = f'${humanize_number(factionbank['FBank'])}')
-            embed.add_field(name = 'Stored House Cash', value = f'${humanize_number(housecash['dollars'])}')
-            embed.add_field(name = 'Stored Business Cash', value = f'${humanize_number(bizzcash['dollars'])}')
-            embed.add_field(name = 'Stored Vehicle Cash', value = f'${humanize_number(vehiclecash['dollars'])}')
-            embed.add_field(name = 'Total', value = f'${humanize_number(cashsum)}')
+            embed.add_field(name = "In-Hand Cash", value = '${:,}'.format(inhandcash['dollars']))
+            embed.add_field(name = "Player Banks", value = '${:,}'.format(playerdata['Bank']))
+            embed.add_field(name = "Check Slot 1", value = '${:,}'.format(playerdata['CheckSlot1']))
+            embed.add_field(name = "Check Slot 2", value = '${:,}'.format(playerdata['CheckSlot2']))
+            embed.add_field(name = "Check Slot 3", value = '${:,}'.format(playerdata['CheckSlot3']))
+            embed.add_field(name = 'Faction Banks (excluding ST)', value = '${:,}'.format(factionbank['FBank']))
+            embed.add_field(name = 'Stored House Cash', value = '${:,}'.format(housecash['dollars']))
+            embed.add_field(name = 'Stored Business Cash', value = '${:,}'.format(bizzcash['dollars']))
+            embed.add_field(name = 'Stored Vehicle Cash', value = '${:,}'.format(vehiclecash['dollars']))
+            embed.add_field(name = 'Total', value = '${:,}'.format(cashsum))
             await ctx.send(embed = embed)
     
     @commands.command()
@@ -147,14 +146,14 @@ class OwnerCog(commands.Cog):
             sql.close()
 
             embed = discord.Embed(title = 'RCRP Drug Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
-            embed.add_field(name = 'Low Grade Cocaine', value = humanize_number(drugs[47]))
-            embed.add_field(name = 'Medium Grade Cocaine', value = humanize_number(drugs[48]))
-            embed.add_field(name = 'High Grade Cocaine', value = humanize_number(drugs[49]))
-            embed.add_field(name = 'Low Grade Crack', value = humanize_number(drugs[51]))
-            embed.add_field(name = 'Medium Grade Crack', value = humanize_number(drugs[52]))
-            embed.add_field(name = 'High Grade Crack', value = humanize_number(drugs[53]))
-            embed.add_field(name = 'Marijuana', value = humanize_number(drugs[55]))
-            embed.add_field(name = 'Heroin', value = humanize_number(drugs[57]))
+            embed.add_field(name = 'Low Grade Cocaine', value = '{:,}'.format(drugs[47]))
+            embed.add_field(name = 'Medium Grade Cocaine', value = '{:,}'.format(drugs[48]))
+            embed.add_field(name = 'High Grade Cocaine', value = '{:,}'.format(drugs[49]))
+            embed.add_field(name = 'Low Grade Crack', value = '{:,}'.format(drugs[51]))
+            embed.add_field(name = 'Medium Grade Crack', value = '{:,}'.format(drugs[52]))
+            embed.add_field(name = 'High Grade Crack', value = '{:,}'.format(drugs[53]))
+            embed.add_field(name = 'Marijuana', value = '{:,}'.format(drugs[55]))
+            embed.add_field(name = 'Heroin', value = '{:,}'.format(drugs[57]))
             await ctx.send(embed = embed)
     
     @commands.command()
