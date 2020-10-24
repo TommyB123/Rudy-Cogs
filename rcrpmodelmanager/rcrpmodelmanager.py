@@ -24,7 +24,7 @@ class RCRPModelManager(commands.Cog):
         self.bot = bot
         self.models = {} #dict for pending model data. key will be the model's ID
         self.model_urls = [] #list containing each URL that needs to used for downloading
-        self.rcrp_model_path = "/home/rudybot/download_testing" #path of RCRP models
+        self.rcrp_model_path = "/home/rcrp/domains/cdn.redcountyrp.com/public_html/rcrp" #path of RCRP models
 
     def get_model_range_for_type(self, type: str):
         """Returns the valid range of model IDs for a specific type"""
@@ -261,6 +261,7 @@ class RCRPModelManager(commands.Cog):
         await ctx.send(f'Beginning the download of the {url_count} necessary {"files" if url_count != 1 else "file"}.')
         if os.path.exists(f'{self.rcrp_model_path}/temp') == False:
             await aiofiles.os.mkdir(f'{self.rcrp_model_path}/temp')
+
         async with ctx.typing():
             for url in self.model_urls:
                 async with aiohttp.ClientSession() as session:
