@@ -95,7 +95,7 @@ class RCRPModelManager(commands.Cog):
             await ctx.send(f'Invalid model ID for type {type}. Please use a range of {min} to {max} for this type.')
             return
         
-        if await self.is_valid_model(modelid) == True:
+        if await self.is_valid_model(modelid):
             await ctx.send(f'The model {modelid} is already present on the server.')
             return
         
@@ -155,7 +155,7 @@ class RCRPModelManager(commands.Cog):
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
 
-        if deletefiles == True:
+        if deletefiles:
             await cursor.execute("SELECT * FROM models WHERE modelid = %s", (modelid, ))
             data = await cursor.fetchone()
             modelfolder = data['folder']
@@ -277,14 +277,13 @@ class RCRPModelManager(commands.Cog):
                 if os.path.exists(destinationfolder) == False:
                     await aiofiles.os.mkdir(destinationfolder)
 
-                if os.path.isfile(f'{downloadfolder}/{model.dff_name}') == True and os.path.isfile(f'{destinationfolder}/{model.dff_name}') == False:
+                if os.path.isfile(f'{downloadfolder}/{model.dff_name}') and os.path.isfile(f'{destinationfolder}/{model.dff_name}') == False:
                     await aiofiles.os.rename(f'{downloadfolder}/{model.dff_name}', f'{destinationfolder}/{model.dff_name}')
+                    await aiofiles.os.remove(f'{downloadfolder}/{model.dff_name}')
 
-                if os.path.isfile(f'{downloadfolder}/{model.txd_name}') == True and os.path.isfile(f'{destinationfolder}/{model.txd_name}') == False:
+                if os.path.isfile(f'{downloadfolder}/{model.txd_name}') and os.path.isfile(f'{destinationfolder}/{model.txd_name}') == False:
                     await aiofiles.os.rename(f'{downloadfolder}/{model.txd_name}', f'{destinationfolder}/{model.txd_name}')
-
-        #remove the temporary directory
-        await aiofiles.os.rmdir(f'{self.rcrp_model_path}/temp')
+                    await aiofiles.os.remove(f'{downloadfolder}/{model.txd_name}')
 
         #tap into the RCRP message queue system to tell the server to check for new models
         message = humanize_list(model_id_list)
@@ -295,6 +294,12 @@ class RCRPModelManager(commands.Cog):
         sql.close()
 
         await ctx.send(f'{model_count} {"models" if model_count != 1 else "model"} has been successfully downloaded and put in their appropriate directories. The RCRP game server has been instructed to check for new models.')
+
+        #remove the temporary directory
+        try:
+            await aiofiles.os.rmdir(f'{self.rcrp_model_path}/temp')
+        except:
+            await ctx.send("The temp models directory could't be deleted. Consider manually deleting it before the next time custom models are added.")
 
     @modelmanager.group()
     @commands.guild_only()
