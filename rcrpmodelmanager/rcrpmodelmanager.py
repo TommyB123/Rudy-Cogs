@@ -35,16 +35,6 @@ class RCRPModelManager(commands.Cog):
             return -30000, -1000
         else:
             return -1, -1
-    
-    def get_model_type_folder(self, type: str):
-        """Returns the folder used for a specific model type"""
-        type = type.upper()
-        if type == 'PED':
-            return 'peds'
-        elif type == 'OBJECT':
-            return 'objects'
-        else:
-            return '' 
         
     def model_type_int(self, type: str):
         """Returns the reference constant for model types that's used in the MySQL database/RCRP script"""
@@ -168,11 +158,10 @@ class RCRPModelManager(commands.Cog):
         if deletefiles == True:
             await cursor.execute("SELECT * FROM models WHERE modelid = %s", (modelid, ))
             data = await cursor.fetchone()
-            typefolder = self.get_model_type_folder(self.model_type_name(data['modeltype']))
             modelfolder = data['folder']
             model_dff = data['dff_name']
             model_txd = data['txd_name']
-            model_path = f'{self.rcrp_model_path}/{typefolder}/{modelfolder}'
+            model_path = f'{self.rcrp_model_path}/{modelfolder}'
 
             if os.path.isfile(f'{model_path}/{model_dff}'):
                 os.remove(f'{model_path}/{model_dff}')
@@ -277,22 +266,22 @@ class RCRPModelManager(commands.Cog):
         await ctx.send('Inserting new models into the MySQL database and moving them to their correct folders.')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
+        downloadfolder = f'{self.rcrp_model_path}/temp'
         async with ctx.typing():
             for model in model_list:
-                model_id_list.append(model.model_id)
+                model_id_list.append(f'{model.model_id}')
                 await cursor.execute("INSERT INTO models (modelid, reference_model, modeltype, dff_name, txd_name, folder) VALUES (%s, %s, %s, %s, %s, %s)",
                     (model.model_id, model.reference_model, self.model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
-                originfolder = f'{self.rcrp_model_path}/temp'
-                destinationfolder = f'{self.rcrp_model_path}/{self.get_model_type_folder(model.model_type)}/{model.model_path}'
+                destinationfolder = f'{self.rcrp_model_path}/{model.model_path}'
 
                 if os.path.exists(destinationfolder) == False:
                     await aiofiles.os.mkdir(destinationfolder)
 
-                if os.path.isfile(f'{originfolder}/{model.dff_name}') == True and os.path.isfile(f'{destinationfolder}/{model.dff_name}') == False:
-                    await aiofiles.os.rename(f'{originfolder}/{model.dff_name}', f'{destinationfolder}/{model.dff_name}')
+                if os.path.isfile(f'{downloadfolder}/{model.dff_name}') == True and os.path.isfile(f'{destinationfolder}/{model.dff_name}') == False:
+                    await aiofiles.os.rename(f'{downloadfolder}/{model.dff_name}', f'{destinationfolder}/{model.dff_name}')
 
-                if os.path.isfile(f'{originfolder}/{model.txd_name}') == True and os.path.isfile(f'{destinationfolder}/{model.txd_name}') == False:
-                    await aiofiles.os.rename(f'{originfolder}/{model.txd_name}', f'{destinationfolder}/{model.txd_name}')
+                if os.path.isfile(f'{downloadfolder}/{model.txd_name}') == True and os.path.isfile(f'{destinationfolder}/{model.txd_name}') == False:
+                    await aiofiles.os.rename(f'{downloadfolder}/{model.txd_name}', f'{destinationfolder}/{model.txd_name}')
 
         #remove the temporary directory
         await aiofiles.os.rmdir(f'{self.rcrp_model_path}/temp')
@@ -300,7 +289,7 @@ class RCRPModelManager(commands.Cog):
         #tap into the RCRP message queue system to tell the server to check for new models
         message = humanize_list(model_id_list)
         message = message.replace(', and', ',')
-        await cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (-1, '%s', 2, UNIX_TIMESTAMP())", (message, ))
+        await cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (-1, %s, 2, UNIX_TIMESTAMP())", (message, ))
 
         await cursor.close()
         sql.close()
