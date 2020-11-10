@@ -61,7 +61,9 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
             sql.close()
 
             roles = list(results)
-            roles.remove(rcrpguildid)
+            if rcrpguildid in roles:
+                roles.remove(rcrpguildid)
+
             for role in results:
                 role = rcrpguild.get_role(role)
                 roles.append(role)
@@ -80,7 +82,8 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
 
         #insert roles
         role_ids = [role.id for role in after.roles]
-        role_ids.remove(rcrpguildid)
+        if rcrpguildid in role_ids:
+                role_ids.remove(rcrpguildid)
         for role in role_ids:
             await cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id, ))
 
