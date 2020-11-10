@@ -29,7 +29,7 @@ def member_is_management(member: discord.Member):
 
 class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
     def __init__(self, bot: discord.Client):
-        self.bot = bot
+        self.bot: discord.Client = bot
         self.sync_task = self.bot.loop.create_task(self.sync_member_roles())
 
     async def verified_filter(self, member: discord.Member):
@@ -51,96 +51,83 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         if member.guild.id == rcrpguildid:
-            rcrpguild = self.bot.get_guild(rcrpguildid)
+            rcrpguild: discord.Guild = self.bot.get_guild(rcrpguildid)
             sql = await aiomysql.connect(**mysqlconfig)
             cursor = await sql.cursor()
-            await cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
 
-            roles = []
+            await cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
             results = await cursor.fetchall()
             await cursor.close()
             sql.close()
+
+            roles = list(results)
+            roles.remove(rcrpguildid)
             for role in results:
-                if role[0] == rcrpguildid: #check to see if the role is @everyone, skip it if so
-                    continue
-                roles.append(rcrpguild.get_role(role[0]))
+                role = rcrpguild.get_role(role)
+                roles.append(role)
             await member.add_roles(*roles)
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        if not member_is_verified(after) or before.roles == after.roles or after.guild.id != rcrpguildid:
+        if member_is_verified(after) == False or before.roles == after.roles or after.guild.id != rcrpguildid:
             return
 
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
 
-        #check for removed roles and delete them
-        for role in before.roles:
-            if role.id not in after.roles:
-                await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s AND discordrole = %s", (before.id, role.id))
+        #delete previous roles
+        await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (before.id, ))
 
-        #check for added roles and insert them
-        cursor = await sql.cursor()
-        for role in after.roles:
-            if role.id not in before.roles:
-                if role.id == rcrpguildid: #check to see if role is @everyone, skip it if so
-                    continue
-                await cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id))
+        #insert roles
+        role_ids = [role.id for role in after.roles]
+        role_ids.remove(rcrpguildid)
+        for role in role_ids:
+            await cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id, ))
 
         await cursor.close()
         sql.close()
+
+    async def assign_roles(self, field: str, rcrpguild: discord.Guild, role: discord.Role):
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor(aiomysql.DictCursor)
+
+        await cursor.execute("SELECT discordid FROM masters WHERE %s != 0 AND discordid != 0", (field, ))
+        results = await cursor.fetchall()
+        await cursor.close()
+        sql.close()
+
+        rcrp_ids = list(results)
+        discord_ids = [member.id for member in role.members]
+
+        #assign roles to those who should have it
+        for member_id in rcrp_ids:
+            if member_id not in discord_ids:
+                member = await rcrpguild.get_member(member_id)
+                if member is not None and member_is_management(member) == False:
+                    await member.add_roles(role)
+
+        #remove roles from those who shouldn't have it
+        for member_id in discord_ids:
+            if member_id not in rcrp_ids:
+                member = await rcrpguild.get_member(member_id)
+                if member is not None and member_is_management(member) == False:
+                    await member.remove_roles(role)
     
     async def sync_member_roles(self):
         while 1:
             rcrpguild = await self.bot.fetch_guild(rcrpguildid)
-            sql = await aiomysql.connect(**mysqlconfig)
-            cursor = await sql.cursor(aiomysql.DictCursor)
-            async for member in rcrpguild.fetch_members(limit = None).filter(self.verified_filter):
-                if member_is_management(member) == True or member_is_verified(member) == False:
-                    continue
-
-                await cursor.execute("SELECT id, Helper, Tester, AdminLevel, Premium FROM masters WHERE discordid = %s", (member.id, ))
-                data = await cursor.fetchone()
-
-                if data is None:
-                    continue
-
-                banned = await self.account_is_banned(data['id'])
-
-                #remove roles a member shouldn't have
-                removeroles = []
-                if helperrole in [role.id for role in member.roles] and data['Helper'] == 0: #member isn't a helper but has the role
-                    removeroles.append(rcrpguild.get_role(helperrole))
-                if testerrole in [role.id for role in member.roles] and data['Tester'] == 0: #member isn't a tester but has the role
-                    removeroles.append(rcrpguild.get_role(testerrole))
-                if adminrole in [role.id for role in member.roles] and data['AdminLevel'] == 0: #member isn't an admin but has the role
-                    removeroles.append(rcrpguild.get_role(adminrole))
-                if premiumrole in [role.id for role in member.roles] and data['Premium'] == 0: #member isn't an admin but has the role
-                    removeroles.append(rcrpguild.get_role(premiumrole))
-                if bannedrole in [role.id for role in member.roles] and banned is False: #member isn't banned but has the role
-                    removeroles.append(rcrpguild.get_role(bannedrole))
-                if removeroles:
-                    await member.remove_roles(*removeroles)
-
-                #add roles a member should have
-                addroles = []
-                if helperrole not in [role.id for role in member.roles] and data['Helper'] == 1: #member is a helper but doesn't have the role
-                    addroles.append(rcrpguild.get_role(helperrole))
-                if testerrole not in [role.id for role in member.roles] and data['Tester'] == 1: #member is a tester but doesn't have the role
-                    addroles.append(rcrpguild.get_role(testerrole))
-                if adminrole not in [role.id for role in member.roles] and data['AdminLevel'] != 0: #member is an admin but doesn't have the role
-                    addroles.append(rcrpguild.get_role(adminrole))
-                if premiumrole not in [role.id for role in member.roles] and data['Premium'] != 0: #member is an admin but doesn't have the role
-                    addroles.append(rcrpguild.get_role(premiumrole))
-                if bannedrole not in [role.id for role in member.roles] and banned is True: #member isn't banned but has the role
-                    addroles.append(rcrpguild.get_role(bannedrole))
-                if verifiedrole not in [role.id for role in member.roles]:
-                    addroles.append(rcrpguild.get_role(verifiedrole))
-                if addroles:
-                    await member.add_roles(*addroles)
-
-            await cursor.close()
-            sql.close()
+            try:
+                admin = rcrpguild.get_role(adminrole)
+                tester = rcrpguild.get_role(testerrole)
+                helper = rcrpguild.get_role(helperrole)
+                premium = rcrpguild.get_role(premiumrole)
+                await self.assign_roles('AdminLevel', rcrpguild, admin)
+                await self.assign_roles('Tester', rcrpguild, tester)
+                await self.assign_roles('Helper', rcrpguild, helper)
+                await self.assign_roles('Premium', rcrpguild, premium)
+            except Exception as e:
+                channel = rcrpguild.get_channel(775767985586962462)
+                await channel.send(f'An exception occurred in role sync. Exception: {e}')
             await asyncio.sleep(60) #check every minute
     
     def __unload(self):
