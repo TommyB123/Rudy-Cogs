@@ -66,7 +66,8 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
 
             for role in results:
                 role = rcrpguild.get_role(role)
-                roles.append(role)
+                if role is not None:
+                    roles.append(role)
             await member.add_roles(*roles)
 
     @commands.Cog.listener()
