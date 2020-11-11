@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import aiomysql
+from aiomysql import Cursor
 from redbot.core import commands
 from .config import mysqlconfig
 
@@ -32,12 +33,17 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
         self.bot: discord.Client = bot
         self.sync_task = self.bot.loop.create_task(self.sync_member_roles())
 
+    async def log(self, message: str):
+        rcrpguild = self.bot.get_guild(rcrpguildid)
+        logchannel = rcrpguild.get_channel(775767985586962462)
+        await logchannel.send(message)
+
     async def verified_filter(self, member: discord.Member):
         return member_is_verified(member) == True
 
     async def account_is_banned(self, accountid):
         sql = await aiomysql.connect(**mysqlconfig)
-        cursor = await sql.cursor()
+        cursor: Cursor = await sql.cursor()
         await cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
         data = await cursor.fetchone()
         await cursor.close()
@@ -53,22 +59,23 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
         if member.guild.id == rcrpguildid:
             rcrpguild: discord.Guild = self.bot.get_guild(rcrpguildid)
             sql = await aiomysql.connect(**mysqlconfig)
-            cursor = await sql.cursor()
+            cursor: Cursor = await sql.cursor()
 
-            await cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
-            results = await cursor.fetchall()
+            count = await cursor.execute("SELECT discordrole FROM discordroles WHERE discorduser = %s", (member.id, ))
+            if count != 0:
+                results = await cursor.fetchall()
+
+                roles = []
+                for roleid in results:
+                    role = rcrpguild.get_role(roleid[0])
+                    if role is None or roleid[0] == rcrpguildid:
+                        continue
+                    else:
+                        roles.append(role)
+
+                await member.add_roles(*roles)
             await cursor.close()
             sql.close()
-
-            roles = list(results)
-            if rcrpguildid in roles:
-                roles.remove(rcrpguildid)
-
-            for role in results:
-                role = rcrpguild.get_role(role)
-                if role is not None:
-                    roles.append(role)
-            await member.add_roles(*roles)
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
@@ -86,7 +93,7 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
         if rcrpguildid in role_ids:
                 role_ids.remove(rcrpguildid)
         for role in role_ids:
-            await cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role.id, ))
+            await cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role, ))
 
         await cursor.close()
         sql.close()
@@ -130,8 +137,7 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
                 await self.assign_roles('Helper', rcrpguild, helper)
                 await self.assign_roles('Premium', rcrpguild, premium)
             except Exception as e:
-                channel = rcrpguild.get_channel(775767985586962462)
-                await channel.send(f'An exception occurred in role sync. Exception: {e}')
+                await self.log(f'An exception occurred in role sync. Exception: {e}')
             await asyncio.sleep(60) #check every minute
     
     def __unload(self):
