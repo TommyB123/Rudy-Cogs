@@ -30,5 +30,5 @@ class RCRPSampInfo(commands.Cog, name="SA-MP Server Info"):
 
             await asyncio.sleep(1) #run every second
     
-    def __unload(self):
+    def cog_unload(self):
         self.info_task.cancel()

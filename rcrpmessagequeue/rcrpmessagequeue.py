@@ -52,5 +52,5 @@ class RCRPMessageQueue(commands.Cog, name = "RCRP Message Queue"):
             sql.close()
             await asyncio.sleep(1) #checks every second
     
-    def __unload(self):
+    def cog_unload(self):
         self.queue_task.cancel()

@@ -140,5 +140,5 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
                 await self.log(f'An exception occurred in role sync. Exception: {e}')
             await asyncio.sleep(60) #check every minute
     
-    def __unload(self):
+    def cog_unload(self):
         self.sync_task.cancel()
