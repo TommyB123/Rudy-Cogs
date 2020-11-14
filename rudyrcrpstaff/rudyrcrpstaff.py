@@ -1,5 +1,6 @@
 import discord
 import aiomysql
+import json
 from .config import mysqlconfig
 from redbot.core import commands
 from datetime import datetime
@@ -99,6 +100,19 @@ async def management_check(ctx: commands.Context):
     else:
         return True
 
+async def fetch_master_id_from_discord_id(discordid: int):
+    sql = await aiomysql.connect( **mysqlconfig)
+    cursor = await sql.cursor()
+    await cursor.execute("SELECT id FROM masters WHERE discordid = %s", (discordid, ))
+    data = await cursor.fetchone()
+    await cursor.close()
+    sql.close()
+
+    if data is None:
+        return 0
+    else:
+        return data[0]
+
 def member_is_admin(member: discord.Member):
     for role in member.roles:
         if role.id in staffroles:
@@ -134,6 +148,7 @@ async def fetch_account_id(mastername: str):
 class RCRPStaffCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.message_chanel_id = 776943930603470868
 
     @commands.group()
     @commands.guild_only()
@@ -592,3 +607,49 @@ class RCRPStaffCommands(commands.Cog):
     async def avatar(self, ctx: commands.Context, member: discord.Member):
         """Fetches the avatar of a Discord member"""
         await ctx.send(f'Avatar of {member.mention}: {member.avatar_url}')
+    
+    @commands.group()
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
+    async def rcrp(self, ctx: commands.Context):
+        pass
+
+    @rcrp.command()
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
+    async def asay(self, ctx: commands.Context, *, message: str):
+        """Broadcasts an admin message in-game"""
+        rcrp_message = {
+            "callback": "SendDiscordAsay",
+            "admin": ctx.author.name,
+            "message": message
+        }
+
+        finalmsg = json.dumps(rcrp_message)
+        messagechannel = ctx.guild.get_channel(self.message_chanel_id)
+        await messagechannel.send(finalmsg)
+    
+    @rcrp.command()
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
+    async def igban(self, ctx: commands.Context, target: str, *, reason: str):
+        """Bans an online player from the server"""
+        master_id = await fetch_master_id_from_discord_id(ctx.author.id)
+        if(master_id == 0):
+            return
+        
+        rcrp_message = {
+            "callback": "SendDiscordBan",
+            "admin_id": master_id,
+            "admin_name": ctx.author.name,
+            "target": target,
+            "reason": reason,
+            "channel": str(ctx.channel.id)
+        }
+
+        finalmsg = json.dumps(rcrp_message)
+        messagechannel = ctx.guild.get_channel(self.message_chanel_id)
+        await messagechannel.send(finalmsg)
