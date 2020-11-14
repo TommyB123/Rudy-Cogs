@@ -5,6 +5,7 @@ import aiofiles
 import aiofiles.os
 import re
 import os
+import json
 from .config import mysqlconfig
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list
@@ -25,6 +26,7 @@ class RCRPModelManager(commands.Cog):
         self.models = {} #dict for pending model data. key will be the model's ID
         self.model_urls = [] #list containing each URL that needs to used for downloading
         self.rcrp_model_path = "/home/rcrp/domains/cdn.redcountyrp.com/public_html/rcrp" #path of RCRP models
+        self.message_channel_id = 776943930603470868
 
     def get_model_range_for_type(self, type: str):
         """Returns the valid range of model IDs for a specific type"""
@@ -284,14 +286,19 @@ class RCRPModelManager(commands.Cog):
                 if os.path.isfile(f'{downloadfolder}/{model.txd_name}') and os.path.isfile(f'{destinationfolder}/{model.txd_name}') == False:
                     await aiofiles.os.rename(f'{downloadfolder}/{model.txd_name}', f'{destinationfolder}/{model.txd_name}')
 
-        #tap into the RCRP message queue system to tell the server to check for new models
-        message = humanize_list(model_id_list)
-        message = message.replace(', and', ',')
-        await cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (-1, %s, 2, UNIX_TIMESTAMP())", (message, ))
-
         await cursor.close()
         sql.close()
 
+        #send a message to the rcrp game server so it'll load the models
+        message = humanize_list(model_id_list)
+        message = message.replace(', and', ',')
+        rcrp_message = {
+            "callback": "LoadCustomModels",
+            "models": message
+        }
+        final = json.dumps(rcrp_message)
+        messagechannel = await ctx.guild.get_channel(self.message_channel_id)
+        await messagechannel.send(final)
         await ctx.send(f'{model_count} {"models" if model_count != 1 else "model"} has been successfully downloaded and put in their appropriate directories. The RCRP game server has been instructed to check for new models.')
 
         #remove the temporary directory
