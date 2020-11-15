@@ -635,6 +635,21 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
+    async def id(self, ctx: commands.Context, *, search: str):
+        rcrp_message = {
+            "callback": "SendDiscordIDFetch",
+            "target": search,
+            "channel": str(ctx.channel.id)
+        }
+
+        finalmsg = json.dumps(rcrp_message)
+        messagechannel = ctx.guild.get_channel(self.message_chanel_id)
+        await messagechannel.send(finalmsg)
+    
+    @rcrp.command()
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
     async def igban(self, ctx: commands.Context, target: str, *, reason: str):
         """Bans an online player from the server"""
         master_id = await fetch_master_id_from_discord_id(ctx.author.id)
@@ -643,6 +658,29 @@ class RCRPStaffCommands(commands.Cog):
         
         rcrp_message = {
             "callback": "SendDiscordBan",
+            "admin_id": master_id,
+            "admin_name": ctx.author.name,
+            "target": target,
+            "reason": reason,
+            "channel": str(ctx.channel.id)
+        }
+
+        finalmsg = json.dumps(rcrp_message)
+        messagechannel = ctx.guild.get_channel(self.message_chanel_id)
+        await messagechannel.send(finalmsg)
+    
+    @rcrp.command()
+    @commands.guild_only()
+    @commands.check(rcrp_check)
+    @commands.check(admin_check)
+    async def igkick(self, ctx: commands.Context, target:str, *, reason: str):
+        """Kicks an online player from the server"""
+        master_id = await fetch_master_id_from_discord_id(ctx.author.id)
+        if(master_id == 0):
+            return
+        
+        rcrp_message = {
+            "callback": "SendDiscordKick",
             "admin_id": master_id,
             "admin_name": ctx.author.name,
             "target": target,
