@@ -162,7 +162,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def discordname(self, ctx: commands.Context, discord_user: discord.User):
+    async def discord(self, ctx: commands.Context, discord_user: discord.User):
         """Fetches Master Account info for a verified Discord member"""
         sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor()
@@ -189,7 +189,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def master(self, ctx: commands.Context, master_name: str):
+    async def ma(self, ctx: commands.Context, master_name: str):
         """Fetches a Discord account based on a Master Account name search"""
         sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor()
@@ -299,7 +299,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def accountweapons(self, ctx: commands.Context, master_name: str):
+    async def weapons(self, ctx: commands.Context, master_name: str):
         """Collects a list of all the weapons that an account owns"""
         master_id = await fetch_account_id(master_name)
         if master_id == 0:
