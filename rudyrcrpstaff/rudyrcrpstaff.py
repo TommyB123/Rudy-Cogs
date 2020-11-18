@@ -636,6 +636,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(rcrp_check)
     @commands.check(admin_check)
     async def id(self, ctx: commands.Context, *, search: str):
+        """Fetches an online player's ID based on user input"""
         rcrp_message = {
             "callback": "SendDiscordIDFetch",
             "target": search,
