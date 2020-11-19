@@ -342,22 +342,20 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def ban(self, ctx: commands.Context, target: discord.Member, *, banreason: str):
         """Issues a ban to a member of the RCRP discord"""
-        bannedmember = ctx.guild.get_member(target.id)
-        if member_is_admin(bannedmember):
-            await ctx.send("You can't ban other staff idiot boy.")
+        if member_is_admin(target):
+            await ctx.send("You can't ban other staff retard.")
             return
 
         try:
-            adminuser = await self.bot.fetch_user(ctx.author.id)
-            embed = discord.Embed(title = 'Banned', description = f'You have been banned from the Red County Roleplay Discord server by {adminuser.name}', color = 0xe74c3c, timestamp = ctx.message.created_at)
+            embed = discord.Embed(title = 'Banned', description = f'You have been banned from the Red County Roleplay Discord server by {ctx.author.name}', color = 0xe74c3c, timestamp = ctx.message.created_at)
             embed.add_field(name = 'Ban Reason', value = banreason)
             await target.send(embed = embed)
         except: #an exception will be raised if the bot can't DM the target, so we'll just pass and pretend it never happened
             pass
 
-        baninfo = f"{banreason} - Banned by {adminuser.name}"
-        await ctx.guild.ban(bannedmember, reason = baninfo, delete_message_days = 0)
-        await ctx.send(f"{bannedmember.mention} has been successfully banned.")
+        baninfo = f"{banreason} - Banned by {ctx.author.name}"
+        await ctx.guild.ban(target, reason = baninfo, delete_message_days = 0)
+        await ctx.send(f"{target.mention} has been successfully banned.")
 
     @punish.command()
     @commands.guild_only()
