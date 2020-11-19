@@ -158,11 +158,11 @@ class RCRPStaffCommands(commands.Cog):
         """Various search functions"""
         pass
 
-    @search.command()
+    @search.command(name="discord")
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def discord(self, ctx: commands.Context, discord_user: discord.User):
+    async def discord_ma_search(self, ctx: commands.Context, discord_user: discord.User):
         """Fetches Master Account info for a verified Discord member"""
         sql = await aiomysql.connect( **mysqlconfig)
         cursor = await sql.cursor()
