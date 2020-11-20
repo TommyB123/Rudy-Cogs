@@ -297,8 +297,8 @@ class RCRPModelManager(commands.Cog):
             "models": message
         }
         final = json.dumps(rcrp_message)
-        messagechannel = await ctx.guild.get_channel(self.message_channel_id)
-        await messagechannel.send(final)
+        relaychannel = ctx.guild.get_channel(self.relay_channel_id)
+        await relaychannel.send(final)
         await ctx.send(f'{model_count} {"models" if model_count != 1 else "model"} has been successfully downloaded and put in their appropriate directories. The RCRP game server has been instructed to check for new models.')
 
         #remove the temporary directory
@@ -307,39 +307,3 @@ class RCRPModelManager(commands.Cog):
             for file in temp_files:
                 await aiofiles.os.remove(f'{self.rcrp_model_path}/temp/{file}')
         await aiofiles.os.rmdir(f'{self.rcrp_model_path}/temp')
-
-    @modelmanager.group()
-    @commands.guild_only()
-    @commands.is_owner()
-    async def set(self, ctx: commands.Context):
-        """Set various attributes for an existing model"""
-        pass
-
-    
-    @set.command()
-    @commands.guild_only()
-    @commands.is_owner()
-    async def dff(self, ctx: commands.Context, modelid: int, texturename: str):
-        """Updates the DFF of an existing model"""
-        await ctx.send('wip')
-
-    @set.command()
-    @commands.guild_only()
-    @commands.is_owner()
-    async def txd(self, ctx: commands.Context, mdoelid: int, txdname: str):
-        """Updates the TXD of an existing model"""
-        await ctx.send('wip')
-    
-    @set.command()
-    @commands.guild_only()
-    @commands.is_owner()
-    async def folder(self, ctx: commands.Context, modelid: int, folder: str):
-        """Updates the folder of an existing model"""
-        await ctx.send('wip')
-    
-    @set.command()
-    @commands.guild_only()
-    @commands.is_owner()
-    async def type(self, ctx: commands.Context, modelid: int, type: str):
-        """Updates the type of an existing model (skin or object)"""
-        await ctx.send('wip')
