@@ -185,30 +185,34 @@ class OwnerCog(commands.Cog):
     @commands.is_owner()
     async def mysql(self, ctx, *, query: str):
         """Sends a MySQL query straight to the RCRP database"""
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
         async with ctx.typing():
-            sql = await aiomysql.connect(**mysqlconfig)
-            cursor = await sql.cursor()
-            if query.lower().startswith('update') or query.lower().startswith('delete'):
-                await cursor.execute(query)
-                await ctx.send(f'{cursor.rowcount} {"rows" if cursor.rowcount != 1 else "row"} affected.')
-            else:
-                await cursor.execute(query)
-                data = None
-                if cursor.rowcount == 0:
-                    await ctx.send("No results.")
-                    return
-                elif cursor.rowcount == 1:
-                    data = await cursor.fetchone()
+            try:
+                if query.lower().startswith('update') or query.lower().startswith('delete'):
+                    await cursor.execute(query)
+                    await ctx.send(f'{cursor.rowcount} {"rows" if cursor.rowcount != 1 else "row"} affected.')
                 else:
-                    data = await cursor.fetchall()
-                
-                string = []
-                for row in data:
-                    string.append(f'{row}\n')
-                string = ''.join(string)
-                string = string.replace('(', '')
-                string = string.replace(')', '')
-                await ctx.send(string)
+                    await cursor.execute(query)
+                    data = None
+                    if cursor.rowcount == 0:
+                        await ctx.send("No results.")
+                        return
+                    elif cursor.rowcount == 1:
+                        data = await cursor.fetchone()
+                    else:
+                        data = await cursor.fetchall()
+                    
+                    string = []
+                    for row in data:
+                        string.append(f'{row}\n')
+                    string = ''.join(string)
+                    string = string.replace('(', '')
+                    string = string.replace(')', '')
+                    await ctx.send(string)
+            except Exception as e:
+                embed = discord.Embed(title = 'MySQL Error', description = f'{e}', color = 0xe74c3c, timestamp = ctx.message.created_at)
+                await ctx.send(embed = embed)
             
-            await cursor.close()
-            sql.close()
+        await cursor.close()
+        sql.close()
