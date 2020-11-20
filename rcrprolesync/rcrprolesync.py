@@ -98,44 +98,44 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
         await cursor.close()
         sql.close()
 
-    async def assign_roles(self, field: str, rcrpguild: discord.Guild, role: discord.Role):
+    async def assign_roles(self, field: str, role_id: int):
         sql = await aiomysql.connect(**mysqlconfig)
-        cursor = await sql.cursor(aiomysql.DictCursor)
+        cursor: Cursor = await sql.cursor()
 
-        await cursor.execute("SELECT discordid FROM masters WHERE %s != 0 AND discordid != 0", (field, ))
+        await cursor.execute(f"SELECT discordid FROM masters WHERE {field} != 0 AND discordid != 0")
         results = await cursor.fetchall()
         await cursor.close()
         sql.close()
 
-        rcrp_ids = list(results)
-        discord_ids = [member.id for member in role.members]
+        rcrp_ids = []
+        for member_id in results:
+            rcrp_ids.append(member_id[0])
 
-        #assign roles to those who should have it
-        for member_id in rcrp_ids:
-            if member_id not in discord_ids:
-                member = await rcrpguild.get_member(member_id)
-                if member is not None and member_is_management(member) == False:
-                    await member.add_roles(role)
+        rcrpguild = self.bot.get_guild(rcrpguildid)
+        role = rcrpguild.get_role(role_id)
+        discord_ids = [member.id for member in role.members]
 
         #remove roles from those who shouldn't have it
         for member_id in discord_ids:
             if member_id not in rcrp_ids:
-                member = await rcrpguild.get_member(member_id)
+                member = rcrpguild.get_member(member_id)
                 if member is not None and member_is_management(member) == False:
                     await member.remove_roles(role)
+
+        #assign roles to those who should have it
+        for member_id in rcrp_ids:
+            if member_id not in discord_ids:
+                member = rcrpguild.get_member(member_id)
+                if member is not None and member_is_management(member) == False:
+                    await member.add_roles(role)
     
     async def sync_member_roles(self):
         while 1:
-            rcrpguild = await self.bot.fetch_guild(rcrpguildid)
             try:
-                admin = rcrpguild.get_role(adminrole)
-                tester = rcrpguild.get_role(testerrole)
-                helper = rcrpguild.get_role(helperrole)
-                premium = rcrpguild.get_role(premiumrole)
-                await self.assign_roles('AdminLevel', rcrpguild, admin)
-                await self.assign_roles('Tester', rcrpguild, tester)
-                await self.assign_roles('Helper', rcrpguild, helper)
-                await self.assign_roles('Premium', rcrpguild, premium)
+                await self.assign_roles('AdminLevel', adminrole)
+                await self.assign_roles('Tester', testerrole)
+                await self.assign_roles('Helper', helperrole)
+                await self.assign_roles('Premium', premiumrole)
             except Exception as e:
                 await self.log(f'An exception occurred in role sync. Exception: {e}')
             await asyncio.sleep(60) #check every minute
