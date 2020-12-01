@@ -1,5 +1,6 @@
 import discord
 import aiomysql
+import json
 from redbot.core import commands
 from .config import mysqlconfig
 
@@ -25,31 +26,26 @@ async def admin_check(ctx: commands.Context):
         return True
 
 class RCRPCommands(commands.Cog):
+    def __init__(self):
+        self.relay_channel_id = 776943930603470868
+
+    async def send_relay_channel_message(self, ctx: commands.Context, message: str):
+        relaychannel = ctx.guild.get_channel(self.relay_channel_id)
+        await relaychannel.send(message)
+
     @commands.command()
     @commands.guild_only()
     @commands.cooldown(1, 60)
     @commands.check(rcrp_check)
-    @commands.check(admin_check)
     async def admins(self, ctx: commands.Context):
         """Sends a list of in-game administrators"""
-        sql = await aiomysql.connect(**mysqlconfig)
-        cursor = await sql.cursor(aiomysql.DictCursor)
-        await cursor.execute("SELECT masters.Username AS mastername, players.Name AS charactername FROM masters JOIN players ON players.MasterAccount = masters.id WHERE AdminLevel != 0 AND Online = 1")
+        rcrp_message = {
+            "callback": "FetchAdminListForDiscord",
+            "channel": str(ctx.channel.id)
+        }
 
-        if cursor.rowcount == 0:
-            await cursor.close()
-            sql.close()
-            await ctx.send("There are currently no admins in-game.")
-            return
-
-        results = await cursor.fetchall()
-        embed = discord.Embed(title = 'In-game Administrators', color = 0xe74c3c, timestamp = ctx.message.created_at)
-        for admininfo in results:
-            embed.add_field(name = admininfo['mastername'], value = admininfo['charactername'], inline = True)
-
-        await cursor.close()
-        sql.close()
-        await ctx.send(embed = embed)
+        final = json.dumps(rcrp_message)
+        self.send_relay_channel_message(ctx, final)
 
     @commands.command()
     @commands.guild_only()
@@ -92,6 +88,19 @@ class RCRPCommands(commands.Cog):
             await ctx.send(f'{playername} is not currently in-game.')
         else:
             await ctx.send(f'{playername} is currently in-game.')
+        
+    @commands.command()
+    @commands.guild_only()
+    async def vehicleinfo(self, ctx: commands.Context, vehicle: str):
+        """Fetches all information related to a vehicle model from the SA-MP server"""
+        rcrp_message = {
+            "callback": "FetchVehicleInfoForDiscord",
+            "vehicle": vehicle,
+            "channel": str(ctx.channel.id)
+        }
+
+        message = json.dumps(rcrp_message)
+        await self.send_relay_channel_message(ctx, message)
 
     @commands.command()
     @commands.guild_only()
