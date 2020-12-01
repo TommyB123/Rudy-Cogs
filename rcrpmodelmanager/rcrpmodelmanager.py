@@ -26,7 +26,11 @@ class RCRPModelManager(commands.Cog):
         self.models = {} #dict for pending model data. key will be the model's ID
         self.model_urls = [] #list containing each URL that needs to used for downloading
         self.rcrp_model_path = "/home/rcrp/domains/cdn.redcountyrp.com/public_html/rcrp" #path of RCRP models
-        self.message_channel_id = 776943930603470868
+        self.relay_channel_id = 776943930603470868
+    
+    async def send_relay_channel_message(self, ctx: commands.Context, message: str):
+        relaychannel = ctx.guild.get_channel(self.relay_channel_id)
+        await relaychannel.send(message)
 
     def get_model_range_for_type(self, type: str):
         """Returns the valid range of model IDs for a specific type"""
@@ -297,8 +301,7 @@ class RCRPModelManager(commands.Cog):
             "models": message
         }
         final = json.dumps(rcrp_message)
-        relaychannel = ctx.guild.get_channel(self.relay_channel_id)
-        await relaychannel.send(final)
+        await self.send_relay_channel_message(ctx, final)
         await ctx.send(f'{model_count} {"models" if model_count != 1 else "model"} has been successfully downloaded and put in their appropriate directories. The RCRP game server has been instructed to check for new models.')
 
         #remove the temporary directory

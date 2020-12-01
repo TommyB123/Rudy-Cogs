@@ -148,17 +148,21 @@ async def fetch_account_id(mastername: str):
 class RCRPStaffCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.message_chanel_id = 776943930603470868
+        self.relay_channel_id = 776943930603470868
+    
+    async def send_relay_channel_message(self, ctx: commands.Context, message: str):
+        relaychannel = ctx.guild.get_channel(self.relay_channel_id)
+        await relaychannel.send(message)
 
     @commands.group()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def search(self, ctx: commands.Context):
+    async def lookup(self, ctx: commands.Context):
         """Various search functions"""
         pass
 
-    @search.command(name="discord")
+    @lookup.command(name="discord")
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
@@ -185,7 +189,7 @@ class RCRPStaffCommands(commands.Cog):
         embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
         await ctx.send(embed = embed)
 
-    @search.command()
+    @lookup.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
@@ -224,7 +228,7 @@ class RCRPStaffCommands(commands.Cog):
         embed.add_field(name = "Last Login Date", value = datetime.utcfromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S'), inline = False)
         await ctx.send(embed = embed)
     
-    @search.command()
+    @lookup.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
@@ -259,7 +263,7 @@ class RCRPStaffCommands(commands.Cog):
         embed.add_field(name = "Ext Furn Limit", value = house['ExteriorFurnLimit'], inline = False)
         await ctx.send(embed = embed)
 
-    @search.command()
+    @lookup.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
@@ -295,7 +299,7 @@ class RCRPStaffCommands(commands.Cog):
         embed.add_field(name = "Loaned", value = 'Yes' if bizz['Loaned'] == 1 else 'No', inline = False)
         await ctx.send(embed = embed)
     
-    @search.command()
+    @lookup.command()
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
@@ -626,8 +630,7 @@ class RCRPStaffCommands(commands.Cog):
         }
 
         finalmsg = json.dumps(rcrp_message)
-        messagechannel = ctx.guild.get_channel(self.message_chanel_id)
-        await messagechannel.send(finalmsg)
+        await self.send_relay_channel_message(ctx, finalmsg)
     
     @rcrp.command()
     @commands.guild_only()
@@ -642,8 +645,7 @@ class RCRPStaffCommands(commands.Cog):
         }
 
         finalmsg = json.dumps(rcrp_message)
-        messagechannel = ctx.guild.get_channel(self.message_chanel_id)
-        await messagechannel.send(finalmsg)
+        await self.send_relay_channel_message(ctx, finalmsg)
     
     @rcrp.command()
     @commands.guild_only()
@@ -665,8 +667,7 @@ class RCRPStaffCommands(commands.Cog):
         }
 
         finalmsg = json.dumps(rcrp_message)
-        messagechannel = ctx.guild.get_channel(self.message_chanel_id)
-        await messagechannel.send(finalmsg)
+        await self.send_relay_channel_message(ctx, finalmsg)
     
     @rcrp.command()
     @commands.guild_only()
@@ -688,5 +689,4 @@ class RCRPStaffCommands(commands.Cog):
         }
 
         finalmsg = json.dumps(rcrp_message)
-        messagechannel = ctx.guild.get_channel(self.message_chanel_id)
-        await messagechannel.send(finalmsg)
+        await self.send_relay_channel_message(ctx, finalmsg)
