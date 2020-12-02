@@ -17,6 +17,7 @@ ownerrole = 293303836125298690
 premiumrole = 534479263966167069
 testerrole = 293441807055060993
 verifiedrole = 293441047244308481
+fcrole = 393186381306003466
 
 def member_is_verified(member: discord.Member):
     return (verifiedrole in [role.id for role in member.roles])
@@ -136,6 +137,7 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
                 await self.assign_roles('Tester', testerrole)
                 await self.assign_roles('Helper', helperrole)
                 await self.assign_roles('Premium', premiumrole)
+                await self.assign_roles('FC', fcrole)
             except Exception as e:
                 await self.log(f'An exception occurred in role sync. Exception: {e}')
             await asyncio.sleep(60) #check every minute
