@@ -152,7 +152,7 @@ class RCRPModelManager(commands.Cog):
     @modelmanager.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def deletemodel(self, ctx: commands.Context, modelid: int, deletefiles: bool = False):
+    async def deletemodel(self, ctx: commands.Context, modelid: int, deletefiles: bool):
         """Removes a custom model from database (and optionally, deletes the file itself) (RCRP restart required for full effect)"""
         if await self.is_valid_model(modelid) == False:
             await ctx.send(f'{modelid} is not a model ID that is used on the server.')
