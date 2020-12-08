@@ -230,8 +230,8 @@ class RCRPModelManager(commands.Cog):
         embed.add_field(name = 'DFF', value = dffname, inline = False)
         embed.add_field(name = 'Model Type', value = self.model_type_name(data['modeltype']), inline = False)
         embed.add_field(name = 'Model Path', value = modelpath, inline = False)
-        embed.add_field(name = 'TXD URL', value = f'https://redcountyrp.com/cdn/rcrp/{modelpath}/{txdname}.txd')
-        embed.add_field(name = 'DFF URL', value = f'https://redcountyrp.com/cdn/rcrp/{modelpath}/{dffname}.dff')
+        embed.add_field(name = 'TXD URL', value = f'https://redcountyrp.com/cdn/rcrp/{modelpath}/{txdname}', inline = False)
+        embed.add_field(name = 'DFF URL', value = f'https://redcountyrp.com/cdn/rcrp/{modelpath}/{dffname}', inline = False)
         await ctx.send(embed = embed)
     
     @modelmanager.command()
