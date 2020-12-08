@@ -222,11 +222,16 @@ class RCRPModelManager(commands.Cog):
         await cursor.close()
         sql.close()
 
+        txdname = data['txd_name']
+        dffname = data['dff_name']
+        modelpath = data['folder']
         embed = discord.Embed(title = f'Model Information ({modelid})', color = ctx.author.color)
-        embed.add_field(name = 'TXD', value = data['txd_name'], inline = False)
-        embed.add_field(name = 'DFF', value = data['dff_name'], inline = False)
+        embed.add_field(name = 'TXD', value = txdname, inline = False)
+        embed.add_field(name = 'DFF', value = dffname, inline = False)
         embed.add_field(name = 'Model Type', value = self.model_type_name(data['modeltype']), inline = False)
-        embed.add_field(name = 'Model Path', value = data['folder'], inline = False)
+        embed.add_field(name = 'Model Path', value = modelpath, inline = False)
+        embed.add_field(name = 'TXD URL', value = f'https://redcountyrp.com/cdn/rcrp/{modelpath}/{txdname}.txd')
+        embed.add_field(name = 'DFF URL', value = f'https://redcountyrp.com/cdn/rcrp/{modelpath}/{dffname}.dff')
         await ctx.send(embed = embed)
     
     @modelmanager.command()
