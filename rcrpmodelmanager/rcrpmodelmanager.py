@@ -237,6 +237,35 @@ class RCRPModelManager(commands.Cog):
     @modelmanager.command()
     @commands.guild_only()
     @commands.is_owner()
+    async def modelsearch(self, ctx: commands.Context, type: str, *, search: str):
+        """Searches the database to find models of the specified type with the search term in their DFF name"""
+        if self.is_valid_model_type(type) == False:
+            await ctx.send('Invalid type.')
+            return
+
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor(aiomysql.DictCursor)
+
+        type_int = self.model_type_int(type)
+        await cursor.execute("SELECT * FROM models WHERE modeltype = %s AND dff_name LIKE %s", (type_int, search, ))
+        data = await cursor.fetchall()
+        await cursor.close()
+        sql.close()
+
+        if data is None:
+            await ctx.send('Could not find a model of that type based on your search term.')
+            return
+        
+        embed = discord.Embed(title = 'Search Results', color = ctx.author.color)
+        for model in data:
+            embed.add_field(name = 'Model ID', value = model['modelid'])
+            embed.add_field(name = 'DFF Name', value = model['dff_name'])
+            embed.add_field(name = 'TXD Name', value = model['txd_name'])
+        await ctx.send(embed = embed)
+    
+    @modelmanager.command()
+    @commands.guild_only()
+    @commands.is_owner()
     async def finalize(self, ctx: commands.Context):
         """Downloads all pending models and sends a signal to the RCRP gamemode to check for models that are currently not loaded"""
         if len(self.models) == 0:
@@ -258,9 +287,10 @@ class RCRPModelManager(commands.Cog):
         url_count = len(self.model_urls)
 
         #download!
+        tempfolder = f'{self.rcrp_model_path}/temp'
         await ctx.send(f'Beginning the download of the {url_count} necessary {"files" if url_count != 1 else "file"}.')
-        if os.path.exists(f'{self.rcrp_model_path}/temp') == False:
-            await aiofiles.os.mkdir(f'{self.rcrp_model_path}/temp')
+        if os.path.exists(tempfolder) == False:
+            await aiofiles.os.mkdir(tempfolder)
 
         async with ctx.typing():
             for url in self.model_urls:
@@ -270,15 +300,15 @@ class RCRPModelManager(commands.Cog):
                             file_match = re.search('https://cdn.discordapp.com/attachments/[0-9]*/[0-9]*/', url)
                             filename = url.replace(file_match.group(), '')
                             data = await response.read()
-                            async with aiofiles.open(f'{self.rcrp_model_path}/temp/{filename}', 'wb') as file:
+                            async with aiofiles.open(f'{tempfolder}/{filename}', 'wb') as file:
                                 await file.write(data)
             await ctx.send(f'Finished downloading {url_count} {"files" if url_count != 1 else "file"}.')
         self.model_urls.clear()
 
+        #insert the models into the MySQL database and then move them to the correct directories
         await ctx.send('Inserting new models into the MySQL database and moving them to their correct folders.')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
-        downloadfolder = f'{self.rcrp_model_path}/temp'
         async with ctx.typing():
             for model in model_list:
                 model_id_list.append(f'{model.model_id}')
@@ -289,11 +319,11 @@ class RCRPModelManager(commands.Cog):
                 if os.path.exists(destinationfolder) == False:
                     await aiofiles.os.mkdir(destinationfolder)
 
-                if os.path.isfile(f'{downloadfolder}/{model.dff_name}') and os.path.isfile(f'{destinationfolder}/{model.dff_name}') == False:
-                    await aiofiles.os.rename(f'{downloadfolder}/{model.dff_name}', f'{destinationfolder}/{model.dff_name}')
+                if os.path.isfile(f'{tempfolder}/{model.dff_name}') and os.path.isfile(f'{destinationfolder}/{model.dff_name}') == False:
+                    await aiofiles.os.rename(f'{tempfolder}/{model.dff_name}', f'{destinationfolder}/{model.dff_name}')
 
-                if os.path.isfile(f'{downloadfolder}/{model.txd_name}') and os.path.isfile(f'{destinationfolder}/{model.txd_name}') == False:
-                    await aiofiles.os.rename(f'{downloadfolder}/{model.txd_name}', f'{destinationfolder}/{model.txd_name}')
+                if os.path.isfile(f'{tempfolder}/{model.txd_name}') and os.path.isfile(f'{destinationfolder}/{model.txd_name}') == False:
+                    await aiofiles.os.rename(f'{tempfolder}/{model.txd_name}', f'{destinationfolder}/{model.txd_name}')
 
         await cursor.close()
         sql.close()
@@ -310,8 +340,8 @@ class RCRPModelManager(commands.Cog):
         await ctx.send(f'{model_count} {"models" if model_count != 1 else "model"} has been successfully downloaded and put in their appropriate directories. The RCRP game server has been instructed to check for new models.')
 
         #remove the temporary directory
-        temp_files = os.listdir(downloadfolder)
+        temp_files = os.listdir(tempfolder)
         if len(temp_files) != 0:
             for file in temp_files:
-                await aiofiles.os.remove(f'{self.rcrp_model_path}/temp/{file}')
-        await aiofiles.os.rmdir(f'{self.rcrp_model_path}/temp')
+                await aiofiles.os.remove(f'{tempfolder}/{file}')
+        await aiofiles.os.rmdir(f'{tempfolder}')
