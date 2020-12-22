@@ -45,7 +45,7 @@ class RCRPCommands(commands.Cog):
         }
 
         final = json.dumps(rcrp_message)
-        self.send_relay_channel_message(ctx, final)
+        await self.send_relay_channel_message(ctx, final)
 
     @commands.command()
     @commands.guild_only()
