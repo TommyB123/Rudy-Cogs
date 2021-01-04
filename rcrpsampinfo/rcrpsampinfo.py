@@ -23,7 +23,7 @@ class RCRPSampInfo(commands.Cog, name="SA-MP Server Info"):
                 if players == None:
                     players = 0
 
-                game = discord.Game(f'RCRP ({players}/150 players)')
+                game = discord.Game(f'RCRP ({players}/250 players)')
                 await self.bot.change_presence(activity = game)
             except:
                 pass
