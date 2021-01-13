@@ -13,13 +13,16 @@ async def isrudyfriend(ctx: commands.Context):
     return ctx.author.id in rudyfriends
 
 async def SendRandomAlbumPicture(ctx: commands.Context, album: str):
-    final_url = None
-    async with ctx.typing():
-        pictures = []
-        for image in imclient.get_album_images(album):
-            pictures.append(image.link)
-        final_url = random.choice(pictures)
-    await ctx.send(final_url)
+    try:
+        final_url = None
+        async with ctx.typing():
+            pictures = []
+            for image in imclient.get_album_images(album):
+                pictures.append(image.link)
+            final_url = random.choice(pictures)
+        await ctx.send(final_url)
+    except:
+        await ctx.send('Failed to fetch album photo. Imgur API is probably down because it sucks.')
 
 class RudyPic(commands.Cog, name = "rudypic"):
     def __init__(self, bot):
