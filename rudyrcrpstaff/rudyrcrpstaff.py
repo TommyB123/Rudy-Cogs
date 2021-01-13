@@ -629,8 +629,7 @@ class RCRPStaffCommands(commands.Cog):
             "message": message
         }
 
-        finalmsg = json.dumps(rcrp_message)
-        await self.send_relay_channel_message(ctx, finalmsg)
+        await self.send_relay_channel_message(ctx, json.dumps(rcrp_message))
     
     @rcrp.command()
     @commands.guild_only()
@@ -644,8 +643,7 @@ class RCRPStaffCommands(commands.Cog):
             "channel": str(ctx.channel.id)
         }
 
-        finalmsg = json.dumps(rcrp_message)
-        await self.send_relay_channel_message(ctx, finalmsg)
+        await self.send_relay_channel_message(ctx, json.dumps(rcrp_message))
     
     @rcrp.command()
     @commands.guild_only()
@@ -666,8 +664,7 @@ class RCRPStaffCommands(commands.Cog):
             "channel": str(ctx.channel.id)
         }
 
-        finalmsg = json.dumps(rcrp_message)
-        await self.send_relay_channel_message(ctx, finalmsg)
+        await self.send_relay_channel_message(ctx, json.dumps(rcrp_message))
     
     @rcrp.command()
     @commands.guild_only()
@@ -688,5 +685,4 @@ class RCRPStaffCommands(commands.Cog):
             "channel": str(ctx.channel.id)
         }
 
-        finalmsg = json.dumps(rcrp_message)
-        await self.send_relay_channel_message(ctx, finalmsg)
+        await self.send_relay_channel_message(ctx, json.dumps(rcrp_message))

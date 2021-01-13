@@ -335,8 +335,7 @@ class RCRPModelManager(commands.Cog):
             "callback": "LoadCustomModels",
             "models": message
         }
-        final = json.dumps(rcrp_message)
-        await self.send_relay_channel_message(ctx, final)
+        await self.send_relay_channel_message(ctx, json.dumps(rcrp_message))
         await ctx.send(f'{model_count} {"models" if model_count != 1 else "model"} has been successfully downloaded and put in their appropriate directories. The RCRP game server has been instructed to check for new models.')
 
         #remove the temporary directory
