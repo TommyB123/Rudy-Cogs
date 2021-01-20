@@ -21,13 +21,22 @@ async def fetchweeb(session: aiohttp.ClientSession, url: str):
 async def isweeb(ctx: commands.Context):
     weeb = WeebCommands(commands.Cog)
     weeb.config = Config.get_conf(weeb, identifier=45599)
+
     weebs = await weeb.config.weebs()
-    return ctx.author.id in weebs
+    if ctx.author.id in weebs:
+        return True
+
+    weebservers = await weeb.config.weebservers()
+    if ctx.guild.id in weebservers:
+        return True
+
+    return False
 
 class WeebCommands(commands.Cog, name = "Weeb"):
     def __init__(self, bot):
         default_global = {
-            "weebs": []
+            "weebs": [],
+            "weebservers": []
         }
 
         self.bot = bot
@@ -124,3 +133,21 @@ class WeebCommands(commands.Cog, name = "Weeb"):
             await ctx.send(f'{target.mention} is now a certified weeb!')
         
         await self.config.weebs.set(weebs)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.is_owner()
+    async def makeserverweeb(self, ctx: commands.Context):
+        """Certifies or banishes a server from the weebs"""
+        weebservers: list = await self.config.weebservers()
+
+        guild = ctx.guild
+
+        if guild.id in weebservers:
+            weebservers.remove(guild.id)
+            await ctx.send(f'Server **{guild.name}** has been banished from the weebs.')
+        else:
+            weebservers.append(guild.id)
+            await ctx.send(f'**{guild.name}** is now a certified weeb server!')
+
+        await self.config.weebservers.set(weebservers)
