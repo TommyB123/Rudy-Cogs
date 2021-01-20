@@ -103,7 +103,11 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
         sql = await aiomysql.connect(**mysqlconfig)
         cursor: Cursor = await sql.cursor()
 
-        await cursor.execute(f"SELECT discordid FROM masters WHERE {field} != 0 AND discordid != 0")
+        if role_id == bannedrole:
+            await cursor.execute('SELECT masters.discordid FROM bans JOIN masters ON bans.MasterAccount = masters.id WHERE discordid != 0')
+        else:
+            await cursor.execute(f"SELECT discordid FROM masters WHERE {field} != 0 AND discordid != 0")
+
         results = await cursor.fetchall()
         await cursor.close()
         sql.close()
@@ -138,6 +142,7 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
                 await self.assign_roles('Helper', helperrole)
                 await self.assign_roles('Premium', premiumrole)
                 await self.assign_roles('FC', fcrole)
+                await self.assign_roles('Banned', bannedrole)
             except Exception as e:
                 await self.log(f'An exception occurred in role sync. Exception: {e}')
             await asyncio.sleep(60) #check every minute
