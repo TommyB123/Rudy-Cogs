@@ -42,6 +42,13 @@ class WeebCommands(commands.Cog, name = "Weeb"):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=45599)
         self.config.register_global(**default_global)
+    
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild):
+        weebservers = await self.config.weebservers()
+        if guild.id in weebservers:
+            weebservers.remove(guild.id)
+            await self.config.weebservers.set(weebservers)
 
     @commands.command()
     @commands.guild_only()
