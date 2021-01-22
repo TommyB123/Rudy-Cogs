@@ -3,7 +3,7 @@ import aiomysql
 from redbot.core import commands
 from .config import mysqlconfig
 
-#weapon origins
+# weapon origins
 origins = {
     1: "Admin Refunded Weapons",
     2: "Illegal Weapons",
@@ -13,7 +13,7 @@ origins = {
     8: "Strawman Weapons"
 }
 
-#weapon names
+# weapon names
 weaponnames = {
     0: "Fist",
     1: "Brass Knuckles",
@@ -73,6 +73,7 @@ weaponnames = {
     55: "Beanbag Shotgun"
 }
 
+
 class OwnerCog(commands.Cog):
     """Cog containing owner commands for the RCRP discord"""
 
@@ -114,26 +115,26 @@ class OwnerCog(commands.Cog):
             await cursor.close()
             sql.close()
 
-            embed = discord.Embed(title = 'RCRP Economy Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
-            embed.add_field(name = "In-Hand Cash", value = '${:,}'.format(inhandcash['dollars']))
-            embed.add_field(name = "Player Banks", value = '${:,}'.format(playerdata['Bank']))
-            embed.add_field(name = "Check Slot 1", value = '${:,}'.format(playerdata['CheckSlot1']))
-            embed.add_field(name = "Check Slot 2", value = '${:,}'.format(playerdata['CheckSlot2']))
-            embed.add_field(name = "Check Slot 3", value = '${:,}'.format(playerdata['CheckSlot3']))
-            embed.add_field(name = 'Faction Banks (excluding ST)', value = '${:,}'.format(factionbank['FBank']))
-            embed.add_field(name = 'Stored House Cash', value = '${:,}'.format(housecash['dollars']))
-            embed.add_field(name = 'Stored Business Cash', value = '${:,}'.format(bizzcash['dollars']))
-            embed.add_field(name = 'Stored Vehicle Cash', value = '${:,}'.format(vehiclecash['dollars']))
-            embed.add_field(name = 'Total', value = '${:,}'.format(cashsum))
-            await ctx.send(embed = embed)
-    
+            embed = discord.Embed(title='RCRP Economy Statistics', color=0xe74c3c, timestamp=ctx.message.created_at)
+            embed.add_field(name="In-Hand Cash", value='${:,}'.format(inhandcash['dollars']))
+            embed.add_field(name="Player Banks", value='${:,}'.format(playerdata['Bank']))
+            embed.add_field(name="Check Slot 1", value='${:,}'.format(playerdata['CheckSlot1']))
+            embed.add_field(name="Check Slot 2", value='${:,}'.format(playerdata['CheckSlot2']))
+            embed.add_field(name="Check Slot 3", value='${:,}'.format(playerdata['CheckSlot3']))
+            embed.add_field(name='Faction Banks (excluding ST)', value='${:,}'.format(factionbank['FBank']))
+            embed.add_field(name='Stored House Cash', value='${:,}'.format(housecash['dollars']))
+            embed.add_field(name='Stored Business Cash', value='${:,}'.format(bizzcash['dollars']))
+            embed.add_field(name='Stored Vehicle Cash', value='${:,}'.format(vehiclecash['dollars']))
+            embed.add_field(name='Total', value='${:,}'.format(cashsum))
+            await ctx.send(embed=embed)
+
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
     async def drugs(self, ctx: commands.Context):
         """Collects statistics related to how many drugs are on the server"""
         async with ctx.typing():
-            drugs = {47:0, 48:0, 49:0, 51:0, 52:0, 53:0, 55:0, 57:0}
+            drugs = {47: 0, 48: 0, 49: 0, 51: 0, 52: 0, 53: 0, 55: 0, 57: 0}
             sql = await aiomysql.connect(**mysqlconfig)
             cursor = await sql.cursor(aiomysql.DictCursor)
             await cursor.execute("SELECT SUM(itemval) AS items, item FROM (SELECT * FROM inventory_player UNION SELECT * FROM inventory_house UNION SELECT * FROM inventory_bizz UNION SELECT * FROM inventory_vehicle) t WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
@@ -145,17 +146,17 @@ class OwnerCog(commands.Cog):
             await cursor.close()
             sql.close()
 
-            embed = discord.Embed(title = 'RCRP Drug Statistics', color = 0xe74c3c, timestamp = ctx.message.created_at)
-            embed.add_field(name = 'Low Grade Cocaine', value = '{:,}'.format(drugs[47]))
-            embed.add_field(name = 'Medium Grade Cocaine', value = '{:,}'.format(drugs[48]))
-            embed.add_field(name = 'High Grade Cocaine', value = '{:,}'.format(drugs[49]))
-            embed.add_field(name = 'Low Grade Crack', value = '{:,}'.format(drugs[51]))
-            embed.add_field(name = 'Medium Grade Crack', value = '{:,}'.format(drugs[52]))
-            embed.add_field(name = 'High Grade Crack', value = '{:,}'.format(drugs[53]))
-            embed.add_field(name = 'Marijuana', value = '{:,}'.format(drugs[55]))
-            embed.add_field(name = 'Heroin', value = '{:,}'.format(drugs[57]))
-            await ctx.send(embed = embed)
-    
+            embed = discord.Embed(title='RCRP Drug Statistics', color=0xe74c3c, timestamp=ctx.message.created_at)
+            embed.add_field(name='Low Grade Cocaine', value='{:,}'.format(drugs[47]))
+            embed.add_field(name='Medium Grade Cocaine', value='{:,}'.format(drugs[48]))
+            embed.add_field(name='High Grade Cocaine', value='{:,}'.format(drugs[49]))
+            embed.add_field(name='Low Grade Crack', value='{:,}'.format(drugs[51]))
+            embed.add_field(name='Medium Grade Crack', value='{:,}'.format(drugs[52]))
+            embed.add_field(name='High Grade Crack', value='{:,}'.format(drugs[53]))
+            embed.add_field(name='Marijuana', value='{:,}'.format(drugs[55]))
+            embed.add_field(name='Heroin', value='{:,}'.format(drugs[57]))
+            await ctx.send(embed=embed)
+
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
@@ -175,11 +176,11 @@ class OwnerCog(commands.Cog):
         await cursor.close()
         sql.close()
 
-        embed = discord.Embed(title = f'RCRP Weapon Statistics ({origins[origin]})', color = 0xe74c3c, timestamp = ctx.message.created_at)
+        embed = discord.Embed(title=f'RCRP Weapon Statistics ({origins[origin]})', color=0xe74c3c, timestamp=ctx.message.created_at)
         for weapon in results:
-            embed.add_field(name = weaponnames[weapon['WeaponID']], value = '{:,}'.format(weapon['count']))
-        await ctx.send(embed = embed)
-    
+            embed.add_field(name=weaponnames[weapon['WeaponID']], value='{:,}'.format(weapon['count']))
+        await ctx.send(embed=embed)
+
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
@@ -202,7 +203,7 @@ class OwnerCog(commands.Cog):
                         data = await cursor.fetchone()
                     else:
                         data = await cursor.fetchall()
-                    
+
                     string = []
                     for row in data:
                         string.append(f'{row}\n')
@@ -211,8 +212,8 @@ class OwnerCog(commands.Cog):
                     string = string.replace(')', '')
                     await ctx.send(string)
             except Exception as e:
-                embed = discord.Embed(title = 'MySQL Error', description = f'{e}', color = 0xe74c3c, timestamp = ctx.message.created_at)
-                await ctx.send(embed = embed)
-            
+                embed = discord.Embed(title='MySQL Error', description=f'{e}', color=0xe74c3c, timestamp=ctx.message.created_at)
+                await ctx.send(embed=embed)
+
         await cursor.close()
         sql.close()

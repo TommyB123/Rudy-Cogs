@@ -5,10 +5,10 @@ from aiomysql import Cursor
 from redbot.core import commands
 from .config import mysqlconfig
 
-#rcrp guild ID
+# rcrp guild ID
 rcrpguildid = 93142223473905664
 
-#various role IDs for syncing
+# various role IDs for syncing
 adminrole = 293441894585729024
 bannedrole = 592730783924486168
 helperrole = 293441873945821184
@@ -19,8 +19,10 @@ testerrole = 293441807055060993
 verifiedrole = 293441047244308481
 fcrole = 393186381306003466
 
+
 def member_is_verified(member: discord.Member):
     return (verifiedrole in [role.id for role in member.roles])
+
 
 def member_is_management(member: discord.Member):
     role_ids = [role.id for role in member.roles]
@@ -29,7 +31,8 @@ def member_is_management(member: discord.Member):
     else:
         return False
 
-class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
+
+class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
     def __init__(self, bot: discord.Client):
         self.bot: discord.Client = bot
         self.sync_task = self.bot.loop.create_task(self.sync_member_roles())
@@ -40,7 +43,7 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
         await logchannel.send(message)
 
     async def verified_filter(self, member: discord.Member):
-        return member_is_verified(member) == True
+        return member_is_verified(member) is True
 
     async def account_is_banned(self, accountid):
         sql = await aiomysql.connect(**mysqlconfig)
@@ -80,19 +83,19 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        if member_is_verified(after) == False or before.roles == after.roles or after.guild.id != rcrpguildid:
+        if member_is_verified(after) is False or before.roles == after.roles or after.guild.id != rcrpguildid:
             return
 
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
 
-        #delete previous roles
+        # delete previous roles
         await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (before.id, ))
 
-        #insert roles
+        # insert roles
         role_ids = [role.id for role in after.roles]
         if rcrpguildid in role_ids:
-                role_ids.remove(rcrpguildid)
+            role_ids.remove(rcrpguildid)
         for role in role_ids:
             await cursor.execute("INSERT INTO discordroles (discorduser, discordrole) VALUES (%s, %s)", (before.id, role, ))
 
@@ -120,20 +123,20 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
         role = rcrpguild.get_role(role_id)
         discord_ids = [member.id for member in role.members]
 
-        #remove roles from those who shouldn't have it
+        # remove roles from those who shouldn't have it
         for member_id in discord_ids:
             if member_id not in rcrp_ids:
                 member = rcrpguild.get_member(member_id)
-                if member is not None and member_is_management(member) == False:
+                if member is not None and member_is_management(member) is False:
                     await member.remove_roles(role)
 
-        #assign roles to those who should have it
+        # assign roles to those who should have it
         for member_id in rcrp_ids:
             if member_id not in discord_ids:
                 member = rcrpguild.get_member(member_id)
-                if member is not None and member_is_management(member) == False:
+                if member is not None and member_is_management(member) is False:
                     await member.add_roles(role)
-    
+
     async def sync_member_roles(self):
         while 1:
             try:
@@ -145,7 +148,7 @@ class RCRPRoleSync(commands.Cog, name = "RCRP Role Sync"):
                 await self.assign_roles('Banned', bannedrole)
             except Exception as e:
                 await self.log(f'An exception occurred in role sync. Exception: {e}')
-            await asyncio.sleep(60) #check every minute
-    
+            await asyncio.sleep(60)  # check every minute
+
     def cog_unload(self):
         self.sync_task.cancel()

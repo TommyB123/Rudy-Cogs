@@ -3,14 +3,16 @@ import random
 from imgurpython import ImgurClient
 from redbot.core import commands, Config
 
-#imgur client handler
+# imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
+
 
 async def isrudyfriend(ctx: commands.Context):
     rudy = RudyPic(commands.Cog)
-    rudy.config = Config.get_conf(rudy, identifier = 45599)
+    rudy.config = Config.get_conf(rudy, identifier=45599)
     rudyfriends = await rudy.config.rudy_friends()
     return ctx.author.id in rudyfriends
+
 
 async def SendRandomAlbumPicture(ctx: commands.Context, album: str):
     try:
@@ -24,7 +26,8 @@ async def SendRandomAlbumPicture(ctx: commands.Context, album: str):
     except:
         await ctx.send('Failed to fetch album photo. Imgur API is probably down because it sucks.')
 
-class RudyPic(commands.Cog, name = "rudypic"):
+
+class RudyPic(commands.Cog, name="rudypic"):
     def __init__(self, bot):
         self.bot = bot
         default_global = {
@@ -66,7 +69,7 @@ class RudyPic(commands.Cog, name = "rudypic"):
     async def lylat(self, ctx: commands.Context):
         """Sends a legendary Lylat quote"""
         await SendRandomAlbumPicture(ctx, 'LF00KOm')
-    
+
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
@@ -79,6 +82,5 @@ class RudyPic(commands.Cog, name = "rudypic"):
         else:
             rudyfriends.append(target.id)
             await ctx.send(f'{target.mention} is now a Rudy friend!')
-        
-        await self.config.rudy_friends.set(rudyfriends)
 
+        await self.config.rudy_friends.set(rudyfriends)

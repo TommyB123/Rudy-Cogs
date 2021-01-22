@@ -11,21 +11,22 @@ gaslinks = [
     'https://cdn.discordapp.com/attachments/639337212424617994/645095656930934784/itsuki-takumi-iketani-at-gas-station-initial-d.png'
 ]
 
-#rcrp guild ID
+# rcrp guild ID
 rcrpguildid = 93142223473905664
 
-#roles
+# roles
 adminrole = 293441894585729024
 managementrole = 310927289317588992
 ownerrole = 293303836125298690
 staffroles = [ownerrole, adminrole, managementrole]
 
-#the age of rudy. used for the fancy time delta in the age command
+# the age of rudy. used for the fancy time delta in the age command
 rudyage = 1409529600
 
-#lol this is so ghetto
+# lol this is so ghetto
 path = __file__
 path = path.replace('rudyfun.py', '')
+
 
 async def admin_check(ctx: commands.Context):
     if ctx.guild.id == rcrpguildid:
@@ -35,6 +36,7 @@ async def admin_check(ctx: commands.Context):
         return False
     else:
         return True
+
 
 def pretty_time_delta(seconds: int):
     sign_string = '-' if seconds < 0 else ''
@@ -53,6 +55,7 @@ def pretty_time_delta(seconds: int):
         return '%s%dm %ds' % (sign_string, minutes, seconds)
     else:
         return '%s%ds' % (sign_string, seconds)
+
 
 class FunCommands(commands.Cog):
     @commands.command()
@@ -102,42 +105,42 @@ class FunCommands(commands.Cog):
     @commands.cooldown(1, 60)
     async def dozed(self, ctx: commands.Context):
         """nigga dozed off real quick"""
-        await ctx.send(file = discord.File(f'{path}/files/dozed.mp3'))
+        await ctx.send(file=discord.File(f'{path}/files/dozed.mp3'))
 
     @commands.command()
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def cunt(self, ctx: commands.Context):
         """unforgiveable"""
-        await ctx.send(file = discord.File(f'{path}/files/cunt.mp3'))
+        await ctx.send(file=discord.File(f'{path}/files/cunt.mp3'))
 
     @commands.command()
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def wheels(self, ctx: commands.Context):
         """a tragic tale"""
-        await ctx.send("Never put wheels on your PC", file = discord.File(f'{path}/files/wheels.mp3'))
+        await ctx.send("Never put wheels on your PC", file=discord.File(f'{path}/files/wheels.mp3'))
 
     @commands.command()
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def valero(self, ctx: commands.Context):
         """Hey guys, Valero here"""
-        await ctx.send(file = discord.File(f'{path}/files/valero.mp3'))
+        await ctx.send(file=discord.File(f'{path}/files/valero.mp3'))
 
     @commands.command()
     @commands.guild_only()
     @commands.cooldown(1, 60)
     async def bazinga(self, ctx: commands.Context):
         """Bazinga!"""
-        await ctx.send(file = discord.File(f'{path}/files/bazinga.mp3'))
-    
+        await ctx.send(file=discord.File(f'{path}/files/bazinga.mp3'))
+
     @commands.command()
     @commands.guild_only()
     async def ygay(self, ctx: commands.Context, target: discord.Member):
         """Ask why someone is in fact gay"""
         await ctx.message.delete()
-        await ctx.send(f'{target.mention}, why are you gay?', file = discord.File(f'{path}/files/why-are-you-gay.mp3'))
+        await ctx.send(f'{target.mention}, why are you gay?', file=discord.File(f'{path}/files/why-are-you-gay.mp3'))
 
     @commands.command()
     @commands.cooldown(1, 60)

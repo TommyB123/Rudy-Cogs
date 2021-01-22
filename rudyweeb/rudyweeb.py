@@ -1,7 +1,6 @@
 import discord
 import aiohttp
 import json
-import redbot
 import random
 from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import humanize_list
@@ -14,9 +13,11 @@ degenerate_categories = [
     'baka', 'blowjob', 'holoero', 'feed', 'neko', 'gasm', 'hentai', 'futanari', 'ero', 'solo', 'waifu', 'pwankg', 'eron', 'erokemo'
 ]
 
+
 async def fetchweeb(session: aiohttp.ClientSession, url: str):
     async with session.get(url) as response:
         return await response.text()
+
 
 async def isweeb(ctx: commands.Context):
     weeb = WeebCommands(commands.Cog)
@@ -32,7 +33,8 @@ async def isweeb(ctx: commands.Context):
 
     return False
 
-class WeebCommands(commands.Cog, name = "Weeb"):
+
+class WeebCommands(commands.Cog, name="Weeb"):
     def __init__(self, bot):
         default_global = {
             "weebs": [],
@@ -42,7 +44,7 @@ class WeebCommands(commands.Cog, name = "Weeb"):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=45599)
         self.config.register_global(**default_global)
-    
+
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
         weebservers = await self.config.weebservers()
@@ -81,14 +83,15 @@ class WeebCommands(commands.Cog, name = "Weeb"):
             category = random.choice(degenerate_categories)
 
         if category not in degenerate_categories:
-            await ctx.send(f"Not a valid degenerate category. '*' can be used to grab a random category. Valid categories: {humanize_list(degenerate_categories)}")
+            cats = humanize_list(degenerate_categories)
+            await ctx.send(f"Not a valid degenerate category. '*' can be used to grab a random category. Valid categories: {cats}")
             return
 
         async with aiohttp.ClientSession() as session:
             response = await fetchweeb(session, f'https://nekos.life/api/v2/img/{category}')
             image = json.loads(response)
             await ctx.send(image['url'])
-    
+
     @commands.command()
     @commands.guild_only()
     async def lizard(self, ctx: commands.Context):
@@ -97,7 +100,7 @@ class WeebCommands(commands.Cog, name = "Weeb"):
             response = await fetchweeb(session, 'https://nekos.life/api/v2/img/lizard')
             image = json.loads(response)
             await ctx.send(image['url'])
-    
+
     @commands.command()
     @commands.guild_only()
     async def woof(self, ctx: commands.Context):
@@ -106,7 +109,7 @@ class WeebCommands(commands.Cog, name = "Weeb"):
             response = await fetchweeb(session, 'https://nekos.life/api/v2/img/woof')
             image = json.loads(response)
             await ctx.send(image['url'])
-    
+
     @commands.command()
     @commands.guild_only()
     async def meow(self, ctx: commands.Context):
@@ -115,7 +118,7 @@ class WeebCommands(commands.Cog, name = "Weeb"):
             response = await fetchweeb(session, 'https://nekos.life/api/v2/img/meow')
             image = json.loads(response)
             await ctx.send(image['url'])
-    
+
     @commands.command()
     @commands.guild_only()
     async def goose(self, ctx: commands.Context):
@@ -124,7 +127,7 @@ class WeebCommands(commands.Cog, name = "Weeb"):
             response = await fetchweeb(session, 'https://nekos.life/api/v2/img/goose')
             image = json.loads(response)
             await ctx.send(image['url'])
-    
+
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
@@ -138,7 +141,7 @@ class WeebCommands(commands.Cog, name = "Weeb"):
         else:
             weebs.append(target.id)
             await ctx.send(f'{target.mention} is now a certified weeb!')
-        
+
         await self.config.weebs.set(weebs)
 
     @commands.command()

@@ -4,14 +4,15 @@ import aiomysql
 from redbot.core import commands
 from .config import mysqlconfig
 
-#ID of RCRP guild
+# ID of RCRP guild
 rcrpguildid = 93142223473905664
 
-#helper and admin chat channel IDs for echo
+# helper and admin chat channel IDs for echo
 adminchat = 397566940723281922
 helperchat = 609053396204257290
 
-class RCRPMessageQueue(commands.Cog, name = "RCRP Message Queue"):
+
+class RCRPMessageQueue(commands.Cog, name="RCRP Message Queue"):
     def __init__(self, bot: discord.Client):
         self.bot = bot
         self.queue_task = self.bot.loop.create_task(self.process_message_queue())
@@ -26,7 +27,7 @@ class RCRPMessageQueue(commands.Cog, name = "RCRP Message Queue"):
                 await cursor.execute("INSERT INTO messagequeue (channel, message, origin, timestamp) VALUES (%s, %s, 2, UNIX_TIMESTAMP())", (message.channel.id, queuemessage))
                 await cursor.close()
                 sql.close()
-    
+
     async def process_message_queue(self):
         while 1:
             sql = await aiomysql.connect(**mysqlconfig)
@@ -50,7 +51,7 @@ class RCRPMessageQueue(commands.Cog, name = "RCRP Message Queue"):
 
             await cursor.close()
             sql.close()
-            await asyncio.sleep(1) #checks every second
-    
+            await asyncio.sleep(1)  # checks every second
+
     def cog_unload(self):
         self.queue_task.cancel()

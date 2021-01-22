@@ -1,19 +1,20 @@
 import discord
-import asyncio
 import aiomysql
 from redbot.core import commands
 from .config import mysqlconfig
 
-#guild id for the prison guild
+# guild id for the prison guild
 prisonguildid = 558036120743706625
+
 
 async def prison_check(ctx: commands.Context):
     return ctx.guild.id == prisonguildid
 
-class RCRPPrison(commands.Cog, name = "RCRP Prison"):
+
+class RCRPPrison(commands.Cog, name="RCRP Prison"):
     def __init__(self, bot):
         self.bot = bot
-    
+
     @commands.group()
     @commands.guild_only()
     @commands.check(prison_check)
@@ -35,20 +36,21 @@ class RCRPPrison(commands.Cog, name = "RCRP Prison"):
             sql.close()
             await ctx.send('There are currently no online prisoners.')
             return
-        
+
         prisoners = await cursor.fetchall()
         prisonstring = []
         for prisoner in prisoners:
-            prisonstring.append(f'{prisoner[0]} ({prisoner[1]}) - Cell {prisoner[3]} ({prisoner[2]} {"minutes" if cursor.rowcount != 1 else "minute"} remaining)')
+            minutes = "minutes" if cursor.rowcount != 1 else "minute"
+            prisonstring.append(f'{prisoner[0]} ({prisoner[1]}) - Cell {prisoner[3]} ({prisoner[2]} {minutes} remaining)')
         prisonstring = '\n'.join(prisonstring)
         prisonstring = prisonstring.replace('_', ' ')
 
-        embed = discord.Embed(title = f'Online Prisoners ({cursor.rowcount})', description = prisonstring, color = 0xe74c3c, timestamp = ctx.message.created_at)
-        await ctx.send(embed = embed)
+        embed = discord.Embed(title=f'Online Prisoners ({cursor.rowcount})', description=prisonstring, color=0xe74c3c)
+        embed.timestamp = ctx.message.created_at
+        await ctx.send(embed=embed)
 
         await cursor.close()
         sql.close()
-
 
     @prison.command()
     @commands.guild_only()
