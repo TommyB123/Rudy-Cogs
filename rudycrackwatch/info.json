@@ -1,0 +1,7 @@
+{
+    "name": "Rudy Crackwatch",
+    "author": ["TommyB"],
+    "description": "Module that watches and posts notifications when games are cracked.",
+    "short": "Module that watches and posts notifications when games are cracked.",
+    "end_user_data_statement": "This cog does not collect data pertaining to any Discord user."
+}
