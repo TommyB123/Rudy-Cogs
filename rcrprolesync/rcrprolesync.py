@@ -1,7 +1,7 @@
 import discord
-import asyncio
 import aiomysql
 from aiomysql import Cursor
+from discord.ext import tasks
 from redbot.core import commands
 from .config import mysqlconfig
 
@@ -35,7 +35,10 @@ def member_is_management(member: discord.Member):
 class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
     def __init__(self, bot: discord.Client):
         self.bot: discord.Client = bot
-        self.sync_task = self.bot.loop.create_task(self.sync_member_roles())
+        self.sync_member_roles.start()
+
+    def cog_unload(self):
+        self.sync_member_roles.cancel()
 
     async def log(self, message: str):
         rcrpguild = self.bot.get_guild(rcrpguildid)
@@ -137,18 +140,15 @@ class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
                 if member is not None and member_is_management(member) is False:
                     await member.add_roles(role)
 
+    @tasks.loop(seconds=60.0)
     async def sync_member_roles(self):
-        while 1:
-            try:
-                await self.assign_roles('AdminLevel', adminrole)
-                await self.assign_roles('Tester', testerrole)
-                await self.assign_roles('Helper', helperrole)
-                await self.assign_roles('Premium', premiumrole)
-                await self.assign_roles('FC', fcrole)
-                await self.assign_roles('Banned', bannedrole)
-            except Exception as e:
-                await self.log(f'An exception occurred in role sync. Exception: {e}')
-            await asyncio.sleep(60)  # check every minute
+        await self.assign_roles('AdminLevel', adminrole)
+        await self.assign_roles('Tester', testerrole)
+        await self.assign_roles('Helper', helperrole)
+        await self.assign_roles('Premium', premiumrole)
+        await self.assign_roles('FC', fcrole)
+        await self.assign_roles('Banned', bannedrole)
 
-    def cog_unload(self):
-        self.sync_task.cancel()
+    @sync_member_roles.before_loop
+    async def before_sync_member_roles(self):
+        await self.bot.wait_until_ready()

@@ -1,9 +1,9 @@
 import discord
-import asyncio
 import aiohttp
 import ciso8601
 import time
 from datetime import timedelta
+from discord.ext import tasks
 from redbot.core import commands, Config
 from redbot.core.utils import menus
 
@@ -18,30 +18,33 @@ class RudyCrackwatch(commands.Cog, name="Crackwatch Watcher"):
         self.bot = bot
         self.config = Config.get_conf(self, 45599)
         self.config.register_global(**default_global)
-        self.game_check_task = self.bot.loop.create_task(self.fetch_cracked_games())
+        self.fetch_cracked_games.add_exception_type(aiohttp.ClientError)
+        self.fetch_cracked_games.start()
 
+    def cog_unload(self):
+        self.fetch_cracked_games.cancel()
+
+    @tasks.loop(seconds=60)
     async def fetch_cracked_games(self):
-        while 1:
-            data = None
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get('https://api.crackwatch.com/api/games?page=0&sort_by=crack_date&is_cracked=true') as res:
-                        data = await res.json()
-            except aiohttp.ClientError:
-                await asyncio.sleep(60)
-                continue
+        data = None
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://api.crackwatch.com/api/games?page=0&sort_by=crack_date&is_cracked=true') as res:
+                data = await res.json()
 
-            last_title = await self.config.last_cracked_game()
-            if last_title != data[0]['title']:
-                embed = await self.format_game_info(data[0])
-                channels = await self.config.watched_channels()
-                for channel_id in channels:
-                    channel = self.bot.get_channel(channel_id)
-                    if channel is not None:
-                        await channel.send(embed=embed)
-            last_title = data[0]['title']
-            await self.config.last_cracked_game.set(last_title)
-            await asyncio.sleep(60)
+        last_title = await self.config.last_cracked_game()
+        if last_title != data[0]['title']:
+            embed = await self.format_game_info(data[0])
+            channels = await self.config.watched_channels()
+            for channel_id in channels:
+                channel = self.bot.get_channel(channel_id)
+                if channel is not None:
+                    await channel.send(embed=embed)
+        last_title = data[0]['title']
+        await self.config.last_cracked_game.set(last_title)
+
+    @fetch_cracked_games.before_loop
+    async def before_fetch_cracked_games(self):
+        await self.bot.wait_until_ready()
 
     async def format_game_info(self, game):
         protections = ', '.join(game['protections'])
@@ -118,6 +121,3 @@ class RudyCrackwatch(commands.Cog, name="Crackwatch Watcher"):
             embeds.append(embed)
 
         await menus.menu(ctx, embeds, menus.DEFAULT_CONTROLS)
-
-    def cog_unload(self):
-        self.game_check_task.cancel()
