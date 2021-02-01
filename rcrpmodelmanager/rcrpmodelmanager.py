@@ -228,9 +228,9 @@ class RCRPModelManager(commands.Cog):
         embed.add_field(name='TXD', value=data['txd_name'], inline=False)
         embed.add_field(name='DFF', value=data['dff_name'], inline=False)
         embed.add_field(name='Model Type', value=self.model_type_name(data['modeltype']), inline=False)
-        embed.add_field(name='Model Path', value=data['folder]'], inline=False)
-        embed.add_field(name='TXD URL', value=f"https://redcountyrp.com/cdn/rcrp/{data['folder]']}/{data['txd_name']}", inline=False)
-        embed.add_field(name='DFF URL', value=f"https://redcountyrp.com/cdn/rcrp/{data['folder]']}/{data['dff_name']}", inline=False)
+        embed.add_field(name='Model Path', value=data['folder'], inline=False)
+        embed.add_field(name='TXD URL', value=f"https://redcountyrp.com/cdn/rcrp/{data['folder']}/{data['txd_name']}", inline=False)
+        embed.add_field(name='DFF URL', value=f"https://redcountyrp.com/cdn/rcrp/{data['folder']}/{data['dff_name']}", inline=False)
         await ctx.send(embed=embed)
 
     @modelmanager.command()
