@@ -11,28 +11,9 @@ from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list
 
 
-class pending_model():
-    """Pending model data"""
-    model_id: int
-    reference_model: int
-    dff_name: str
-    txd_name: str
-    model_type: str
-    model_path: str
-
-
-class RCRPModelManager(commands.Cog):
-    """RCRP Model Manager"""
-    def __init__(self, bot: discord.Client):
-        self.bot = bot
-        self.models = {}  # dict for pending model data. key will be the model's ID
-        self.model_urls = []  # list containing each URL that needs to used for downloading
-        self.rcrp_model_path = "/home/rcrp/domains/cdn.redcountyrp.com/public_html/rcrp"  # path of RCRP models
-        self.relay_channel_id = 776943930603470868
-
-    async def send_relay_channel_message(self, ctx: commands.Context, message: str):
-        relaychannel = ctx.guild.get_channel(self.relay_channel_id)
-        await relaychannel.send(message)
+class model_types():
+    model_type_ped: int = 0
+    model_type_object: int = 1
 
     def get_model_range_for_type(self, type: str):
         """Returns the valid range of model IDs for a specific type"""
@@ -82,28 +63,63 @@ class RCRPModelManager(commands.Cog):
         else:
             return True
 
+
+class model_data():
+    """Model data"""
+    def __init__(self, data: dict = {}):
+        if len(data) != 0:
+            # resolve a model based on a dict from a mysql cursor
+            self.model_id: int = data['modelid']
+            self.reference_model: int = data['reference_model']
+            self.dff_name: str = data['dff_name']
+            self.txd_name: str = data['txd_name']
+            self.model_type: str = model_types.model_type_name(data['modeltype'])
+            self.model_path: str = data['folder']
+        else:
+            self.model_id: int = 0
+            self.reference_model: int = 0
+            self.dff_name: str = ""
+            self.txd_name: str = ""
+            self.model_type: str = ""
+            self.model_path: str = ""
+
+
+class RCRPModelManager(commands.Cog):
+    """RCRP Model Manager"""
+    def __init__(self, bot: discord.Client):
+        self.bot = bot
+        self.models = {}  # dict for pending model data. key will be the model's ID
+        self.model_urls = []  # list containing each URL that needs to used for downloading
+        self.rcrp_model_path = "/home/rcrp/domains/cdn.redcountyrp.com/public_html/rcrp"  # path of RCRP models
+        self.relay_channel_id = 776943930603470868
+
+    async def send_relay_channel_message(self, ctx: commands.Context, message: str):
+        relaychannel = ctx.guild.get_channel(self.relay_channel_id)
+        await relaychannel.send(message)
+
     @commands.group()
-    @commands.guild_only()
     @commands.is_owner()
     async def modelmanager(self, ctx):
         """Manage and add new custom models"""
         pass
 
     @modelmanager.command()
-    @commands.guild_only()
     @commands.is_owner()
     async def addmodel(self, ctx: commands.Context, modelid: int, reference_id: int, folder: str, type: str, dff_url: str, txd_url: str):
         """Adds a new model to the pending models list"""
-        if self.is_valid_model_type(type) is False:
+        if model_types.is_valid_model_type(type) is False:
             await ctx.send('Invalid type.')
             return
 
-        min, max = self.get_model_range_for_type(type)
-        if modelid not in range(min, max):
+        if modelid in self.models:
+            await ctx.send(f'Model ID {modelid} is already present in the pending models list.')
+            return
+
+        if modelid not in range(model_types.get_model_range_for_type(type)):
             await ctx.send(f'Invalid model ID for type {type}. Please use a range of {min} to {max} for this type.')
             return
 
-        if await self.is_valid_model(modelid):
+        if await model_types.is_valid_model(modelid):
             await ctx.send(f'The model {modelid} is already present on the server.')
             return
 
@@ -125,7 +141,7 @@ class RCRPModelManager(commands.Cog):
         self.model_urls.append(txd_url)
 
         # assign pending model data, add it to dict
-        model_info = pending_model()
+        model_info = model_data()
         model_info.model_id = modelid
         model_info.reference_model = reference_id
         model_info.dff_name = dff_name
@@ -136,7 +152,6 @@ class RCRPModelManager(commands.Cog):
         await ctx.send(f'Model ID {modelid} has been added to the pending models list. Use !modelmanager finalize when you are ready to download the pending models to the server and add them in-game.')
 
     @modelmanager.command()
-    @commands.guild_only()
     @commands.is_owner()
     async def removependingmodel(self, ctx: commands.Context, modelid: int):
         """Removes a model from the list of current pending models"""
@@ -152,11 +167,10 @@ class RCRPModelManager(commands.Cog):
         await ctx.send(f'Model ID {modelid} has been removed from the pending models list.')
 
     @modelmanager.command()
-    @commands.guild_only()
     @commands.is_owner()
     async def deletemodel(self, ctx: commands.Context, modelid: int, deletefiles: bool):
         """Removes a custom model from database (and optionally, deletes the file itself) (RCRP restart required for full effect)"""
-        if await self.is_valid_model(modelid) is False:
+        if await model_types.is_valid_model(modelid) is False:
             await ctx.send(f'{modelid} is not a model ID that is used on the server.')
             return
 
@@ -187,7 +201,6 @@ class RCRPModelManager(commands.Cog):
         await ctx.send(f'Model {modelid} has been deleted from the MySQL database and will not be loaded on the next server restart.')
 
     @modelmanager.command()
-    @commands.guild_only()
     @commands.is_owner()
     async def viewpendingmodel(self, ctx: commands.Context, modelid: int):
         """Views the information of a pending model that has not been sent to the server yet"""
@@ -199,7 +212,7 @@ class RCRPModelManager(commands.Cog):
             await ctx.send('No pending model found with that ID.')
             return
 
-        model_info: pending_model = self.models[modelid]
+        model_info: model_data = self.models[modelid]
         embed = discord.Embed(title=f'Pending Model Information ({modelid})', color=ctx.author.color)
         embed.add_field(name='Reference ID', value=model_info.reference_model, inline=False)
         embed.add_field(name='TXD File Name', value=model_info.txd_name, inline=False)
@@ -209,43 +222,47 @@ class RCRPModelManager(commands.Cog):
         await ctx.send(embed=embed)
 
     @modelmanager.command()
-    @commands.guild_only()
     @commands.is_owner()
     async def fetchmodelinfo(self, ctx: commands.Context, modelid: int):
         """Retrieves information about an existing model from the MySQL database"""
-        if await self.is_valid_model(modelid) is False:
+        if await model_types.is_valid_model(modelid) is False:
             await ctx.send(f'{modelid} is not a valid model ID used on the server.')
             return
 
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT * FROM models WHERE modelid = %s", (modelid, ))
-        data = await cursor.fetchone()
+        results = await cursor.fetchone()
+        model = model_data(results)
         await cursor.close()
         sql.close()
 
+        model.model_path = model.model_path.replace(' ', '%20')
         embed = discord.Embed(title=f'Model Information ({modelid})', color=ctx.author.color)
-        embed.add_field(name='TXD', value=data['txd_name'], inline=False)
-        embed.add_field(name='DFF', value=data['dff_name'], inline=False)
-        embed.add_field(name='Model Type', value=self.model_type_name(data['modeltype']), inline=False)
-        embed.add_field(name='Model Path', value=data['folder'], inline=False)
-        embed.add_field(name='TXD URL', value=f"https://redcountyrp.com/cdn/rcrp/{data['folder']}/{data['txd_name']}", inline=False)
-        embed.add_field(name='DFF URL', value=f"https://redcountyrp.com/cdn/rcrp/{data['folder']}/{data['dff_name']}", inline=False)
+        embed.add_field(name='TXD', value=model.txd_name, inline=False)
+        embed.add_field(name='DFF', value=model.dff_name, inline=False)
+        embed.add_field(name='Model Type', value=model_types.model_type_name(model.model_type), inline=False)
+        embed.add_field(name='Model Path', value=model.model_path, inline=False)
+        embed.add_field(name='DFF URL', value=f"https://redcountyrp.com/cdn/rcrp/{model.model_path}/{model.model_dff}", inline=False)
+        embed.add_field(name='TXD URL', value=f"https://redcountyrp.com/cdn/rcrp/{model.model_path}/{model.model_txd}", inline=False)
+        if model.model_type == model_types.model_type_ped:
+            embed.add_field(name='Artconfig', value=f'AddCharModel({model.reference_model}, {model.model_id}, "{model.dff_name}", "{model.txd_name}")')
+        else:
+            embed.add_field(name='Artconfig', value=f'AddSimpleModel(-1, {model.reference_model}, {model.model_id}), "{model.dff_name}", "{model.txd_name}"')
         await ctx.send(embed=embed)
 
     @modelmanager.command()
-    @commands.guild_only()
     @commands.is_owner()
     async def modelsearch(self, ctx: commands.Context, type: str, *, search: str):
         """Searches the database to find models of the specified type with the search term in their DFF name"""
-        if self.is_valid_model_type(type) is False:
+        if model_types.is_valid_model_type(type) is False:
             await ctx.send('Invalid type.')
             return
 
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
 
-        type_int = self.model_type_int(type)
+        type_int = model_types.model_type_int(type)
         await cursor.execute("SELECT * FROM models WHERE modeltype = %s AND dff_name LIKE %s", (type_int, search, ))
         data = await cursor.fetchall()
         await cursor.close()
@@ -263,7 +280,6 @@ class RCRPModelManager(commands.Cog):
         await ctx.send(embed=embed)
 
     @modelmanager.command()
-    @commands.guild_only()
     @commands.is_owner()
     async def finalize(self, ctx: commands.Context):
         """Downloads all pending models and sends a signal to the RCRP gamemode to check for models that are currently not loaded"""
@@ -312,7 +328,7 @@ class RCRPModelManager(commands.Cog):
             for model in model_list:
                 model_id_list.append(f'{model.model_id}')
                 await cursor.execute("INSERT INTO models (modelid, reference_model, modeltype, dff_name, txd_name, folder) VALUES (%s, %s, %s, %s, %s, %s)",
-                    (model.model_id, model.reference_model, self.model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
+                    (model.model_id, model.reference_model, model_types.model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
                 destinationfolder = f'{self.rcrp_model_path}/{model.model_path}'
 
                 if os.path.exists(destinationfolder) is False:
