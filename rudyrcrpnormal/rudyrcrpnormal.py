@@ -104,16 +104,3 @@ class RCRPCommands(commands.Cog):
 
         message = json.dumps(rcrp_message)
         await self.send_relay_channel_message(ctx, message)
-
-    @commands.command()
-    @commands.guild_only()
-    async def gta(self, ctx: commands.Context):
-        """Sends two links providing clean copies of GTA SA. Useful for when modded games break and etc"""
-        await ctx.send("https://tommyb.ovh/files/cleangtasa.7z - Full game (3.6 GB)\nhttps://tommyb.ovh/files/cleangtasa-small.7z - Compressed/Removed audio (600MB)\n\nhttps://rc-rp.com/03dl - SA-MP 0.3.DL")
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.check(rcrp_check)
-    async def mipmapped(self, ctx: commands.Context):
-        """Sends a link with the GTA SA mipmapped mod"""
-        await ctx.send("https://tommyb.ovh/files/GTA-SA-Fully-Mipmapped.7z")
