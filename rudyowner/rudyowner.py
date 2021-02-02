@@ -1,6 +1,7 @@
 import discord
 import aiomysql
 from redbot.core import commands
+from redbot.core.utils import menus
 from .config import mysqlconfig
 
 # weapon origins
@@ -181,10 +182,16 @@ class OwnerCog(commands.Cog):
             embed.add_field(name=weaponnames[weapon['WeaponID']], value='{:,}'.format(weapon['count']))
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.group()
     @commands.is_owner()
-    async def mysql(self, ctx, *, query: str):
+    async def mysql(self, ctx: commands.Context):
         """Sends a MySQL query straight to the RCRP database"""
+        pass
+
+    @mysql.command(name='normal')
+    @commands.is_owner()
+    async def mysql_normal(self, ctx: commands.Context, *, query: str):
+        """Runs the given query and makes no attempt to format it."""
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         async with ctx.typing():
@@ -196,6 +203,8 @@ class OwnerCog(commands.Cog):
                     await cursor.execute(query)
                     data = None
                     if cursor.rowcount == 0:
+                        await cursor.close()
+                        sql.close()
                         await ctx.send("No results.")
                         return
                     elif cursor.rowcount == 1:
@@ -211,6 +220,46 @@ class OwnerCog(commands.Cog):
                     string = string.replace(')', '')
                     await ctx.send(string)
             except Exception as e:
+                embed = discord.Embed(title='MySQL Error', description=f'{e}', color=0xe74c3c, timestamp=ctx.message.created_at)
+                await ctx.send(embed=embed)
+
+        await cursor.close()
+        sql.close()
+
+    @mysql.command(name='pretty')
+    @commands.is_owner()
+    async def mysql_pretty(self, ctx: commands.Context, *, query: str):
+        """Runs the given query and formats it in an embed menu. Update and delete queries not supported."""
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        async with ctx.typing():
+            try:
+                if query.lower().startswith('update') or query.lower().startswith('delete'):
+                    await cursor.close()
+                    sql.close()
+                    await ctx.send('Update and delete queries are not supported in this method.')
+                    return
+
+                await cursor.execute(query)
+                data = None
+                if cursor.rowcount == 0:
+                    await cursor.close()
+                    sql.close()
+                    await ctx.send("No results.")
+                    return
+                elif cursor.rowcount == 1:
+                    data = await cursor.fetchone()
+                else:
+                    data = await cursor.fetchall()
+
+                embeds = []
+                for row in data:
+                    embed = discord.Embed(title='MySQL Results', color=0xe74c3c, timestamp=ctx.message.created_at)
+                    for key in row:
+                        embed.add_field(name=key, value=row[key])
+                    embeds.append(embed)
+                await menus.menu(ctx, embeds, menus.DEFAULT_CONTROLS)
+            except aiomysql.Error as e:
                 embed = discord.Embed(title='MySQL Error', description=f'{e}', color=0xe74c3c, timestamp=ctx.message.created_at)
                 await ctx.send(embed=embed)
 
