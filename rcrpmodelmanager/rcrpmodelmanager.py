@@ -15,36 +15,36 @@ class model_types():
     model_type_ped: int = 0
     model_type_object: int = 1
 
-    def get_model_range_for_type(self, type: str):
+    def get_model_range_for_type(modeltype: str):
         """Returns the valid range of model IDs for a specific type"""
-        type = type.upper()
-        if type == 'PED':
+        modeltype = modeltype.upper()
+        if modeltype == 'PED':
             return 20000, 30000
-        elif type == 'OBJECT':
+        elif modeltype == 'OBJECT':
             return -30000, -1000
         else:
             return -1, -1
 
-    def model_type_int(self, type: str):
+    def model_type_int(modeltype: str):
         """Returns the reference constant for model types that's used in the MySQL database/RCRP script"""
-        type = type.upper()
-        if type == 'PED':
+        modeltype = modeltype.upper()
+        if modeltype == 'PED':
             return 0
-        elif type == 'OBJECT':
+        elif modeltype == 'OBJECT':
             return 1
         else:
             return -1
 
-    def model_type_name(self, type: int):
+    def model_type_name(modeltype: int):
         """Returns the reference string for model types based on the constant used in the MySQL database/RCRP script"""
-        if type == 0:
+        if modeltype == 0:
             return 'PED'
-        elif type == 1:
+        elif modeltype == 1:
             return 'OBJECT'
         else:
             return 'INVALID'
 
-    async def is_valid_model(self, modelid: int):
+    async def is_valid_model(modelid: int):
         """Queries the MySQL database to see if a model ID exists"""
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
@@ -55,9 +55,9 @@ class model_types():
 
         return rows != 0
 
-    def is_valid_model_type(self, type: str):
+    def is_valid_model_type(modeltype: str):
         """Checks if the supplied string matches a valid model type. Valid types are 'PED' or 'OBJECT'"""
-        temp_type = type.upper()
+        temp_type = modeltype.upper()
         if temp_type != 'PED' and temp_type != 'OBJECT':
             return False
         else:
@@ -213,7 +213,7 @@ class RCRPModelManager(commands.Cog):
             return
 
         model_info: model_data = self.models[modelid]
-        embed = discord.Embed(title=f'Pending Model Information ({modelid})', color=ctx.author.color)
+        embed = discord.Embed(title=f'Pending Model Information ({modelid})', color=0xe74c3c)
         embed.add_field(name='Reference ID', value=model_info.reference_model, inline=False)
         embed.add_field(name='TXD File Name', value=model_info.txd_name, inline=False)
         embed.add_field(name='DFF File Name', value=model_info.dff_name, inline=False)
@@ -237,46 +237,43 @@ class RCRPModelManager(commands.Cog):
         await cursor.close()
         sql.close()
 
-        model.model_path = model.model_path.replace(' ', '%20')
-        embed = discord.Embed(title=f'Model Information ({modelid})', color=ctx.author.color)
+        url_path = model.model_path.replace(' ', '%20')
+        embed = discord.Embed(title=f'Model Information ({modelid})', color=0xe74c3c)
         embed.add_field(name='TXD', value=model.txd_name, inline=False)
         embed.add_field(name='DFF', value=model.dff_name, inline=False)
-        embed.add_field(name='Model Type', value=model_types.model_type_name(model.model_type), inline=False)
+        embed.add_field(name='Model Type', value=model.model_type, inline=False)
         embed.add_field(name='Model Path', value=model.model_path, inline=False)
-        embed.add_field(name='DFF URL', value=f"https://redcountyrp.com/cdn/rcrp/{model.model_path}/{model.model_dff}", inline=False)
-        embed.add_field(name='TXD URL', value=f"https://redcountyrp.com/cdn/rcrp/{model.model_path}/{model.model_txd}", inline=False)
-        if model.model_type == model_types.model_type_ped:
-            embed.add_field(name='Artconfig', value=f'AddCharModel({model.reference_model}, {model.model_id}, "{model.dff_name}", "{model.txd_name}")')
+        embed.add_field(name='DFF URL', value=f"https://redcountyrp.com/cdn/rcrp/{url_path}/{model.dff_name}", inline=False)
+        embed.add_field(name='TXD URL', value=f"https://redcountyrp.com/cdn/rcrp/{url_path}/{model.txd_name}", inline=False)
+        if model_types.model_type_int(model.model_type) == model_types.model_type_ped:
+            embed.add_field(name='Artconfig', value=f'AddCharModel({model.reference_model}, {model.model_id}, "{model.dff_name}", "{model.txd_name}");')
         else:
-            embed.add_field(name='Artconfig', value=f'AddSimpleModel(-1, {model.reference_model}, {model.model_id}), "{model.dff_name}", "{model.txd_name}"')
+            embed.add_field(name='Artconfig', value=f'AddSimpleModel(-1, {model.reference_model}, {model.model_id}, "{model.dff_name}", "{model.txd_name}");')
         await ctx.send(embed=embed)
 
     @modelmanager.command()
     @commands.is_owner()
-    async def modelsearch(self, ctx: commands.Context, type: str, *, search: str):
+    async def modelsearch(self, ctx: commands.Context, search: str):
         """Searches the database to find models of the specified type with the search term in their DFF name"""
-        if model_types.is_valid_model_type(type) is False:
-            await ctx.send('Invalid type.')
-            return
-
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
 
-        type_int = model_types.model_type_int(type)
-        await cursor.execute("SELECT * FROM models WHERE modeltype = %s AND dff_name LIKE %s", (type_int, search, ))
+        await cursor.execute("SELECT * FROM models WHERE dff_name LIKE %s", (('%' + search + '%'), ))
+        if cursor.rowcount == 0:
+            await cursor.close()
+            sql.close()
+            await ctx.send('Could not find a model of that type based on your search term.')
+            return
+
         data = await cursor.fetchall()
         await cursor.close()
         sql.close()
 
-        if data is None:
-            await ctx.send('Could not find a model of that type based on your search term.')
-            return
-
-        embed = discord.Embed(title='Search Results', color=ctx.author.color)
+        embed = discord.Embed(title='Search Results', color=0xe74c3c)
         for model in data:
-            embed.add_field(name='Model ID', value=model['modelid'])
-            embed.add_field(name='DFF Name', value=model['dff_name'])
-            embed.add_field(name='TXD Name', value=model['txd_name'])
+            embed.add_field(name='Model ID', value=model['modelid'], inline=True)
+            embed.add_field(name='DFF Name', value=model['dff_name'], inline=True)
+            embed.add_field(name='TXD Name', value=model['txd_name'], inline=True)
         await ctx.send(embed=embed)
 
     @modelmanager.command()
