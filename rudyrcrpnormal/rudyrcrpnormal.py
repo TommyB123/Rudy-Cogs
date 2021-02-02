@@ -66,9 +66,8 @@ class RCRPCommands(commands.Cog):
             await ctx.send("There are currently no helpers in-game.")
             return
 
-        embed = discord.Embed(title='Ingame Helpers', color=0xe74c3c, timestamp=ctx.message.created_at)
-
         results = await cursor.fetchall()
+        embed = discord.Embed(title='Ingame Helpers', color=0xe74c3c, timestamp=ctx.message.created_at)
         for helperinfo in results:
             embed.add_field(name=helperinfo['mastername'], value=helperinfo['charactername'])
 

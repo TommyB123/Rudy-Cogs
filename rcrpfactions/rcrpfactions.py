@@ -75,7 +75,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
 
-        await cursor.execute("SELECT id, FactionName FROM factions ORDER BY id ASC", ())
+        await cursor.execute("SELECT id, FactionName FROM factions ORDER BY id ASC")
         if cursor.rowcount == 0:
             await ctx.send("There are apparently no factions currently.")
             await cursor.close()

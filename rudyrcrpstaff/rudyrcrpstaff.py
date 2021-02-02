@@ -154,7 +154,7 @@ async def fetch_account_id(mastername: str):
 
 
 class RCRPStaffCommands(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: discord.Client):
         self.bot = bot
         self.relay_channel_id = 776943930603470868
 
@@ -221,7 +221,7 @@ class RCRPStaffCommands(commands.Cog):
             await ctx.send(f"{master_name} does not have a Discord account linked to their MA.")
             return
 
-        matcheduser: discord.User = await self.bot.fetch_user(data[1])
+        matcheduser = await self.bot.fetch_user(data[1])
         embed = discord.Embed(title=f"{master_name}", url=f"https://redcountyrp.com/admin/masters/{data[0]}", color=0xe74c3c)
         embed.add_field(name="Discord User", value=matcheduser.mention)
         embed.add_field(name="Account ID", value=data[0], inline=False)
@@ -391,7 +391,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def searchban(self, ctx: commands.Context, target_discordid: int):
         """Searches all existing bans for a banned user"""
-        banned_user: discord.User = await self.bot.fetch_user(target_discordid)
+        banned_user = await self.bot.fetch_user(target_discordid)
         if banned_user is None:
             await ctx.send("Invalid user.")
             return
