@@ -182,7 +182,6 @@ class OwnerCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    @commands.guild_only()
     @commands.is_owner()
     async def mysql(self, ctx, *, query: str):
         """Sends a MySQL query straight to the RCRP database"""
