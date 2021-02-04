@@ -2,6 +2,7 @@ import discord
 import aiomysql
 import json
 from redbot.core import commands
+from redbot.core.utils import menus
 from .config import mysqlconfig
 
 # rcrp guild ID
@@ -12,10 +13,6 @@ adminrole = 293441894585729024
 managementrole = 310927289317588992
 ownerrole = 293303836125298690
 staffroles = [ownerrole, adminrole, managementrole]
-
-
-async def rcrp_check(ctx: commands.Context):
-    return (ctx.guild.id == rcrpguildid)
 
 
 async def admin_check(ctx: commands.Context):
@@ -29,7 +26,8 @@ async def admin_check(ctx: commands.Context):
 
 
 class RCRPCommands(commands.Cog):
-    def __init__(self):
+    def __init__(self, bot: discord.Client):
+        self.bot = bot
         self.relay_channel_id = 776943930603470868
 
     async def send_relay_channel_message(self, ctx: commands.Context, message: str):
@@ -38,8 +36,47 @@ class RCRPCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    async def players(self, ctx: commands.Context):
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT Name FROM players WHERE Online = 1 ORDER BY Name ASC")
+        if cursor.rowcount == 0:
+            await cursor.close()
+            sql.close()
+            await ctx.send('There are currently no players in-game.')
+            return
+
+        totalcount = 0
+        counter = 0
+        embeds = []
+        string = ""
+        players = await cursor.fetchall()
+        for player in players:
+            string += f'{player[0]}\n'
+            counter += 1
+            totalcount += 1
+            if counter == 25 or totalcount == cursor.rowcount:
+                embed = discord.Embed(title=f'Online Players - {cursor.rowcount}', description=string, color=0xe74c3c, timestamp=ctx.message.created_at)
+                embed.set_footer(text='Use the !player command to view if a specific player is online.', icon_url=self.bot.user.avatar_url)
+                embeds.append(embed)
+                string = ""
+                counter = 0
+
+        message: discord.Message = await ctx.send(embed=discord.Embed())
+        menus.start_adding_reactions(message, menus.DEFAULT_CONTROLS)
+        await menus.menu(ctx, embeds, menus.DEFAULT_CONTROLS, message)
+
+        # try to delete the message after the timeout in the event that the user didn't close the menu
+        try:
+            await message.delete()
+        except discord.Forbidden:
+            pass
+        except discord.HTTPException:
+            pass
+
+    @commands.command()
+    @commands.guild_only()
     @commands.cooldown(1, 60)
-    @commands.check(rcrp_check)
     async def admins(self, ctx: commands.Context):
         """Sends a list of in-game administrators"""
         rcrp_message = {
@@ -53,7 +90,6 @@ class RCRPCommands(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.cooldown(1, 60)
-    @commands.check(rcrp_check)
     async def helpers(self, ctx: commands.Context):
         """Sends a list of in-game helpers"""
         sql = await aiomysql.connect(**mysqlconfig)
@@ -77,7 +113,6 @@ class RCRPCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(rcrp_check)
     async def player(self, ctx: commands.Context, *, playername: str):
         """Queries the SA-MP server to see if a player with the specified name is in-game"""
         playername = playername.replace(' ', '_')
