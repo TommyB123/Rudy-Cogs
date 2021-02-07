@@ -11,7 +11,7 @@ from redbot.core.utils import menus
 class RudyCrackwatch(commands.Cog, name="Crackwatch Watcher"):
     def __init__(self, bot: discord.Client):
         default_global = {
-            "last_cracked_game": None,
+            "notified_games": [],
             "watched_channels": []
         }
 
@@ -31,16 +31,17 @@ class RudyCrackwatch(commands.Cog, name="Crackwatch Watcher"):
             async with session.get('https://api.crackwatch.com/api/games?page=0&sort_by=crack_date&is_cracked=true') as res:
                 data = await res.json()
 
-        last_title = await self.config.last_cracked_game()
-        if last_title != data[0]['title']:
-            embed = await self.format_game_info(data[0])
-            channels = await self.config.watched_channels()
-            for channel_id in channels:
-                channel = self.bot.get_channel(channel_id)
-                if channel is not None:
-                    await channel.send(embed=embed)
-        last_title = data[0]['title']
-        await self.config.last_cracked_game.set(last_title)
+        sent_titles = await self.config.notified_games()
+        for title in data:
+            if title['_id'] not in sent_titles:
+                embed = await self.format_game_info(title)
+                channels = await self.config.watched_channels()
+                for channel_id in channels:
+                    channel = self.bot.get_channel(channel_id)
+                    if channel is not None:
+                        await channel.send(embed=embed)
+                sent_titles.append(title['_id'])
+        await self.config.notified_games.set(sent_titles)
 
     @fetch_cracked_games.before_loop
     async def before_fetch_cracked_games(self):
