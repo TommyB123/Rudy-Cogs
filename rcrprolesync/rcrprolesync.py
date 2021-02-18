@@ -148,6 +148,7 @@ class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
         await self.assign_roles('Premium', premiumrole)
         await self.assign_roles('FC', fcrole)
         await self.assign_roles('Banned', bannedrole)
+        await self.assign_roles('id', verifiedrole)  # checking for id because every account has an ID and we want to check every verified account here
 
     @sync_member_roles.before_loop
     async def before_sync_member_roles(self):
