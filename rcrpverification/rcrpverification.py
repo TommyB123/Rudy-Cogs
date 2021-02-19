@@ -21,11 +21,11 @@ dashboardurl = "https://redcountyrp.com/user/dashboard"
 
 # command checks
 async def rcrp_check(ctx: commands.Context):
-    return (ctx.guild.id == rcrpguildid)
+    return ctx.guild is not None and ctx.guild.id == rcrpguildid
 
 
 async def management_check(ctx: commands.Context):
-    if ctx.guild.id == rcrpguildid:
+    if ctx.guild is not None and ctx.guild.id == rcrpguildid:
         role_ids = [role.id for role in ctx.author.roles]
         if managementrole in role_ids or ownerrole in role_ids:
             return True

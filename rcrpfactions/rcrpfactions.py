@@ -16,7 +16,7 @@ staffroles = [ownerrole, adminrole, managementrole]
 
 
 async def admin_check(ctx: commands.Context):
-    if ctx.guild.id == rcrpguildid:
+    if ctx.guild is not None and ctx.guild.id == rcrpguildid:
         for role in ctx.author.roles:
             if role.id in staffroles:
                 return True
@@ -26,7 +26,7 @@ async def admin_check(ctx: commands.Context):
 
 
 def rcrp_check(ctx: commands.Context):
-    return (ctx.guild.id == rcrpguildid)
+    return (ctx.guild is not None and ctx.guild.id == rcrpguildid)
 
 
 class RCRPFactions(commands.Cog, name="Faction Commands"):

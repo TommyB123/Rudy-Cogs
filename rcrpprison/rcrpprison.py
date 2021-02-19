@@ -8,7 +8,7 @@ prisonguildid = 558036120743706625
 
 
 async def prison_check(ctx: commands.Context):
-    return ctx.guild.id == prisonguildid
+    return ctx.guild is not None and ctx.guild.id == prisonguildid
 
 
 class RCRPPrison(commands.Cog, name="RCRP Prison"):

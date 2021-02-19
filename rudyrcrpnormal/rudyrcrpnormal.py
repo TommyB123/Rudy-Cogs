@@ -16,7 +16,7 @@ staffroles = [ownerrole, adminrole, managementrole]
 
 
 async def admin_check(ctx: commands.Context):
-    if ctx.guild.id == rcrpguildid:
+    if ctx.guild is not None and ctx.guild.id == rcrpguildid:
         for role in ctx.author.roles:
             if role.id in staffroles:
                 return True

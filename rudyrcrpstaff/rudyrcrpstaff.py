@@ -80,11 +80,11 @@ rcrpguildid = 93142223473905664
 
 
 async def rcrp_check(ctx: commands.Context):
-    return (ctx.guild.id == rcrpguildid)
+    return ctx.guild is not None and ctx.guild.id == rcrpguildid
 
 
 async def admin_check(ctx: commands.Context):
-    if ctx.guild.id == rcrpguildid:
+    if ctx.guild is not None and ctx.guild.id == rcrpguildid:
         for role in ctx.author.roles:
             if role.id in staffroles:
                 return True
@@ -94,7 +94,7 @@ async def admin_check(ctx: commands.Context):
 
 
 async def management_check(ctx: commands.Context):
-    if ctx.guild.id == rcrpguildid:
+    if ctx.guild is not None and ctx.guild.id == rcrpguildid:
         role_ids = [role.id for role in ctx.author.roles]
         if managementrole in role_ids or ownerrole in role_ids:
             return True
