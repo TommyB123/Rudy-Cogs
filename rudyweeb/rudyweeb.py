@@ -28,7 +28,7 @@ async def isweeb(ctx: commands.Context):
         return True
 
     weebservers = await weeb.config.weebservers()
-    if ctx.guild.id in weebservers:
+    if ctx.guild.id is not None and ctx.guild.id in weebservers:
         return True
 
     return False
