@@ -94,7 +94,8 @@ class RCRPModelManager(commands.Cog):
         self.relay_channel_id = 776943930603470868
 
     async def send_relay_channel_message(self, ctx: commands.Context, message: str):
-        relaychannel = ctx.guild.get_channel(self.relay_channel_id)
+        rcrpguild = await self.bot.fetch_guild(93142223473905664)
+        relaychannel = rcrpguild.get_channel(self.relay_channel_id)
         await relaychannel.send(message)
 
     @commands.group()
