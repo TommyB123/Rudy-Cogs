@@ -115,7 +115,8 @@ class RCRPModelManager(commands.Cog):
             await ctx.send(f'Model ID {modelid} is already present in the pending models list.')
             return
 
-        if modelid not in range(model_types.get_model_range_for_type(type)):
+        min, max = model_types.get_model_range_for_type(type)
+        if modelid not in range(min, max):
             await ctx.send(f'Invalid model ID for type {type}. Please use a range of {min} to {max} for this type.')
             return
 
