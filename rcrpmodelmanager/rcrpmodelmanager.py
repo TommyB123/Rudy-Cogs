@@ -204,7 +204,7 @@ class RCRPModelManager(commands.Cog):
 
     @modelmanager.command()
     @commands.is_owner()
-    async def viewpendingmodel(self, ctx: commands.Context, modelid: int):
+    async def pending(self, ctx: commands.Context, modelid: int):
         """Views the information of a pending model that has not been sent to the server yet"""
         if len(self.models) == 0:
             await ctx.send('There are currently no pending models.')
@@ -223,9 +223,9 @@ class RCRPModelManager(commands.Cog):
         embed.add_field(name='Model Path', value=model_info.model_path, inline=False)
         await ctx.send(embed=embed)
 
-    @modelmanager.command()
+    @modelmanager.command(aliases=['info', 'modelinfo'])
     @commands.is_owner()
-    async def fetchmodelinfo(self, ctx: commands.Context, modelid: int):
+    async def fetch(self, ctx: commands.Context, modelid: int):
         """Retrieves information about an existing model from the MySQL database"""
         if await model_types.is_valid_model(modelid) is False:
             await ctx.send(f'{modelid} is not a valid model ID used on the server.')
@@ -255,7 +255,7 @@ class RCRPModelManager(commands.Cog):
 
     @modelmanager.command()
     @commands.is_owner()
-    async def modelsearch(self, ctx: commands.Context, search: str):
+    async def search(self, ctx: commands.Context, search: str):
         """Searches the database to find models of the specified type with the search term in their DFF name"""
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
