@@ -18,6 +18,7 @@ premiumrole = 534479263966167069
 testerrole = 293441807055060993
 verifiedrole = 293441047244308481
 fcrole = 393186381306003466
+farole = 813872907612586004
 
 
 def member_is_verified(member: discord.Member):
@@ -147,6 +148,7 @@ class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
         await self.assign_roles('Helper', helperrole)
         await self.assign_roles('Premium', premiumrole)
         await self.assign_roles('FC', fcrole)
+        await self.assign_roles('HoF', farole)
         await self.assign_roles('Banned', bannedrole)
         await self.assign_roles('id', verifiedrole)  # checking for id because every account has an ID and we want to check every verified account here
 
