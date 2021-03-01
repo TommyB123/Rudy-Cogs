@@ -94,7 +94,8 @@ class RCRPModelManager(commands.Cog):
         self.relay_channel_id = 776943930603470868
 
     async def send_relay_channel_message(self, ctx: commands.Context, message: str):
-        relaychannel = ctx.guild.get_channel(self.relay_channel_id)
+        rcrpguild = await self.bot.fetch_guild(93142223473905664)
+        relaychannel = rcrpguild.get_channel(self.relay_channel_id)
         await relaychannel.send(message)
 
     @commands.group()
@@ -115,7 +116,8 @@ class RCRPModelManager(commands.Cog):
             await ctx.send(f'Model ID {modelid} is already present in the pending models list.')
             return
 
-        if modelid not in range(model_types.get_model_range_for_type(type)):
+        min, max = model_types.get_model_range_for_type(type)
+        if modelid not in range(min, max):
             await ctx.send(f'Invalid model ID for type {type}. Please use a range of {min} to {max} for this type.')
             return
 
