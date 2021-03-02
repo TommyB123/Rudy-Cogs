@@ -9,23 +9,23 @@ import json
 from .config import mysqlconfig
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list
+from typing import Union
 
 
 class model_types():
-    model_type_ped: int = 0
-    model_type_object: int = 1
+    model_type_ped = 0
+    model_type_object = 1
 
-    def get_model_range_for_type(modeltype: str):
+    def get_model_range_for_type(self, modeltype: Union[str, int]):
         """Returns the valid range of model IDs for a specific type"""
-        modeltype = modeltype.upper()
-        if modeltype == 'PED':
+        if (isinstance(modeltype, str) and modeltype.upper() == 'PED') or (isinstance(modeltype, int) and modeltype == self.model_type_ped):
             return 20000, 30000
-        elif modeltype == 'OBJECT':
+        elif (isinstance(modeltype, str) and modeltype.upper() == 'OBJECT') or (isinstance(modeltype, int) and modeltype == self.model_type_object):
             return -30000, -1000
         else:
             return -1, -1
 
-    def model_type_int(modeltype: str):
+    def model_type_int(self, modeltype: str):
         """Returns the reference constant for model types that's used in the MySQL database/RCRP script"""
         modeltype = modeltype.upper()
         if modeltype == 'PED':
@@ -35,7 +35,7 @@ class model_types():
         else:
             return -1
 
-    def model_type_name(modeltype: int):
+    def model_type_name(self, modeltype: int):
         """Returns the reference string for model types based on the constant used in the MySQL database/RCRP script"""
         if modeltype == 0:
             return 'PED'
@@ -44,7 +44,7 @@ class model_types():
         else:
             return 'INVALID'
 
-    async def is_valid_model(modelid: int):
+    async def is_valid_model(self, modelid: int):
         """Queries the MySQL database to see if a model ID exists"""
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
@@ -55,7 +55,7 @@ class model_types():
 
         return rows != 0
 
-    def is_valid_model_type(modeltype: str):
+    def is_valid_model_type(self, modeltype: str):
         """Checks if the supplied string matches a valid model type. Valid types are 'PED' or 'OBJECT'"""
         temp_type = modeltype.upper()
         if temp_type != 'PED' and temp_type != 'OBJECT':
@@ -98,6 +98,39 @@ class RCRPModelManager(commands.Cog):
         relaychannel = rcrpguild.get_channel(self.relay_channel_id)
         await relaychannel.send(message)
 
+    async def validate_model_submission(self, modelid: int, dff_url: str, txd_url: str):
+        if modelid in self.models:
+            return f'Model ID {modelid} is already present in the pending models list.'
+
+        if await model_types.is_valid_model(modelid):
+            return f'The model {modelid} is already present on the server.'
+
+        min, max = model_types.get_model_range_for_type(model_types.model_type_object)
+        if modelid not in range(min, max):
+            return f'Invalid object model ID. Please use a range of {min} to {max} for this type.'
+
+        if await model_types.is_valid_model(modelid):
+            return f'The model {modelid} is already present on the server.'
+
+        if dff_url.endswith('.dff') is False:
+            return 'DFF URL does not seem to actually be a DFF file.'
+
+        if txd_url.endswith('.txd') is False:
+            return 'TXD URL does not seem to actually be a TXD file.'
+
+    def strip_model_urls(self, dff_url: str, txd_url: str):
+        dff_match = re.search('https://cdn.discordapp.com/attachments/[0-9]*/[0-9]*/', dff_url)
+        if dff_match is None:
+            return 'Invalid Discord URL formatting for DFF URL.', '', ''
+
+        txd_match = re.search('https://cdn.discordapp.com/attachments/[0-9]*/[0-9]*/', txd_url)
+        if txd_match is None:
+            return 'Invalid Discord URL formatting for TXD URL.', '', ''
+
+        txd_name = txd_url.replace(txd_match.group(), '')
+        dff_name = dff_url.replace(dff_match.group(), '')
+        return '', txd_name, dff_name
+
     @commands.group()
     @commands.is_owner()
     async def modelmanager(self, ctx):
@@ -106,37 +139,17 @@ class RCRPModelManager(commands.Cog):
 
     @modelmanager.command()
     @commands.is_owner()
-    async def addmodel(self, ctx: commands.Context, modelid: int, reference_id: int, folder: str, type: str, dff_url: str, txd_url: str):
-        """Adds a new model to the pending models list"""
-        if model_types.is_valid_model_type(type) is False:
-            await ctx.send('Invalid type.')
+    async def addobject(self, ctx: commands.Context, modelid: int, reference_id: int, folder: str, dff_url: str, txd_url: str):
+        """Adds a new object model to the list of pending models"""
+        error = await self.validate_model_submission(modelid, dff_url, txd_url)
+        if len(error) != 0:
+            await ctx.send(error)
             return
 
-        if modelid in self.models:
-            await ctx.send(f'Model ID {modelid} is already present in the pending models list.')
+        error, txd_name, dff_name = self.strip_model_urls(dff_url, txd_url)
+        if len(error) != 0:
+            await ctx.send(error)
             return
-
-        min, max = model_types.get_model_range_for_type(type)
-        if modelid not in range(min, max):
-            await ctx.send(f'Invalid model ID for type {type}. Please use a range of {min} to {max} for this type.')
-            return
-
-        if await model_types.is_valid_model(modelid):
-            await ctx.send(f'The model {modelid} is already present on the server.')
-            return
-
-        dff_match = re.search('https://cdn.discordapp.com/attachments/[0-9]*/[0-9]*/', dff_url)
-        if dff_match is None:
-            await ctx.send('Invalid Discord URL formatting for DFF URL.')
-            return
-
-        txd_match = re.search('https://cdn.discordapp.com/attachments/[0-9]*/[0-9]*/', txd_url)
-        if txd_match is None:
-            await ctx.send('Invalid Discord URL formatting for TXD URL.')
-            return
-
-        txd_name = txd_url.replace(txd_match.group(), '')
-        dff_name = dff_url.replace(dff_match.group(), '')
 
         # add model URLs to the list
         self.model_urls.append(dff_url)
@@ -148,8 +161,37 @@ class RCRPModelManager(commands.Cog):
         model_info.reference_model = reference_id
         model_info.dff_name = dff_name
         model_info.txd_name = txd_name
-        model_info.model_type = type
-        model_info.model_path = folder
+        model_info.model_type = model_types.model_type_name(model_types.model_type_object)
+        model_info.model_path = f'objects/{folder}'
+        self.models[modelid] = model_info
+        await ctx.send(f'Model ID {modelid} has been added to the pending models list. Use !modelmanager finalize when you are ready to download the pending models to the server and add them in-game.')
+
+    @modelmanager.command()
+    @commands.is_owner()
+    async def addped(self, ctx: commands.Context, modelid: int, reference_id: int, folder: str, dff_url: str, txd_url: str):
+        """Adds a new model to the pending models list"""
+        error = await self.validate_model_submission(modelid, dff_url, txd_url)
+        if len(error) != 0:
+            await ctx.send(error)
+            return
+
+        error, txd_name, dff_name = self.strip_model_urls(dff_url, txd_url)
+        if len(error) != 0:
+            await ctx.send(error)
+            return
+
+        # add model URLs to the list
+        self.model_urls.append(dff_url)
+        self.model_urls.append(txd_url)
+
+        # assign pending model data, add it to dict
+        model_info = model_data()
+        model_info.model_id = modelid
+        model_info.reference_model = reference_id
+        model_info.dff_name = dff_name
+        model_info.txd_name = txd_name
+        model_info.model_type = model_types.model_type_name(model_types.model_type_ped)
+        model_info.model_path = f'peds/{folder}'
         self.models[modelid] = model_info
         await ctx.send(f'Model ID {modelid} has been added to the pending models list. Use !modelmanager finalize when you are ready to download the pending models to the server and add them in-game.')
 
