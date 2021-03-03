@@ -238,12 +238,18 @@ class RCRPStaffCommands(commands.Cog):
         """Queries the database for information of a house based on user-specified input"""
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
-        await cursor.execute("SELECT houses.id, OwnerSQLID, Description, players.Name AS OwnerName, InsideID, ExteriorFurnLimit, Price FROM houses LEFT JOIN players ON players.id = houses.OwnerSQLID WHERE Description = %s", (address, ))
+        await cursor.execute("SELECT houses.id, OwnerSQLID, Description, players.Name AS OwnerName, InsideID, ExteriorFurnLimit, Price FROM houses LEFT JOIN players ON players.id = houses.OwnerSQLID WHERE Description LIKE %s", (('%' + address + '%'), ))
 
         if cursor.rowcount == 0:
             await cursor.close()
             sql.close()
             await ctx.send("Invalid house address.")
+            return
+
+        if cursor.rowcount > 1:
+            await cursor.close()
+            sql.close()
+            await ctx.send('More than one house was found. Please use a more specific address.')
             return
 
         house = await cursor.fetchone()
@@ -269,16 +275,22 @@ class RCRPStaffCommands(commands.Cog):
     @commands.guild_only()
     @commands.check(rcrp_check)
     @commands.check(admin_check)
-    async def business(self, ctx, *, description: str):
+    async def business(self, ctx: commands.Context, *, description: str):
         """Queries the database for information of a business based on user-specified input"""
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
-        await cursor.execute("SELECT bizz.id, OwnerSQLID, Description, players.Name AS OwnerName, Price, BizzEarnings, IsSpecial, Loaned FROM bizz LEFT JOIN players ON players.id = bizz.OwnerSQLID WHERE Description = %s", (description, ))
+        await cursor.execute("SELECT bizz.id, OwnerSQLID, Description, players.Name AS OwnerName, Price, BizzEarnings, IsSpecial, Loaned FROM bizz LEFT JOIN players ON players.id = bizz.OwnerSQLID WHERE Description LIKE %s", (('%' + description + '%'), ))
 
         if cursor.rowcount == 0:
             await cursor.close()
             sql.close()
             await ctx.send("Invalid business.")
+            return
+
+        if cursor.rowcount > 1:
+            await cursor.close()
+            sql.close()
+            await ctx.send('More than one business was found. Please use a more specific name.')
             return
 
         bizz = await cursor.fetchone()
@@ -292,7 +304,7 @@ class RCRPStaffCommands(commands.Cog):
                 bizz['OwnerName'] = "Unowned"
 
         embed = discord.Embed(title=bizz['Description'], color=0xe74c3c, url=f"https://redcountyrp.com/admin/assets/businesses/{bizz['id']}")
-        embed.set_thumbnail(url=f"https://redcountyrp.com/images/bizz/{bizz['id']}.png")
+        embed.set_thumbnail(url=f"https://redcountyrp.com/images/businesses/{bizz['id']}.png")
         embed.add_field(name="ID", value=bizz['id'], inline=False)
         embed.add_field(name="Owner", value=bizz['OwnerName'], inline=False)
         embed.add_field(name="Price", value='${:,}'.format(bizz['Price']), inline=False)
