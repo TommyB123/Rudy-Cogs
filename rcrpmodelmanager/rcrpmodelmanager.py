@@ -13,8 +13,9 @@ from typing import Union
 
 
 class model_types():
-    model_type_ped = 0
-    model_type_object = 1
+    def __init__(self):
+        self.model_type_ped = 0
+        self.model_type_object = 1
 
     def get_model_range_for_type(self, modeltype: Union[str, int]):
         """Returns the valid range of model IDs for a specific type"""
