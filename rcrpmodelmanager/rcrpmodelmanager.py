@@ -74,7 +74,7 @@ class model_data():
             self.reference_model: int = data['reference_model']
             self.dff_name: str = data['dff_name']
             self.txd_name: str = data['txd_name']
-            self.model_type: str = model_types.model_type_name(data['modeltype'])
+            self.model_type: str = model_types().model_type_name(data['modeltype'])
             self.model_path: str = data['folder']
         else:
             self.model_id: int = 0
@@ -103,15 +103,12 @@ class RCRPModelManager(commands.Cog):
         if modelid in self.models:
             return f'Model ID {modelid} is already present in the pending models list.'
 
-        if await model_types.is_valid_model(modelid):
+        if await model_types().is_valid_model(modelid):
             return f'The model {modelid} is already present on the server.'
 
-        min, max = model_types.get_model_range_for_type(model_types.model_type_object)
+        min, max = model_types().get_model_range_for_type(model_types().model_type_object)
         if modelid not in range(min, max):
             return f'Invalid object model ID. Please use a range of {min} to {max} for this type.'
-
-        if await model_types.is_valid_model(modelid):
-            return f'The model {modelid} is already present on the server.'
 
         if dff_url.endswith('.dff') is False:
             return 'DFF URL does not seem to actually be a DFF file.'
@@ -162,7 +159,7 @@ class RCRPModelManager(commands.Cog):
         model_info.reference_model = reference_id
         model_info.dff_name = dff_name
         model_info.txd_name = txd_name
-        model_info.model_type = model_types.model_type_name(model_types.model_type_object)
+        model_info.model_type = model_types().model_type_name(model_types().model_type_object)
         model_info.model_path = f'objects/{folder}'
         self.models[modelid] = model_info
         await ctx.send(f'Model ID {modelid} has been added to the pending models list. Use !modelmanager finalize when you are ready to download the pending models to the server and add them in-game.')
@@ -191,7 +188,7 @@ class RCRPModelManager(commands.Cog):
         model_info.reference_model = reference_id
         model_info.dff_name = dff_name
         model_info.txd_name = txd_name
-        model_info.model_type = model_types.model_type_name(model_types.model_type_ped)
+        model_info.model_type = model_types().model_type_name(model_types().model_type_ped)
         model_info.model_path = f'peds/{folder}'
         self.models[modelid] = model_info
         await ctx.send(f'Model ID {modelid} has been added to the pending models list. Use !modelmanager finalize when you are ready to download the pending models to the server and add them in-game.')
@@ -215,7 +212,7 @@ class RCRPModelManager(commands.Cog):
     @commands.is_owner()
     async def deletemodel(self, ctx: commands.Context, modelid: int, deletefiles: bool):
         """Removes a custom model from database (and optionally, deletes the file itself) (RCRP restart required for full effect)"""
-        if await model_types.is_valid_model(modelid) is False:
+        if await model_types().is_valid_model(modelid) is False:
             await ctx.send(f'{modelid} is not a model ID that is used on the server.')
             return
 
@@ -270,7 +267,7 @@ class RCRPModelManager(commands.Cog):
     @commands.is_owner()
     async def fetch(self, ctx: commands.Context, modelid: int):
         """Retrieves information about an existing model from the MySQL database"""
-        if await model_types.is_valid_model(modelid) is False:
+        if await model_types().is_valid_model(modelid) is False:
             await ctx.send(f'{modelid} is not a valid model ID used on the server.')
             return
 
@@ -290,7 +287,7 @@ class RCRPModelManager(commands.Cog):
         embed.add_field(name='Model Path', value=model.model_path, inline=False)
         embed.add_field(name='DFF URL', value=f"https://redcountyrp.com/cdn/rcrp/{url_path}/{model.dff_name}", inline=False)
         embed.add_field(name='TXD URL', value=f"https://redcountyrp.com/cdn/rcrp/{url_path}/{model.txd_name}", inline=False)
-        if model_types.model_type_int(model.model_type) == model_types.model_type_ped:
+        if model_types().model_type_int(model.model_type) == model_types().model_type_ped:
             embed.add_field(name='Artconfig', value=f'AddCharModel({model.reference_model}, {model.model_id}, "{model.dff_name}", "{model.txd_name}");')
         else:
             embed.add_field(name='Artconfig', value=f'AddSimpleModel(-1, {model.reference_model}, {model.model_id}, "{model.dff_name}", "{model.txd_name}");')
@@ -370,7 +367,7 @@ class RCRPModelManager(commands.Cog):
             for model in model_list:
                 model_id_list.append(f'{model.model_id}')
                 await cursor.execute("INSERT INTO models (modelid, reference_model, modeltype, dff_name, txd_name, folder) VALUES (%s, %s, %s, %s, %s, %s)",
-                    (model.model_id, model.reference_model, model_types.model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
+                    (model.model_id, model.reference_model, model_types().model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
                 destinationfolder = f'{self.rcrp_model_path}/{model.model_path}'
 
                 if os.path.exists(destinationfolder) is False:
