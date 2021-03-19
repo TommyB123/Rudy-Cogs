@@ -27,7 +27,7 @@ class RCRPSampInfo(commands.Cog, name="SA-MP Server Info"):
         if players is None:
             players = 0
 
-        game = discord.Game(f'RCRP - {players} players')
+        game = discord.Game(f'RCRP - {players} {"players" if players != 1 else "player"}')
         await self.bot.change_presence(activity=game)
 
     @update_samp_info.before_loop
