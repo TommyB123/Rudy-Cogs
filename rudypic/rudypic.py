@@ -72,6 +72,12 @@ class RudyPic(commands.Cog, name="rudypic"):
 
     @commands.command()
     @commands.guild_only()
+    async def frog(self, ctx: commands.Context):
+        """Sends a nice frog"""
+        await SendRandomAlbumPicture(ctx, 'yIW3G5g')
+
+    @commands.command()
+    @commands.guild_only()
     @commands.is_owner()
     async def rudyfriend(self, ctx: commands.Context, target: discord.Member):
         rudyfriends: list = await self.config.rudy_friends()
