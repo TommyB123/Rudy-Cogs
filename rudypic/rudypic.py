@@ -14,19 +14,6 @@ async def isrudyfriend(ctx: commands.Context):
     return ctx.author.id in rudyfriends
 
 
-async def SendRandomAlbumPicture(ctx: commands.Context, album: str):
-    try:
-        final_url = None
-        async with ctx.typing():
-            pictures = []
-            for image in imclient.get_album_images(album):
-                pictures.append(image.link)
-            final_url = random.choice(pictures)
-        await ctx.send(final_url)
-    except:
-        await ctx.send('Failed to fetch album photo. Imgur API is probably down because it sucks.')
-
-
 class RudyPic(commands.Cog, name="rudypic"):
     def __init__(self, bot):
         self.bot = bot
@@ -37,51 +24,62 @@ class RudyPic(commands.Cog, name="rudypic"):
         self.config = Config.get_conf(self, identifier=45599)
         self.config.register_global(**default_global)
 
+    async def send_album_picture(self, ctx: commands.Context, album: str):
+        try:
+            final_url = None
+            async with ctx.typing():
+                pictures = []
+                for image in imclient.get_album_images(album):
+                    pictures.append(image.link)
+                final_url = random.choice(pictures)
+            await ctx.send(final_url)
+        except:
+            await ctx.send('Failed to fetch album photo. Imgur API is probably down because it sucks.')
+
     @commands.command()
     @commands.guild_only()
     @commands.check(isrudyfriend)
     async def rudypic(self, ctx: commands.Context):
         """Sends an adorable picture of Rudy"""
-        await SendRandomAlbumPicture(ctx, 'WLQku0l')
+        await self.send_album_picture(ctx, 'WLQku0l')
 
     @commands.command()
     @commands.guild_only()
     @commands.check(isrudyfriend)
     async def sammypic(self, ctx: commands.Context):
         """Sends an adorable picture of Sammy"""
-        await SendRandomAlbumPicture(ctx, 'VfKwj4H')
+        await self.send_album_picture(ctx, 'VfKwj4H')
 
     @commands.command()
     @commands.guild_only()
     @commands.check(isrudyfriend)
     async def milopic(self, ctx: commands.Context):
         """Sends an adorable picture of Milo"""
-        await SendRandomAlbumPicture(ctx, 'h3VORpQ')
+        await self.send_album_picture(ctx, 'h3VORpQ')
 
     @commands.command()
     @commands.guild_only()
     async def gizmo(self, ctx: commands.Context):
         """Sends a legendary Gizmo quote"""
-        await SendRandomAlbumPicture(ctx, 'SlgjJJu')
+        await self.send_album_picture(ctx, 'SlgjJJu')
 
     @commands.command()
     @commands.guild_only()
     async def lylat(self, ctx: commands.Context):
         """Sends a legendary Lylat quote"""
-        await SendRandomAlbumPicture(ctx, 'LF00KOm')
+        await self.send_album_picture(ctx, 'LF00KOm')
 
     @commands.command()
     @commands.guild_only()
     async def frog(self, ctx: commands.Context):
         """Sends a nice frog"""
-        await SendRandomAlbumPicture(ctx, 'yIW3G5g')
+        await self.send_album_picture(ctx, 'yIW3G5g')
 
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
     async def rudyfriend(self, ctx: commands.Context, target: discord.Member):
         rudyfriends: list = await self.config.rudy_friends()
-
         if target.id in rudyfriends:
             rudyfriends.remove(target.id)
             await ctx.send(f'{target.mention} is no longer a Rudy friend!')
