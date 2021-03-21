@@ -22,7 +22,7 @@ class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(fgguildid)
+    @commands.check(fg_check)
     async def quote(self, ctx: commands.Context):
         """Fetches a quote"""
         quotes: list = await self.config.guild(ctx.guild).quotes()
@@ -31,14 +31,14 @@ class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
 
     @commands.group()
     @commands.guild_only()
-    @commands.check(fgguildid)
+    @commands.check(fg_check)
     async def managequote(self, ctx: commands.Context):
         """Manages the quote list"""
         pass
 
     @managequote.command()
     @commands.guild_only()
-    @commands.check(fgguildid)
+    @commands.check(fg_check)
     async def add(self, ctx: commands.Context, *, quote: str):
         """Adds a quote to the quote list"""
         quotes: list = await self.config.guild(ctx.guild).quotes()
@@ -52,7 +52,7 @@ class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
 
     @managequote.command()
     @commands.guild_only()
-    @commands.check(fgguildid)
+    @commands.check(fg_check)
     async def remove(self, ctx: commands.Context, *, quote: str):
         """Removes a quote from the quote list"""
         quotes: list = await self.config.guild(ctx.guild).quotes()
