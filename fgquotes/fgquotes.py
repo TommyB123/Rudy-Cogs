@@ -29,7 +29,7 @@ class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
         quote = random.choice(quotes)
         await ctx.send(quote)
 
-    @commands.group()
+    @commands.group(aliases=['managequotes'])
     @commands.guild_only()
     @commands.check(fg_check)
     async def managequote(self, ctx: commands.Context):
@@ -50,7 +50,7 @@ class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
         await self.config.guild(ctx.guild).quotes.set(quotes)
         await ctx.send('Quote added.')
 
-    @managequote.command()
+    @managequote.command(aliases=['delete', 'del'])
     @commands.guild_only()
     @commands.check(fg_check)
     async def remove(self, ctx: commands.Context, *, quote: str):
