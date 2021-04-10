@@ -62,7 +62,7 @@ class RCRPCommands(commands.Cog):
                 string = ""
                 counter = 0
 
-        message: discord.Message = await ctx.send(embed=discord.Embed())
+        message: discord.Message = await ctx.send(embed=discord.Embed('Formatting the player list. Please wait.'))
         menus.start_adding_reactions(message, menus.DEFAULT_CONTROLS)
         await menus.menu(ctx, embeds, menus.DEFAULT_CONTROLS, message)
 
