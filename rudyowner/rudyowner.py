@@ -2,6 +2,7 @@ import discord
 import aiomysql
 from redbot.core import commands
 from redbot.core.utils import menus
+from redbot.core.utils.chat_formatting import pagify
 from .config import mysqlconfig
 
 # weapon origins
@@ -135,14 +136,14 @@ class OwnerCog(commands.Cog):
     async def drugs(self, ctx: commands.Context):
         """Collects statistics related to how many drugs are on the server"""
         async with ctx.typing():
-            drugs = {47: 0, 48: 0, 49: 0, 51: 0, 52: 0, 53: 0, 55: 0, 57: 0}
             sql = await aiomysql.connect(**mysqlconfig)
             cursor = await sql.cursor(aiomysql.DictCursor)
             await cursor.execute("SELECT SUM(itemval) AS items, item FROM (SELECT * FROM inventory_player UNION SELECT * FROM inventory_house UNION SELECT * FROM inventory_bizz UNION SELECT * FROM inventory_vehicle) t WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
             results = await cursor.fetchall()
 
+            drugs = {}
             for drug in results:
-                drugs[drug['item']] += drug['items']
+                drugs[drug['item']] = drug['items']
 
             await cursor.close()
             sql.close()
@@ -218,7 +219,8 @@ class OwnerCog(commands.Cog):
                     string = ''.join(string)
                     string = string.replace('(', '')
                     string = string.replace(')', '')
-                    await ctx.send(string)
+                    for page in pagify(string):
+                        await ctx.send(page)
             except Exception as e:
                 embed = discord.Embed(title='MySQL Error', description=f'{e}', color=0xe74c3c, timestamp=ctx.message.created_at)
                 await ctx.send(embed=embed)
