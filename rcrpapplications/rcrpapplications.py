@@ -53,7 +53,7 @@ class RCRPApplications(commands.Cog, name='RCRP Applications'):
         if len(self.applications) != 0:
             for key in self.applications:
                 if self.applications[key] not in application_ids:
-                    message = appchannel.fetch_message(self.applications[key])
+                    message = await appchannel.fetch_message(self.applications[key])
                     await message.delete()
 
         await appchannel.edit(name=f'applications-{cursor.rowcount}')
