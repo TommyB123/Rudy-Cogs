@@ -22,6 +22,9 @@ class RCRPApplications(commands.Cog, name='RCRP Applications'):
         self.applications = {}
         self.check_pending_applications.start()
 
+    def cog_unload(self):
+        self.check_pending_applications.cancel()
+
     @tasks.loop(seconds=5.0)
     async def check_pending_applications(self):
         rcrpguild = await self.bot.fetch_guild(rcrpguildid)
