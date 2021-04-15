@@ -25,7 +25,7 @@ class RCRPApplications(commands.Cog, name='RCRP Applications'):
     @tasks.loop(seconds=5.0)
     async def check_pending_applications(self):
         rcrpguild = await self.bot.fetch_guild(rcrpguildid)
-        appchannel: discord.TextChannel = await self.bot.get_channel(appchannelid)
+        appchannel: discord.TextChannel = self.bot.get_channel(appchannelid)
         sql = await aiomysql.connect(**mysqlconfig)
         cursor: Cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT quizapps.id, maID, masters.Username, masters.EMail, characterName, quizapps.created_at, ipscore FROM quizapps JOIN masters ON quizapps.maID = masters.id WHERE quizapps.state = 0")
