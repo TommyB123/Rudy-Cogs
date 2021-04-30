@@ -1,6 +1,7 @@
 import discord
 import random
 from imgurpython import ImgurClient
+from typing import Union
 from redbot.core import commands, Config
 
 # imgur client handler
@@ -10,15 +11,28 @@ imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293
 async def isrudyfriend(ctx: commands.Context):
     rudy = RudyPic(commands.Cog)
     rudy.config = Config.get_conf(rudy, identifier=45599)
-    rudyfriends = await rudy.config.rudy_friends()
-    return ctx.author.id in rudyfriends
+    async with rudy.config.rudy_friends() as friends:
+        if ctx.author.id in friends:
+            return True
+
+    async with rudy.config.rudy_guilds() as guilds:
+        if ctx.guild is not None and ctx.guild.id in guilds:
+            return True
+
+    async with rudy.config.rudy_channels() as channels:
+        if ctx.channel is not None and ctx.channel.id in channels:
+            return True
+
+    return False
 
 
 class RudyPic(commands.Cog, name="rudypic"):
     def __init__(self, bot):
         self.bot = bot
         default_global = {
-            "rudy_friends": []
+            "rudy_friends": [],
+            "rudy_guilds": [],
+            "rudy_channels": []
         }
 
         self.config = Config.get_conf(self, identifier=45599)
@@ -78,11 +92,28 @@ class RudyPic(commands.Cog, name="rudypic"):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def rudyfriend(self, ctx: commands.Context, target: discord.Member):
-        async with self.config.rudy_friends() as rudyfriends:
-            if target.id in rudyfriends:
-                rudyfriends.remove(target.id)
-                await ctx.send(f'{target.mention} is no longer a Rudy friend!')
-            else:
-                rudyfriends.append(target.id)
-                await ctx.send(f'{target.mention} is now a Rudy friend!')
+    async def rudyfriend(self, ctx: commands.Context, target: Union[discord.Member, discord.TextChannel] = None):
+        if isinstance(target, discord.Member):
+            async with self.config.rudy_friends() as rudyfriends:
+                if target.id in rudyfriends:
+                    rudyfriends.remove(target.id)
+                    await ctx.send(f'{target.mention} is no longer a Rudy friend!')
+                else:
+                    rudyfriends.append(target.id)
+                    await ctx.send(f'{target.mention} is now a Rudy friend!')
+        elif isinstance(target, discord.TextChannel):
+            async with self.config.rudy_channels() as rudychannels:
+                if target.id in rudychannels:
+                    rudychannels.remove(target.id)
+                    await ctx.send(f'{target.mention} is no longer a Rudy friend channel!')
+                else:
+                    rudychannels.append(target.id)
+                    await ctx.send(f'{target.mention} is now a Rudy friend channel!')
+        elif target is None and ctx.guild is not None:
+            async with self.config.rudy_guilds() as rudyguilds:
+                if ctx.guild.id in rudyguilds:
+                    rudyguilds.remove(ctx.guild.id)
+                    await ctx.send(f'{ctx.guild.name} is no longer a Rudy friend guild!')
+                else:
+                    rudyguilds.append(ctx.guild.id)
+                    await ctx.send(f'{ctx.guild.name} is now a Rudy friend guild!')

@@ -7,7 +7,7 @@ fgguildid = 93140261797904384
 
 
 async def fg_check(ctx: commands.Context):
-    return ctx.guild.id == fgguildid
+    return ctx.guild is not None and ctx.guild.id == fgguildid
 
 
 class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
