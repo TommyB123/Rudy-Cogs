@@ -94,7 +94,7 @@ class RCRPModelManager(commands.Cog):
         self.rcrp_model_path = "/home/rcrp/domains/cdn.redcountyrp.com/public_html/rcrp"  # path of RCRP models
         self.relay_channel_id = 776943930603470868
 
-    async def send_relay_channel_message(self, ctx: commands.Context, message: str):
+    async def send_relay_channel_message(self, message: str):
         rcrpguild = await self.bot.fetch_guild(93142223473905664)
         relaychannel = rcrpguild.get_channel(self.relay_channel_id)
         await relaychannel.send(message)
@@ -140,7 +140,7 @@ class RCRPModelManager(commands.Cog):
     async def addobject(self, ctx: commands.Context, modelid: int, reference_id: int, folder: str, dff_url: str, txd_url: str):
         """Adds a new object model to the list of pending models"""
         error = await self.validate_model_submission(modelid, dff_url, txd_url)
-        if len(error) != 0:
+        if error is not None:
             await ctx.send(error)
             return
 
@@ -389,7 +389,7 @@ class RCRPModelManager(commands.Cog):
             "callback": "LoadCustomModels",
             "models": message
         }
-        await self.send_relay_channel_message(ctx, json.dumps(rcrp_message))
+        await self.send_relay_channel_message(json.dumps(rcrp_message))
         await ctx.send(f'{model_count} {"models" if model_count != 1 else "model"} has been successfully downloaded and put in their appropriate directories. The RCRP game server has been instructed to check for new models.')
 
         # remove the temporary directory

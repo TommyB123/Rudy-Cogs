@@ -33,7 +33,7 @@ class RudyPic(commands.Cog, name="rudypic"):
                     pictures.append(image.link)
                 final_url = random.choice(pictures)
             await ctx.send(final_url)
-        except:
+        except Exception:
             await ctx.send('Failed to fetch album photo. Imgur API is probably down because it sucks.')
 
     @commands.command()
@@ -79,12 +79,10 @@ class RudyPic(commands.Cog, name="rudypic"):
     @commands.guild_only()
     @commands.is_owner()
     async def rudyfriend(self, ctx: commands.Context, target: discord.Member):
-        rudyfriends: list = await self.config.rudy_friends()
-        if target.id in rudyfriends:
-            rudyfriends.remove(target.id)
-            await ctx.send(f'{target.mention} is no longer a Rudy friend!')
-        else:
-            rudyfriends.append(target.id)
-            await ctx.send(f'{target.mention} is now a Rudy friend!')
-
-        await self.config.rudy_friends.set(rudyfriends)
+        async with self.config.rudy_friends() as rudyfriends:
+            if target.id in rudyfriends:
+                rudyfriends.remove(target.id)
+                await ctx.send(f'{target.mention} is no longer a Rudy friend!')
+            else:
+                rudyfriends.append(target.id)
+                await ctx.send(f'{target.mention} is now a Rudy friend!')

@@ -58,18 +58,16 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
         deletechannelid: int = await self.config.guild(channel.guild).deletechannel()
-        editchannelid: int = await self.config.guild(channel.id).editchannel()
-        ignorechannels: list = await self.config.guild(channel.id).ignorechannels()
-
         if channel.id == deletechannelid:
             await self.config.guild(channel.guild).deletechannel.set(None)
 
+        editchannelid: int = await self.config.guild(channel.id).editchannel()
         if channel.id == editchannelid:
             await self.config.guild(channel.guild).editchannel.set(None)
 
-        if channel.id in ignorechannels:
-            ignorechannels.remove(channel.id)
-            await self.config.guild(channel.guild).ignorechannels.set(ignorechannels)
+        async with self.config.guild(channel.guild).ignorechannels() as ignorechannels:
+            if channel.id in ignorechannels:
+                ignorechannels.remove(channel.id)
 
     @commands.group()
     @commands.guild_only()
@@ -99,15 +97,13 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
     @commands.guildowner()
     async def ignore(self, ctx: commands.Context, channel: discord.TextChannel):
         """Adds or removes a channel from a list of channels that are skipped when logging"""
-        channels: list = await self.config.guild(ctx.guild).ignorechannels()
-        if channel.id not in channels:  # add the channel ID to the list
-            channels.append(channel.id)
-            await ctx.send(f'{channel.mention} has been added to the ignore list.')
-        else:
-            channels.remove(channel.id)
-            await ctx.send(f'{channel.mention} has been removed from the ignore list.')
-
-        await self.config.guild(ctx.guild).ignorechannels.set(channels)
+        async with self.config.guild(ctx.guild).ignorechannels() as channels:
+            if channel.id not in channels:  # add the channel ID to the list
+                channels.append(channel.id)
+                await ctx.send(f'{channel.mention} has been added to the ignore list.')
+            else:
+                channels.remove(channel.id)
+                await ctx.send(f'{channel.mention} has been removed from the ignore list.')
 
     @rudylogging.command()
     @commands.guild_only()
@@ -116,7 +112,6 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
         """Displays information related to logging functionality on this current server"""
         deletechannelid: int = await self.config.guild(ctx.guild).deletelogchannel()
         editchannelid: int = await self.config.guild(ctx.guild).editlogchannel()
-        ignorelist: list = await self.config.guild(ctx.guild).ignorechannels()
         deletechannel = self.bot.get_channel(deletechannelid)
         editchannel = self.bot.get_channel(editchannelid)
 
@@ -124,13 +119,14 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
         embed.add_field(name='Message Deletions', value=deletechannel.mention if deletechannel is not None else "Not Set", inline=False)
         embed.add_field(name='Message Edits', value=editchannel.mention if editchannel is not None else "Not Set", inline=False)
 
-        if len(ignorelist) != 0:
-            message = []
-            for id in ignorelist:
-                channel = self.bot.get_channel(id)
-                message.append(f'{channel.mention}')
-            message = '\n'.join(message)
-            embed.add_field(name='Ignored Channels', value=message, inline=False)
+        async with self.config.guild(ctx.guild).ignorechannels() as ignorelist:
+            if len(ignorelist) != 0:
+                message = []
+                for id in ignorelist:
+                    channel = self.bot.get_channel(id)
+                    message.append(channel.mention)
+                message = '\n'.join(message)
+                embed.add_field(name='Ignored Channels', value=message, inline=False)
 
         await ctx.send(embed=embed)
 

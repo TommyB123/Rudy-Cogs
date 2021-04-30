@@ -23,13 +23,14 @@ async def isweeb(ctx: commands.Context):
     weeb = WeebCommands(commands.Cog)
     weeb.config = Config.get_conf(weeb, identifier=45599)
 
-    weebs = await weeb.config.weebs()
-    if ctx.author.id in weebs:
-        return True
+    async with weeb.config.weebs() as weebs:
+        if ctx.author.id in weebs:
+            return True
 
-    weebservers = await weeb.config.weebservers()
-    if ctx.guild is not None and ctx.guild.id in weebservers:
-        return True
+    if ctx.guild is not None:
+        async with weeb.config.weebservers() as weebservers:
+            if ctx.guild.id in weebservers:
+                return True
 
     return False
 
@@ -47,10 +48,9 @@ class WeebCommands(commands.Cog, name="Weeb"):
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
-        weebservers = await self.config.weebservers()
-        if guild.id in weebservers:
-            weebservers.remove(guild.id)
-            await self.config.weebservers.set(weebservers)
+        async with self.config.weebservers() as guild_ids:
+            if guild.id in guild_ids:
+                guild_ids.remove(guild.id)
 
     @commands.command()
     @commands.guild_only()
@@ -133,31 +133,23 @@ class WeebCommands(commands.Cog, name="Weeb"):
     @commands.is_owner()
     async def makeweeb(self, ctx: commands.Context, target: discord.Member):
         """Certifies or banishes a dude from the weebs"""
-        weebs: list = await self.config.weebs()
-
-        if target.id in weebs:
-            weebs.remove(target.id)
-            await ctx.send(f'{target.mention} has been banished from the weebs.')
-        else:
-            weebs.append(target.id)
-            await ctx.send(f'{target.mention} is now a certified weeb!')
-
-        await self.config.weebs.set(weebs)
+        async with self.config.weebs() as weebs:
+            if target.id in weebs:
+                weebs.remove(target.id)
+                await ctx.send(f'{target.mention} has been banished from the weebs.')
+            else:
+                weebs.append(target.id)
+                await ctx.send(f'{target.mention} is now a certified weeb!')
 
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
     async def makeserverweeb(self, ctx: commands.Context):
         """Certifies or banishes a server from the weebs"""
-        weebservers: list = await self.config.weebservers()
-
-        guild = ctx.guild
-
-        if guild.id in weebservers:
-            weebservers.remove(guild.id)
-            await ctx.send(f'Server **{guild.name}** has been banished from the weebs.')
-        else:
-            weebservers.append(guild.id)
-            await ctx.send(f'**{guild.name}** is now a certified weeb server!')
-
-        await self.config.weebservers.set(weebservers)
+        async with self.config.weebservers() as weebservers:
+            if ctx.guild.id in weebservers:
+                weebservers.remove(ctx.guild.id)
+                await ctx.send(f'Server **{ctx.guild.name}** has been banished from the weebs.')
+            else:
+                weebservers.append(ctx.guild.id)
+                await ctx.send(f'**{ctx.guild.name}** is now a certified weeb server!')

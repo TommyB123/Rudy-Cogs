@@ -31,17 +31,16 @@ class RudyCrackwatch(commands.Cog, name="Crackwatch Watcher"):
             async with session.get('https://api.crackwatch.com/api/games?page=0&sort_by=crack_date&is_cracked=true') as res:
                 data = await res.json()
 
-        sent_titles = await self.config.notified_games()
-        for title in data:
-            if title['_id'] not in sent_titles:
-                embed = await self.format_game_info(title)
-                channels = await self.config.watched_channels()
-                for channel_id in channels:
-                    channel = self.bot.get_channel(channel_id)
-                    if channel is not None:
-                        await channel.send(embed=embed)
-                sent_titles.append(title['_id'])
-        await self.config.notified_games.set(sent_titles)
+        async with self.config.notified_games() as sent_titles:
+            for title in data:
+                if title['_id'] not in sent_titles:
+                    embed = await self.format_game_info(title)
+                    channels = await self.config.watched_channels()
+                    for channel_id in channels:
+                        channel = self.bot.get_channel(channel_id)
+                        if channel is not None:
+                            await channel.send(embed=embed)
+                    sent_titles.append(title['_id'])
 
     @fetch_cracked_games.before_loop
     async def before_fetch_cracked_games(self):
@@ -71,10 +70,9 @@ class RudyCrackwatch(commands.Cog, name="Crackwatch Watcher"):
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
-        channels = await self.config.watched_channels()
-        if channel.id in channels:
-            channels.remove(channel.id)
-            await self.config.watched_channels.set(channels)
+        async with self.config.watched_channels() as channels:
+            if channel.id in channels:
+                channels.remove(channel.id)
 
     @commands.group()
     async def crackwatch(self, ctx: commands.Context):
@@ -86,23 +84,20 @@ class RudyCrackwatch(commands.Cog, name="Crackwatch Watcher"):
     async def setalertchannel(self, ctx: commands.Context, channel: discord.TextChannel = None):
         """Assigns a channel that will receive notifications whenever a new game is marked as cracked on Crackwatch.
         If you'd like to unassign a channel, run this command in the channel that's already been set."""
-        channels = await self.config.watched_channels()
-        if channel is None:
-            if channel.id not in channels:
-                await ctx.send('Specify a channel to link Crackwatch notifications to.')
+        async with self.config.watched_channels() as channels:
+            if channel is None:
+                if channel.id not in channels:
+                    await ctx.send('Specify a channel to link Crackwatch notifications to.')
+                else:
+                    channels.remove(channel.id)
+                    await ctx.send('This channel will no longer receive Crackwatch notifications.')  # using ctx to send here because channel and ctx.channel would be identical
             else:
-                channels.remove(channel.id)
-                await self.config.watched_channels.set(channels)
-                await ctx.send('This channel will no longer receive Crackwatch notifications.')  # using ctx to send here because channel and ctx.channel would be identical
-        else:
-            if channel.id in channels:
-                await ctx.send(f'{channel.mention} already receives Crackwatch notifications.')
-                return
-
-            channels.append(channel.id)
-            await self.config.watched_channels.set(channels)
-            await channel.send('This channel will now receive Crackwatch notifications.')
-            await ctx.send(f'{channel.mention} will now receive Crackwatch notifications.')
+                if channel.id in channels:
+                    await ctx.send(f'{channel.mention} already receives Crackwatch notifications.')
+                else:
+                    channels.append(channel.id)
+                    await channel.send('This channel will now receive Crackwatch notifications.')
+                    await ctx.send(f'{channel.mention} will now receive Crackwatch notifications.')
 
     @crackwatch.command()
     async def recent(self, ctx: commands.Context):
