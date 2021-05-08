@@ -102,6 +102,7 @@ class FunCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.bot_has_permissions(attach_files=True)
     @commands.cooldown(1, 60)
     async def dozed(self, ctx: commands.Context):
         """nigga dozed off real quick"""
@@ -109,6 +110,7 @@ class FunCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.bot_has_permissions(attach_files=True)
     @commands.cooldown(1, 60)
     async def cunt(self, ctx: commands.Context):
         """unforgiveable"""
@@ -116,6 +118,7 @@ class FunCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.bot_has_permissions(attach_files=True)
     @commands.cooldown(1, 60)
     async def wheels(self, ctx: commands.Context):
         """a tragic tale"""
@@ -123,6 +126,7 @@ class FunCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.bot_has_permissions(attach_files=True)
     @commands.cooldown(1, 60)
     async def valero(self, ctx: commands.Context):
         """Hey guys, Valero here"""
@@ -130,6 +134,7 @@ class FunCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.bot_has_permissions(attach_files=True)
     @commands.cooldown(1, 60)
     async def bazinga(self, ctx: commands.Context):
         """Bazinga!"""
@@ -137,6 +142,7 @@ class FunCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.bot_has_permissions(manage_messages=True)
     async def ygay(self, ctx: commands.Context, target: discord.Member):
         """Ask why someone is in fact gay"""
         await ctx.message.delete()

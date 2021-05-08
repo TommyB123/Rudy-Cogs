@@ -555,20 +555,6 @@ class RCRPStaffCommands(commands.Cog):
             await member.add_roles(fcrole)
             await ctx.send(f'{member.mention} now has the faction consultant role.')
 
-    @assign.command()
-    @commands.guild_only()
-    @commands.check(rcrp_check)
-    @commands.check(admin_check)
-    async def factionleader(self, ctx: commands.Context, member: discord.Member):
-        """Adds or removes Faction Leader from a member"""
-        flrole = ctx.guild.get_role(743953759901843568)
-        if flrole in member.roles:
-            await member.remove_roles(flrole)
-            await ctx.send(f'{member.mention} no longer has the faction leader role.')
-        else:
-            await member.add_roles(flrole)
-            await ctx.send(f'{member.mention} now has the faction leader role')
-
     @commands.command()
     @commands.guild_only()
     @commands.check(rcrp_check)

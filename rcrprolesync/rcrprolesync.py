@@ -35,7 +35,7 @@ def member_is_management(member: discord.Member):
 
 class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
     def __init__(self, bot: discord.Client):
-        self.bot: discord.Client = bot
+        self.bot = bot
         self.sync_member_roles.start()
 
     def cog_unload(self):
