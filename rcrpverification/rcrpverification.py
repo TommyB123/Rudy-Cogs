@@ -120,7 +120,7 @@ class RCRPVerification(commands.Cog, name="RCRP Verification"):
         code = random_with_N_digits(10)
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
-        await cursor.execute("UPDATE masters SET discordcode = %s, pendingdiscordid = %s WHERE Username = %s AND discordid = 0", (str(code), ctx.author.id, masteraccount))
+        await cursor.execute("UPDATE masters SET discordcode = %s, pendingdiscordid = %s WHERE Username = %s AND discordid = 0", (str(code), ctx.author.id, masteraccount, ))
         await cursor.close()
         sql.close()
 
@@ -132,7 +132,7 @@ class RCRPVerification(commands.Cog, name="RCRP Verification"):
         """Validates the verification code set to an RCRP account"""
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
-        await cursor.execute("SELECT COUNT(*) AS matches, id, Helper, Tester, AdminLevel FROM masters WHERE discordcode = %s AND pendingdiscordid = %s", (code, ctx.author.id))
+        await cursor.execute("SELECT COUNT(*) AS matches, id, Helper, Tester, AdminLevel FROM masters WHERE discordcode = %s AND pendingdiscordid = %s", (code, ctx.author.id, ))
         data = await cursor.fetchone()
 
         if data['matches'] == 0:  # account doesn't match
@@ -153,7 +153,7 @@ class RCRPVerification(commands.Cog, name="RCRP Verification"):
             discordroles.append(rcrpguild.get_role(managementrole))
         await discordmember.add_roles(*discordroles)
 
-        await cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0, pendingdiscordid = 0 WHERE id = %s", (ctx.author.id, data['id']))
+        await cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0, pendingdiscordid = 0 WHERE id = %s", (ctx.author.id, data['id'], ))
         await cursor.close()
         sql.close()
 
@@ -214,7 +214,7 @@ class RCRPVerification(commands.Cog, name="RCRP Verification"):
         """Unlinks an RCRP account from a Discord ID. Useful for when a Discord account no longer exists or is no longer used by its owner"""
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
-        await cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (discordid))
+        await cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (discordid, ))
 
         if cursor.rowcount != 0:
             await ctx.send(f"Discord ID {discordid} has been unlinked from its MA.")
