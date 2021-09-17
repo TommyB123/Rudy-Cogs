@@ -11,6 +11,35 @@ gaslinks = [
     'https://cdn.discordapp.com/attachments/639337212424617994/645095656930934784/itsuki-takumi-iketani-at-gas-station-initial-d.png'
 ]
 
+msquotes = [
+    "maked a camp", "ES GIBT VIEL ZU DISKUTIEREN", "one time i ated a mine, it didnt't go well",
+    "Help I'm stuck in a time loop.", "GOOT MY WEBSTIE IS 123.BOBL.FOM", "Turkey skin and Billybongs.",
+    "never trust a fart", "rehehehe raggy", "Are you god?", "my buttsack has extensions", "i want some polka in my butt",
+    "HELP IM ACTUALLY A HUMAN FORCED TO SAY THINGS", "do you have any ding dong diddly do-do dingle bobbies?",
+    "hoy, am name karble", "DUDE FUCK HES A GUN", "FUCK THE POLISE", "You idot.", "can we help you sir", "neon is a cunt",
+    "All I ever do is SMOKE BIG WEED", "hey men circle gone me admin now", "Did you know? If you set your dog on fire, you gain magical powers.",
+    "salam?", "widnows?", "My compaytur runs on widnows vistee.", "Well my compaytur run on dinwow expy : ^ )", "billions and billions of stars",
+    "welcome to the jange, we got em fon an gem", "stay out of my territory", "alright ramblers lets get rAAAMMMMMMMMMMMMMMM",
+    "If we get the code wrong, billy gets penetrated.", "hello friends",
+    "we, survivors of the third bot war, have ursurped the tyrant bots of the past and now we reign for a thousand years",
+    "WOP", "the money?", "fuck off copfan", "i wish it was christmas already", "I FUCK YOUR MOTHER", "i can't poop", "i can poop",
+    "we don't represent the systeM WE ARE THE SYSTEEMM", "i play anal my neighbor 12 every day", "wanna buy some niggies", "dude you shot me",
+    "fuking shit HES GOT A HALOOLIECOPTER", "dude i just drop the biggest dookie", "LIGHTSABERS DUDE", "my bobfrien all ways hit me",
+    "bongo bongo bongo i aint leavin the congo fuk off", "DO YOU LIKE SA-MP? BUY THE DLC", "i bought my virginty at man and tumor inc.",
+    "one two three ANARCHY", "do you want to buy some roleplay?", "i draw dicks in places people wouldn't expect them", "i poop in the sink",
+    "WE CAN'T STOP TONIGHT WE GOIN BALLS DEEP", "im admin", "big bobs", "wanna trade teeth?", "theres so much all the time", "his name is robert paulson",
+    "fucking cartoons why cant i walk on air when im not looking", "i wish dooc was gone :((((((((((", "they'll never see me IF IM NAKED",
+    "check my bum, there might be treasure", "lets go exploring! fuck thats a bear lets go back", "WANNA FUCKING GET JACKED? TYPE /KICKSTART",
+    "THINK YOU'RE HARD NIGGA? TYPE /RACE FOOL", "PROVE YOUR GENETICLY DIFFERENT, TYPE /SUMO", "LOP:P:{", "they were all dead", "is this the payne residence",
+    "i NEED ESEX", "xd", ":o", "behold the weiner", "all i see is flesh", "hey tommy", "want some lips", "can we agree to boogie", "Found a bug? fuck off.",
+    "br?", "we know", "WE GOTTA GO NIGGA", "no sir i did not touch the naughty spot", "hi sir can i buy some rp", "i just ate so many biggle burgers",
+    "MIND LAZORS BEEWMEMEMEEMWOOOOOOOO", "./ocreate 1337", "AFLABGMS", "you now understand your anus", "rehehehe roogy", "did you unders stand.", "jesus christ man",
+    "who the fuck took my power rangers", "who", "lets go on a sodomy adventure", "wanna go skoloping", "begin the INSERTION",
+    "i have worn my flip flops for so long they have fused with my feet", "./q", "WHERE THE FUCK ARE MY DOgs", "my dogs is long",
+    "SO FUCKIN' WIDE MAN", "SO WIDE", "i hate graham", "where the fuck did jimmy go", "hi im new to server, how to spawn car",
+    "My Dad Sent Prison Last Night :'(", "Have a dog? Kill it."
+]
+
 # rcrp guild ID
 rcrpguildid = 93142223473905664
 
@@ -99,6 +128,12 @@ class FunCommands(commands.Cog):
     async def gasgasgas(self, ctx: commands.Context):
         """Got any anime gas?"""
         await ctx.send(random.choice(gaslinks))
+
+    @commands.command()
+    @commands.guild_only()
+    async def msquote(self, ctx: commands.Context):
+        """Legendary ms quote"""
+        await ctx.send(random.choice(msquotes))
 
     @commands.command()
     @commands.guild_only()
