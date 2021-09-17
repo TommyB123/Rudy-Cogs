@@ -8,13 +8,17 @@ from redbot.core.utils.chat_formatting import humanize_list
 degenerate_categories = [
     'femdom', 'tickle', 'classic', 'ngif', 'erofeet', 'erok', 'poke', 'les', 'v3', 'hololewd', 'lewdk', 'keta',
     'feetg', 'nsfw_neko_gif', 'eroyuri', 'kiss', '8ball', 'kuni', 'tits', 'pussy_jpg', 'cum_jpg', 'pussy', 'lewdkemo',
-    'slap', 'lewd', 'cum', 'cuddle', 'spank', 'smallboobs', 'random_hentai_gif', 'avatar', 'fox_girl', 'nsfw_avatar',
+    'slap', 'lewd', 'cum', 'cuddle', 'spank', 'smallboobs', 'Random_hentai_gif', 'avatar', 'fox_girl', 'nsfw_avatar',
     'hug', 'gecg', 'boobs', 'pat', 'feet', 'smug', 'kemonomimi', 'solog', 'holo', 'wallpaper', 'bj', 'yuri', 'anal',
     'baka', 'blowjob', 'holoero', 'feed', 'neko', 'gasm', 'hentai', 'futanari', 'ero', 'solo', 'waifu', 'pwankg', 'eron', 'erokemo'
 ]
 
 
 async def fetchweeb(session: aiohttp.ClientSession, url: str):
+    async with session.get(url) as response:
+        return await response.text()
+
+async def sendweeb(url: str):
     async with session.get(url) as response:
         return await response.text()
 
