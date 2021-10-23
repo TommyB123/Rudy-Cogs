@@ -70,6 +70,13 @@ class RudyPic(commands.Cog, name="rudypic"):
     async def milopic(self, ctx: commands.Context):
         """Sends an adorable picture of Milo"""
         await self.send_album_picture(ctx, 'h3VORpQ')
+        
+    @commands.command()
+    @commands.guild_only()
+    @commands.check(isrudyfriend)
+    async def anniepic(self, ctx: commands.Context):
+        """Sends an adorable picture of Annie"""
+        await self.send_album_picture(ctx, 'MkkXNpx')
 
     @commands.command()
     @commands.guild_only()
