@@ -81,6 +81,17 @@ class WeebCommands(commands.Cog, name="Weeb"):
     @commands.guild_only()
     @commands.is_nsfw()
     @commands.check(isweeb)
+    async def hentai(self, ctx: commands.Context):
+        """A lot of pics"""
+        async with aiohttp.ClientSession() as session:
+            response = await fetchweeb(session, 'https://api.coomer.ovh/hcp')
+            image = json.loads(response)
+            await ctx.send(image['url'])
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.is_nsfw()
+    @commands.check(isweeb)
     async def degenerate(self, ctx: commands.Context, *, category: str = ""):
         """The worst"""
         if category == '*':
