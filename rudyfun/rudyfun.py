@@ -124,7 +124,6 @@ class FunCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.cooldown(1, 60)
     async def gasgasgas(self, ctx: commands.Context):
         """Got any anime gas?"""
         await ctx.send(random.choice(gaslinks))
