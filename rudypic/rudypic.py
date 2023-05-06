@@ -2,7 +2,7 @@ import discord
 import random
 from imgurpython import ImgurClient
 from typing import Union
-from redbot.core import commands, Config
+from redbot.core import commands, app_commands, Config
 from redbot.core.bot import Red
 
 # imgur client handler
@@ -39,63 +39,35 @@ class RudyPic(commands.Cog, name="rudypic"):
         self.config = Config.get_conf(self, identifier=45599)
         self.config.register_global(**default_global)
 
-    async def send_album_picture(self, ctx: commands.Context, album: str):
+    async def send_album_picture(self, context: Union[commands.Context, discord.Interaction], album: str):
+        final_url = None
         try:
-            final_url = None
-            async with ctx.typing():
+            async with context.typing():
                 pictures = []
                 for image in imclient.get_album_images(album):
                     pictures.append(image.link)
                 final_url = random.choice(pictures)
-            await ctx.send(final_url)
         except Exception:
-            await ctx.send('Failed to fetch album photo. Imgur API is probably down because it sucks.')
+            pass
 
-    @commands.command()
-    @commands.guild_only()
-    @commands.check(isrudyfriend)
-    async def rudypic(self, ctx: commands.Context):
-        """Sends an adorable picture of Rudy"""
-        await self.send_album_picture(ctx, 'WLQku0l')
+        if isinstance(context, commands.Context):
+            await context.send(final_url)
+        elif isinstance(context, discord.Interaction):
+            await context.response.send_message(final_url)
 
-    @commands.command()
-    @commands.guild_only()
-    @commands.check(isrudyfriend)
-    async def sammypic(self, ctx: commands.Context):
-        """Sends an adorable picture of Sammy"""
-        await self.send_album_picture(ctx, 'VfKwj4H')
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.check(isrudyfriend)
-    async def milopic(self, ctx: commands.Context):
-        """Sends an adorable picture of Milo"""
-        await self.send_album_picture(ctx, 'h3VORpQ')
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.check(isrudyfriend)
-    async def anniepic(self, ctx: commands.Context):
-        """Sends an adorable picture of Annie"""
-        await self.send_album_picture(ctx, 'MkkXNpx')
-
-    @commands.command()
-    @commands.guild_only()
-    async def gizmo(self, ctx: commands.Context):
-        """Sends a legendary Gizmo quote"""
-        await self.send_album_picture(ctx, 'SlgjJJu')
-
-    @commands.command()
-    @commands.guild_only()
-    async def lylat(self, ctx: commands.Context):
-        """Sends a legendary Lylat quote"""
-        await self.send_album_picture(ctx, 'LF00KOm')
-
-    @commands.command()
-    @commands.guild_only()
-    async def frog(self, ctx: commands.Context):
-        """Sends a nice frog"""
-        await self.send_album_picture(ctx, 'yIW3G5g')
+    @app_commands.command()
+    @app_commands.guild_only()
+    @app_commands.check(isrudyfriend)
+    @app_commands.choices(pictype=[
+        app_commands.Choice(name='Rudy', value='WLQku0l'),
+        app_commands.Choice(name='Sammy', value='VfKwj4H'),
+        app_commands.Choice(name='Milo', value='h3VORpQ'),
+        app_commands.Choice(name='Annie', value='MkkXNpx'),
+        app_commands.Choice(name='gizmo', value='SlgjJJu'),
+        app_commands.Choice(name='lylat', value='LF00KOm')
+    ])
+    async def pic(self, interaction: discord.Interaction, pictype: str):
+        await self.send_album_picture(interaction, pictype)
 
     @commands.command()
     @commands.guild_only()
