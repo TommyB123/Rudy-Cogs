@@ -12,10 +12,6 @@ rcrpguildid = 93142223473905664
 appchannelid = 445668156824879123
 
 
-def pinned_filter(message: discord.Message):
-    return message.pinned is False
-
-
 class RCRPApplications(commands.Cog, name='RCRP Applications'):
     def __init__(self, bot: Red):
         self.bot = bot
@@ -56,7 +52,7 @@ class RCRPApplications(commands.Cog, name='RCRP Applications'):
                         message: discord.Message = await appchannel.send(embed=embed)
                         self.applications[row['id']] = message.id
             else:
-                messages = await appchannel.history().filter(pinned_filter).flatten()
+                messages = [message async for message in appchannel.history() if not message.pinned]
                 if len(messages) != 0:
                     await appchannel.delete_messages(messages)
                     self.applications.clear()
