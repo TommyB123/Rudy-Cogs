@@ -1,4 +1,4 @@
-import discord
+from redbot.core.bot import Red
 import random
 from redbot.core import commands, Config
 
@@ -11,7 +11,7 @@ async def fg_check(ctx: commands.Context):
 
 
 class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
-    def __init__(self, bot: discord.Client):
+    def __init__(self, bot: Red):
         default_guild = {
             "quotes": []
         }

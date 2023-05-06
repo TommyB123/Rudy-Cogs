@@ -6,10 +6,11 @@ from datetime import timedelta
 from discord.ext import tasks
 from redbot.core import commands, Config
 from redbot.core.utils import menus
+from redbot.core.bot import Red
 
 
 class RudyCrackwatch(commands.Cog, name="Crackwatch Watcher"):
-    def __init__(self, bot: discord.Client):
+    def __init__(self, bot: Red):
         default_global = {
             "notified_games": [],
             "watched_channels": []

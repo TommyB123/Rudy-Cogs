@@ -3,7 +3,7 @@ import aiomysql
 import json
 from redbot.core import commands
 from redbot.core.utils import menus
-from .config import mysqlconfig
+from redbot.core.bot import Red
 
 # rcrp guild ID
 rcrpguildid = 93142223473905664
@@ -26,7 +26,7 @@ async def admin_check(ctx: commands.Context):
 
 
 class RCRPCommands(commands.Cog):
-    def __init__(self, bot: discord.Client):
+    def __init__(self, bot: Red):
         self.bot = bot
         self.relay_channel_id = 776943930603470868
 
@@ -37,6 +37,7 @@ class RCRPCommands(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def players(self, ctx: commands.Context):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT Name FROM players WHERE Online = 1 ORDER BY Name ASC")
@@ -92,6 +93,7 @@ class RCRPCommands(commands.Cog):
     @commands.cooldown(1, 60)
     async def helpers(self, ctx: commands.Context):
         """Sends a list of in-game helpers"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT masters.Username AS mastername, players.Name AS charactername FROM masters JOIN players ON players.MasterAccount = masters.id WHERE Helper != 0 AND Online = 1")
@@ -117,6 +119,7 @@ class RCRPCommands(commands.Cog):
         """Queries the SA-MP server to see if a player with the specified name is in-game"""
         playername = playername.replace(' ', '_')
         playername = discord.utils.escape_mentions(playername)
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT NULL FROM players WHERE Name = %s AND Online = 1", (playername, ))

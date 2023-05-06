@@ -4,6 +4,7 @@ import json
 import random
 from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import humanize_list
+from redbot.core.bot import Red
 
 degenerate_categories = [
     'femdom', 'tickle', 'classic', 'ngif', 'erofeet', 'erok', 'poke', 'les', 'v3', 'hololewd', 'lewdk', 'keta',
@@ -15,10 +16,6 @@ degenerate_categories = [
 
 
 async def fetchweeb(session: aiohttp.ClientSession, url: str):
-    async with session.get(url) as response:
-        return await response.text()
-
-async def sendweeb(url: str):
     async with session.get(url) as response:
         return await response.text()
 
@@ -40,7 +37,7 @@ async def isweeb(ctx: commands.Context):
 
 
 class WeebCommands(commands.Cog, name="Weeb"):
-    def __init__(self, bot):
+    def __init__(self, bot: Red):
         default_global = {
             "weebs": [],
             "weebservers": []

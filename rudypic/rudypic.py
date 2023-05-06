@@ -3,6 +3,7 @@ import random
 from imgurpython import ImgurClient
 from typing import Union
 from redbot.core import commands, Config
+from redbot.core.bot import Red
 
 # imgur client handler
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
@@ -27,7 +28,7 @@ async def isrudyfriend(ctx: commands.Context):
 
 
 class RudyPic(commands.Cog, name="rudypic"):
-    def __init__(self, bot):
+    def __init__(self, bot: Red):
         self.bot = bot
         default_global = {
             "rudy_friends": [],
@@ -70,7 +71,7 @@ class RudyPic(commands.Cog, name="rudypic"):
     async def milopic(self, ctx: commands.Context):
         """Sends an adorable picture of Milo"""
         await self.send_album_picture(ctx, 'h3VORpQ')
-        
+
     @commands.command()
     @commands.guild_only()
     @commands.check(isrudyfriend)

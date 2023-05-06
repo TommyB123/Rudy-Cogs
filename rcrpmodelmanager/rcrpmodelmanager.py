@@ -6,10 +6,10 @@ import aiofiles.os
 import re
 import os
 import json
-from .config import mysqlconfig
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list
 from typing import Union
+from redbot.core.bot import Red
 
 
 class model_types():
@@ -47,6 +47,7 @@ class model_types():
 
     async def is_valid_model(self, modelid: int):
         """Queries the MySQL database to see if a model ID exists"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT NULL FROM models WHERE modelid = %s", (modelid, ))
@@ -87,7 +88,7 @@ class model_data():
 
 class RCRPModelManager(commands.Cog):
     """RCRP Model Manager"""
-    def __init__(self, bot: discord.Client):
+    def __init__(self, bot: Red):
         self.bot = bot
         self.models = {}  # dict for pending model data. key will be the model's ID
         self.model_urls = []  # list containing each URL that needs to used for downloading
@@ -216,6 +217,7 @@ class RCRPModelManager(commands.Cog):
             await ctx.send(f'{modelid} is not a model ID that is used on the server.')
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
 
@@ -271,6 +273,7 @@ class RCRPModelManager(commands.Cog):
             await ctx.send(f'{modelid} is not a valid model ID used on the server.')
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT * FROM models WHERE modelid = %s", (modelid, ))
@@ -297,6 +300,7 @@ class RCRPModelManager(commands.Cog):
     @commands.is_owner()
     async def search(self, ctx: commands.Context, search: str):
         """Searches the database to find models of the specified type with the search term in their DFF name"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
 
@@ -361,13 +365,13 @@ class RCRPModelManager(commands.Cog):
 
         # insert the models into the MySQL database and then move them to the correct directories
         await ctx.send('Inserting new models into the MySQL database and moving them to their correct folders.')
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         async with ctx.typing():
             for model in model_list:
                 model_id_list.append(f'{model.model_id}')
-                await cursor.execute("INSERT INTO models (modelid, reference_model, modeltype, dff_name, txd_name, folder) VALUES (%s, %s, %s, %s, %s, %s)",
-                    (model.model_id, model.reference_model, model_types().model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
+                await cursor.execute("INSERT INTO models (modelid, reference_model, modeltype, dff_name, txd_name, folder) VALUES (%s, %s, %s, %s, %s, %s)", (model.model_id, model.reference_model, model_types().model_type_int(model.model_type), model.dff_name, model.txd_name, model.model_path))
                 destinationfolder = f'{self.rcrp_model_path}/{model.model_path}'
 
                 if os.path.exists(destinationfolder) is False:

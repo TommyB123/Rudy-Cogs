@@ -1,7 +1,7 @@
 import discord
 import aiomysql
 from redbot.core import commands
-from .config import mysqlconfig
+from redbot.core.bot import Red
 
 # guild id for the prison guild
 prisonguildid = 558036120743706625
@@ -12,7 +12,7 @@ async def prison_check(ctx: commands.Context):
 
 
 class RCRPPrison(commands.Cog, name="RCRP Prison"):
-    def __init__(self, bot):
+    def __init__(self, bot: Red):
         self.bot = bot
 
     @commands.group()
@@ -27,6 +27,7 @@ class RCRPPrison(commands.Cog, name="RCRP Prison"):
     @commands.check(prison_check)
     async def inmates(self, ctx: commands.Context):
         """Fetches a list of inmates that are currently in-game"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
 

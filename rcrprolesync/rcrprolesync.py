@@ -3,7 +3,7 @@ import aiomysql
 from aiomysql import Cursor
 from discord.ext import tasks
 from redbot.core import commands
-from .config import mysqlconfig
+from redbot.core.bot import Red
 
 # rcrp guild ID
 rcrpguildid = 93142223473905664
@@ -34,7 +34,7 @@ def member_is_management(member: discord.Member):
 
 
 class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
-    def __init__(self, bot: discord.Client):
+    def __init__(self, bot: Red):
         self.bot = bot
         self.sync_member_roles.start()
 
@@ -50,6 +50,7 @@ class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
         return member_is_verified(member) is True
 
     async def account_is_banned(self, accountid):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor: Cursor = await sql.cursor()
         await cursor.execute("SELECT NULL FROM bans WHERE MasterAccount = %s", (accountid, ))
@@ -66,6 +67,7 @@ class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
     async def on_member_join(self, member: discord.Member):
         if member.guild.id == rcrpguildid:
             rcrpguild: discord.Guild = self.bot.get_guild(rcrpguildid)
+            mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
             sql = await aiomysql.connect(**mysqlconfig)
             cursor: Cursor = await sql.cursor()
 
@@ -90,6 +92,7 @@ class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
         if member_is_verified(after) is False or before.roles == after.roles or after.guild.id != rcrpguildid:
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
 
@@ -107,6 +110,7 @@ class RCRPRoleSync(commands.Cog, name="RCRP Role Sync"):
         sql.close()
 
     async def assign_roles(self, field: str, role_id: int):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor: Cursor = await sql.cursor()
 

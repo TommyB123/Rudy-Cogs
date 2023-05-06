@@ -1,8 +1,8 @@
 import discord
 import aiomysql
 import json
-from .config import mysqlconfig
 from redbot.core import commands
+from redbot.core.bot import Red
 from datetime import datetime
 
 # weapon names
@@ -104,20 +104,6 @@ async def management_check(ctx: commands.Context):
         return True
 
 
-async def fetch_master_id_from_discord_id(discordid: int):
-    sql = await aiomysql.connect(**mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT id FROM masters WHERE discordid = %s", (discordid, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    if data is None:
-        return 0
-    else:
-        return data[0]
-
-
 def member_is_admin(member: discord.Member):
     for role in member.roles:
         if role.id in staffroles:
@@ -139,28 +125,42 @@ def member_is_verified(member: discord.Member):
         return False
 
 
-async def fetch_account_id(mastername: str):
-    sql = await aiomysql.connect(**mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT id FROM masters WHERE Username = %s", (mastername, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    maid = data[0]
-    if maid is None:
-        maid = 0
-    return maid
-
-
 class RCRPStaffCommands(commands.Cog):
-    def __init__(self, bot: discord.Client):
+    def __init__(self, bot: Red):
         self.bot = bot
         self.relay_channel_id = 776943930603470868
 
     async def send_relay_channel_message(self, ctx: commands.Context, message: str):
         relaychannel = ctx.guild.get_channel(self.relay_channel_id)
         await relaychannel.send(message)
+
+    async def fetch_master_id_from_discord_id(self, discordid: int):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT id FROM masters WHERE discordid = %s", (discordid, ))
+        data = await cursor.fetchone()
+        await cursor.close()
+        sql.close()
+
+        if data is None:
+            return 0
+        else:
+            return data[0]
+
+    async def fetch_account_id(self, mastername: str):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT id FROM masters WHERE Username = %s", (mastername, ))
+        data = await cursor.fetchone()
+        await cursor.close()
+        sql.close()
+
+        maid = data[0]
+        if maid is None:
+            maid = 0
+        return maid
 
     @commands.group()
     @commands.guild_only()
@@ -176,6 +176,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def discord_ma_search(self, ctx: commands.Context, discord_user: discord.User):
         """Fetches Master Account info for a verified Discord member"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT id, Username, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE discordid = %s", (discord_user.id, ))
@@ -203,6 +204,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def ma(self, ctx: commands.Context, master_name: str):
         """Fetches a Discord account based on a Master Account name search"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT id, discordid, UNIX_TIMESTAMP(RegTimeStamp) AS RegStamp, LastLog FROM masters WHERE Username = %s", (master_name, ))
@@ -236,6 +238,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def house(self, ctx: commands.Context, *, address: str):
         """Queries the database for information of a house based on user-specified input"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT houses.id, OwnerSQLID, Description, players.Name AS OwnerName, InsideID, ExteriorFurnLimit, Price FROM houses LEFT JOIN players ON players.id = houses.OwnerSQLID WHERE Description LIKE %s", (('%' + address + '%'), ))
@@ -277,6 +280,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def business(self, ctx: commands.Context, *, description: str):
         """Queries the database for information of a business based on user-specified input"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT bizz.id, OwnerSQLID, Description, players.Name AS OwnerName, Price, BizzEarnings, IsSpecial, Loaned FROM bizz LEFT JOIN players ON players.id = bizz.OwnerSQLID WHERE Description LIKE %s", (('%' + description + '%'), ))
@@ -319,11 +323,12 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def weapons(self, ctx: commands.Context, master_name: str):
         """Collects a list of all the weapons that an account owns"""
-        master_id = await fetch_account_id(master_name)
+        master_id = await self.fetch_account_id(master_name)
         if master_id == 0:
             await ctx.send('Invalid account name.')
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT WeaponID AS weapon, COUNT(*) AS count FROM weapons WHERE OwnerSQLID IN (SELECT id FROM players WHERE MasterAccount = %s) AND Deleted = 0 GROUP BY WeaponID", (master_id, ))
@@ -471,6 +476,7 @@ class RCRPStaffCommands(commands.Cog):
             await ctx.send("Invalid admin level.")
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET AdminLevel = %s WHERE discordid = %s", (level, member.id))
@@ -495,6 +501,7 @@ class RCRPStaffCommands(commands.Cog):
             await ctx.send("This command can only be used on verified members. (How would we know what account to give tester to dummy??)")
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT Tester FROM masters WHERE discordid = %s", (member.id, ))
@@ -523,6 +530,7 @@ class RCRPStaffCommands(commands.Cog):
             await ctx.send("This command can only be used on verified members. (How would we know what account to give helper to dummy??)")
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT Helper FROM masters WHERE discordid = %s", (member.id, ))
@@ -561,6 +569,7 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def peaks(self, ctx: commands.Context):
         """Fetches player count peaks for the last 14 days"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT * FROM ucpplayerscron ORDER BY Date DESC LIMIT 14")
@@ -652,8 +661,8 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def igban(self, ctx: commands.Context, target: str, *, reason: str):
         """Bans an online player from the server"""
-        master_id = await fetch_master_id_from_discord_id(ctx.author.id)
-        if(master_id == 0):
+        master_id = await self.fetch_master_id_from_discord_id(ctx.author.id)
+        if master_id == 0:
             return
 
         rcrp_message = {
@@ -673,8 +682,8 @@ class RCRPStaffCommands(commands.Cog):
     @commands.check(admin_check)
     async def igkick(self, ctx: commands.Context, target: str, *, reason: str):
         """Kicks an online player from the server"""
-        master_id = await fetch_master_id_from_discord_id(ctx.author.id)
-        if(master_id == 0):
+        master_id = await self.fetch_master_id_from_discord_id(ctx.author.id)
+        if master_id == 0:
             return
 
         rcrp_message = {

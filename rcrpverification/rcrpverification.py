@@ -2,7 +2,7 @@ import discord
 import aiomysql
 from random import randint
 from redbot.core import commands
-from .config import mysqlconfig
+from redbot.core.bot import Red
 
 # rcrp guild ID
 rcrpguildid = 93142223473905664
@@ -39,50 +39,6 @@ def member_is_verified(member: discord.Member):
     return verifiedrole in [role.id for role in member.roles]
 
 
-async def account_accepted(mastername: str):
-    sql = await aiomysql.connect(**mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    return (data is not None)
-
-
-async def account_verified(name: str):
-    sql = await aiomysql.connect(**mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    return (data is not None)
-
-
-async def account_name_valid(name: str):
-    sql = await aiomysql.connect(**mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    return (data is not None)
-
-
-async def account_linked_to_discord(discordid: int):
-    sql = await aiomysql.connect(**mysqlconfig)
-    cursor = await sql.cursor()
-    await cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
-    data = await cursor.fetchone()
-    await cursor.close()
-    sql.close()
-
-    return (data is not None)
-
-
 def random_with_N_digits(n: int):
     range_start = 10**(n - 1)
     range_end = (10**n) - 1
@@ -90,8 +46,52 @@ def random_with_N_digits(n: int):
 
 
 class RCRPVerification(commands.Cog, name="RCRP Verification"):
-    def __init__(self, bot):
+    def __init__(self, bot: Red):
         self.bot = bot
+
+    async def account_accepted(self, mastername: str):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND State = 1", (mastername, ))
+        data = await cursor.fetchone()
+        await cursor.close()
+        sql.close()
+
+        return (data is not None)
+
+    async def account_verified(self, name: str):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM masters WHERE Username = %s AND discordid != 0", (name, ))
+        data = await cursor.fetchone()
+        await cursor.close()
+        sql.close()
+
+        return (data is not None)
+
+    async def account_name_valid(self, name: str):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM masters WHERE Username = %s", (name, ))
+        data = await cursor.fetchone()
+        await cursor.close()
+        sql.close()
+
+        return (data is not None)
+
+    async def account_linked_to_discord(self, discordid: int):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor()
+        await cursor.execute("SELECT NULL FROM masters WHERE discordid = %s", (discordid, ))
+        data = await cursor.fetchone()
+        await cursor.close()
+        sql.close()
+
+        return (data is not None)
 
     @commands.command()
     @commands.dm_only()
@@ -101,23 +101,24 @@ class RCRPVerification(commands.Cog, name="RCRP Verification"):
             await ctx.send("Usage: !verify [Master Account Name]")
             return
 
-        if await account_linked_to_discord(ctx.author.id) is True:
+        if await self.account_linked_to_discord(ctx.author.id) is True:
             await ctx.send("This Discord account is already linked to an RCRP account.")
             return
 
-        if await account_name_valid(masteraccount) is False:
+        if await self.account_name_valid(masteraccount) is False:
             await ctx.send("Invalid account name.")
             return
 
-        if await account_accepted(masteraccount) is False:
+        if await self.account_accepted(masteraccount) is False:
             await ctx.send("You cannot verify your Master Account if you have not been accepted into the server.\nIf you're looking for help with the registration process, visit our forums at https://forum.redcountyrp.com")
             return
 
-        if await account_verified(masteraccount) is True:
+        if await self.account_verified(masteraccount) is True:
             await ctx.send("This master account has already been verified before. If you are trying to verify a new discord account, please create a support ticket at https://redcountyrp.com/user/tickets.")
             return
 
         code = random_with_N_digits(10)
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET discordcode = %s, pendingdiscordid = %s WHERE Username = %s AND discordid = 0", (str(code), ctx.author.id, masteraccount, ))
@@ -130,6 +131,7 @@ class RCRPVerification(commands.Cog, name="RCRP Verification"):
     @commands.dm_only()
     async def validate(self, ctx, code: int):
         """Validates the verification code set to an RCRP account"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT COUNT(*) AS matches, id, Helper, Tester, AdminLevel FROM masters WHERE discordcode = %s AND pendingdiscordid = %s", (code, ctx.author.id, ))
@@ -169,14 +171,15 @@ class RCRPVerification(commands.Cog, name="RCRP Verification"):
             await ctx.send(f"{member.mention} is already verified.")
             return
 
-        if await account_name_valid(masteraccount) is False:
+        if await self.account_name_valid(masteraccount) is False:
             await ctx.send("Invalid MA name")
             return
 
-        if await account_verified(masteraccount) is True:
+        if await self.account_verified(masteraccount) is True:
             await ctx.send("MA is already verified")
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET discordid = %s, discordcode = 0 WHERE Username = %s", (member.id, masteraccount))
@@ -196,6 +199,7 @@ class RCRPVerification(commands.Cog, name="RCRP Verification"):
             await ctx.send("This user is not verified")
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("DELETE FROM discordroles WHERE discorduser = %s", (member.id, ))
@@ -212,6 +216,7 @@ class RCRPVerification(commands.Cog, name="RCRP Verification"):
     @commands.check(management_check)
     async def softunverify(self, ctx: commands.Context, discordid: int):
         """Unlinks an RCRP account from a Discord ID. Useful for when a Discord account no longer exists or is no longer used by its owner"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("UPDATE masters SET discordid = 0 WHERE discordid = %s", (discordid, ))

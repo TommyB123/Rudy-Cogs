@@ -3,7 +3,6 @@ import aiomysql
 from redbot.core import commands
 from redbot.core.utils import menus
 from redbot.core.utils.chat_formatting import pagify
-from .config import mysqlconfig
 
 # weapon origins
 origins = {
@@ -99,6 +98,7 @@ class OwnerCog(commands.Cog):
     async def economy(self, ctx: commands.Context):
         """Collects statistics about the server's economy"""
         async with ctx.typing():
+            mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
             sql = await aiomysql.connect(**mysqlconfig)
             cursor = await sql.cursor(aiomysql.DictCursor)
             await cursor.execute("SELECT SUM(Bank) AS Bank, SUM(Check1) AS CheckSlot1, SUM(Check2) AS CheckSlot2, SUM(Check3) AS CheckSlot3 FROM players")
@@ -136,6 +136,7 @@ class OwnerCog(commands.Cog):
     async def drugs(self, ctx: commands.Context):
         """Collects statistics related to how many drugs are on the server"""
         async with ctx.typing():
+            mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
             sql = await aiomysql.connect(**mysqlconfig)
             cursor = await sql.cursor(aiomysql.DictCursor)
             await cursor.execute("SELECT SUM(itemval) AS items, item FROM (SELECT * FROM inventory_player UNION SELECT * FROM inventory_house UNION SELECT * FROM inventory_bizz UNION SELECT * FROM inventory_vehicle) t WHERE item IN (47, 48, 49, 51, 52, 53, 55, 57) GROUP BY item")
@@ -164,6 +165,7 @@ class OwnerCog(commands.Cog):
     @commands.is_owner()
     async def weapons(self, ctx: commands.Context, origin: int):
         """Queries the database for weapon statistics depending on its origin"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT COUNT(*) AS count, WeaponID FROM weapons WHERE WeaponOrigin = %s AND Deleted = 0 GROUP BY WeaponID ORDER BY WeaponID", (origin, ))
@@ -193,6 +195,7 @@ class OwnerCog(commands.Cog):
     @commands.is_owner()
     async def mysql_normal(self, ctx: commands.Context, *, query: str):
         """Runs the given query and makes no attempt to format it."""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         async with ctx.typing():
@@ -232,6 +235,7 @@ class OwnerCog(commands.Cog):
     @commands.is_owner()
     async def mysql_pretty(self, ctx: commands.Context, *, query: str):
         """Runs the given query and formats it in an embed menu. Update and delete queries not supported."""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         async with ctx.typing():

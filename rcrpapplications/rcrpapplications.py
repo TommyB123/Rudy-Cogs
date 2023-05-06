@@ -3,7 +3,7 @@ import aiomysql
 from aiomysql import Cursor
 from discord.ext import tasks
 from redbot.core import commands
-from .config import mysqlconfig
+from redbot.core.bot import Red
 
 # rcrp guild id
 rcrpguildid = 93142223473905664
@@ -17,7 +17,7 @@ def pinned_filter(message: discord.Message):
 
 
 class RCRPApplications(commands.Cog, name='RCRP Applications'):
-    def __init__(self, bot: discord.Client):
+    def __init__(self, bot: Red):
         self.bot = bot
         self.applications = {}
         self.check_pending_applications.start()
@@ -35,6 +35,7 @@ class RCRPApplications(commands.Cog, name='RCRP Applications'):
         try:
             rcrpguild = await self.bot.fetch_guild(rcrpguildid)
             appchannel: discord.TextChannel = self.bot.get_channel(appchannelid)
+            mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
             sql = await aiomysql.connect(**mysqlconfig)
             cursor: Cursor = await sql.cursor(aiomysql.DictCursor)
             await cursor.execute("SELECT quizapps.id, maID, masters.Username, masters.EMail, characterName, quizapps.created_at, ipscore FROM quizapps JOIN masters ON quizapps.maID = masters.id WHERE quizapps.state = 0")

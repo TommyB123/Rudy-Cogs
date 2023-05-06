@@ -1,7 +1,7 @@
 import discord
 import aiomysql
-from .config import mysqlconfig
 from redbot.core import commands, Config
+from redbot.core.bot import Red
 
 # roles
 adminrole = 293441894585729024
@@ -30,7 +30,7 @@ def rcrp_check(ctx: commands.Context):
 
 
 class RCRPFactions(commands.Cog, name="Faction Commands"):
-    def __init__(self, bot: discord.Client):
+    def __init__(self, bot: Red):
         default_guild = {
             "factionid": None
         }
@@ -40,6 +40,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
         self.config.register_guild(**default_guild)
 
     async def return_faction_name(self, factionid: int):
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT FactionName FROM factions WHERE id = %s", (factionid, ))
@@ -72,6 +73,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
     @commands.check(admin_check)
     async def factions(self, ctx: commands.Context):
         """Lists all of the current factions on the server"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
 
@@ -121,6 +123,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
                 await ctx.send("This faction is already linked to another discord server.")
                 return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT NULL FROM factions WHERE id = %s", (factionid, ))
@@ -161,6 +164,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
             await ctx.send('This command can only be used in verified, faction-specific Discord servers.')
             return
 
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor()
         await cursor.execute("SELECT Name, factionranks.rankname, masters.Username FROM players LEFT JOIN factionranks ON players.Faction = factionranks.fid LEFT JOIN masters ON masters.id = players.MasterAccount WHERE Faction = %s AND factionranks.slot = FactionRank AND Online = 1 ORDER BY FactionRank DESC", (factionid, ))
@@ -191,6 +195,7 @@ class RCRPFactions(commands.Cog, name="Faction Commands"):
     @commands.check(rcrp_check)
     async def online(self, ctx: commands.Context):
         """Collects a list of factions and their online member counts"""
+        mysqlconfig = await self.bot.get_shared_api_tokens('mysql')
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
         await cursor.execute("SELECT COUNT(players.id) AS members, COUNT(IF(Online = 1, 1, NULL)) AS onlinemembers, factions.FNameShort AS name FROM players JOIN factions ON players.Faction = factions.id WHERE Faction != 0 GROUP BY Faction ORDER BY Faction ASC")

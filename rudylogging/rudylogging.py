@@ -4,8 +4,8 @@ from redbot.core.bot import Red
 
 
 class RudyLogging(commands.Cog, name="Rudy Logging"):
-    def __init__(self, bot):
-        self.bot: Red = bot
+    def __init__(self, bot: Red):
+        self.bot = bot
 
         default_guild = {
             "deletelogchannel": None,
