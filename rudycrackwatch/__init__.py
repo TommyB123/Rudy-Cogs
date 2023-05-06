@@ -1,5 +1,5 @@
 from .rudycrackwatch import RudyCrackwatch
 
 
-def setup(bot):
-    bot.add_cog(RudyCrackwatch(bot))
+async def setup(bot):
+    await bot.add_cog(RudyCrackwatch(bot))

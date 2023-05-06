@@ -1,5 +1,5 @@
 from .rcrpprison import RCRPPrison
 
 
-def setup(bot):
-    bot.add_cog(RCRPPrison(bot))
+async def setup(bot):
+    await bot.add_cog(RCRPPrison(bot))

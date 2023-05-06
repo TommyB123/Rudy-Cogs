@@ -1,5 +1,5 @@
 from .rudyrcrpnormal import RCRPCommands
 
 
-def setup(bot):
-    bot.add_cog(RCRPCommands(bot))
+async def setup(bot):
+    await bot.add_cog(RCRPCommands(bot))

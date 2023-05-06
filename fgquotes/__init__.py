@@ -1,5 +1,5 @@
 from .fgquotes import FGQuotes
 
 
-def setup(bot):
-    bot.add_cog(FGQuotes(bot))
+async def setup(bot):
+    await bot.add_cog(FGQuotes(bot))
