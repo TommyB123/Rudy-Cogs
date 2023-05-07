@@ -1,13 +1,14 @@
+import discord
 from redbot.core.bot import Red
 import random
-from redbot.core import commands, Config
+from redbot.core import commands, app_commands, Config
 
 # FG guild id
 fgguildid = 93140261797904384
 
 
-async def fg_check(ctx: commands.Context):
-    return ctx.guild is not None and ctx.guild.id == fgguildid
+def fg_check(interaction: discord.Interaction):
+    return interaction.guild is not None and interaction.guild.id == fgguildid
 
 
 class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
@@ -20,42 +21,35 @@ class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
         self.config = Config.get_conf(self, 45599)
         self.config.register_guild(**default_guild)
 
-    @commands.command()
-    @commands.guild_only()
-    @commands.check(fg_check)
-    async def quote(self, ctx: commands.Context):
+    @app_commands.command()
+    @app_commands.guild_only()
+    @app_commands.check(fg_check)
+    async def quote(self, interaction: discord.Interaction):
         """Fetches a quote"""
-        async with self.config.guild(ctx.guild).quotes() as quotes:
+        async with self.config.guild(interaction.guild).quotes() as quotes:
             quote = random.choice(quotes)
-            await ctx.send(quote)
+            await interaction.response.send_message(quote)
 
-    @commands.group(aliases=['managequotes'])
-    @commands.guild_only()
-    @commands.check(fg_check)
-    async def managequote(self, ctx: commands.Context):
-        """Manages the quote list"""
-        pass
+    quotemanage = app_commands.Group(name='quotemanage', description='Manipulate stored quotes')
 
-    @managequote.command()
-    @commands.guild_only()
-    @commands.check(fg_check)
-    async def add(self, ctx: commands.Context, *, quote: str):
-        """Adds a quote to the quote list"""
-        async with self.config.guild(ctx.guild).quotes() as quotes:
+    @quotemanage.command(name='add', description='Add a new quote to the list')
+    @app_commands.describe(quote="The quote you'd like to add")
+    async def quotemanage_add(self, interaction: discord.Interaction, *, quote: str):
+        async with self.config.guild(interaction.guild).quotes() as quotes:
             if quote in quotes:
-                await ctx.send('This quote is already in the quote list (lol)')
+                await interaction.response.send_message('This quote is already in the quote list (lol)')
             else:
                 quotes.append(quote)
-                await ctx.send('Quote added.')
+                await interaction.response.send_message('Quote added.')
 
-    @managequote.command(aliases=['delete', 'del'])
-    @commands.guild_only()
-    @commands.check(fg_check)
-    async def remove(self, ctx: commands.Context, *, quote: str):
+    @quotemanage.command(name='delete', description='Delete stored quotes')
+    @app_commands.guild_only()
+    @app_commands.check(fg_check)
+    async def quotemanage_delete(self, interaction: discord.Interaction, *, quote: str):
         """Removes a quote from the quote list"""
-        async with self.config.guild(ctx.guild).quotes() as quotes:
+        async with self.config.guild(interaction.guild).quotes() as quotes:
             if quote not in quotes:
-                await ctx.send('This quote is not present in the quotes list.')
+                await interaction.response.send_message('This quote is not present in the quotes list.')
             else:
                 quotes.remove(quote)
-                await ctx.send('Quote removed.')
+                await interaction.response.send_message('Quote removed.')
