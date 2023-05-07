@@ -9,19 +9,19 @@ from redbot.core.bot import Red
 imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
 
 
-async def isrudyfriend(ctx: commands.Context):
+async def isrudyfriend(interaction: discord.Interaction):
     rudy = RudyPic(commands.Cog)
     rudy.config = Config.get_conf(rudy, identifier=45599)
     async with rudy.config.rudy_friends() as friends:
-        if ctx.author.id in friends:
+        if interaction.user is not None and interaction.user.id in friends:
             return True
 
     async with rudy.config.rudy_guilds() as guilds:
-        if ctx.guild is not None and ctx.guild.id in guilds:
+        if interaction.guild is not None and interaction.guild.id in guilds:
             return True
 
     async with rudy.config.rudy_channels() as channels:
-        if ctx.channel is not None and ctx.channel.id in channels:
+        if interaction.channel is not None and interaction.channel.id in channels:
             return True
 
     return False
@@ -39,26 +39,10 @@ class RudyPic(commands.Cog, name="rudypic"):
         self.config = Config.get_conf(self, identifier=45599)
         self.config.register_global(**default_global)
 
-    async def send_album_picture(self, context: Union[commands.Context, discord.Interaction], album: str):
-        final_url = None
-        try:
-            async with context.typing():
-                pictures = []
-                for image in imclient.get_album_images(album):
-                    pictures.append(image.link)
-                final_url = random.choice(pictures)
-        except Exception:
-            pass
-
-        if isinstance(context, commands.Context):
-            await context.send(final_url)
-        elif isinstance(context, discord.Interaction):
-            await context.response.send_message(final_url)
-
     @app_commands.command()
     @app_commands.guild_only()
     @app_commands.check(isrudyfriend)
-    @app_commands.choices(pictype=[
+    @app_commands.choices(animal=[
         app_commands.Choice(name='Rudy', value='WLQku0l'),
         app_commands.Choice(name='Sammy', value='VfKwj4H'),
         app_commands.Choice(name='Milo', value='h3VORpQ'),
@@ -66,8 +50,10 @@ class RudyPic(commands.Cog, name="rudypic"):
         app_commands.Choice(name='gizmo', value='SlgjJJu'),
         app_commands.Choice(name='lylat', value='LF00KOm')
     ])
-    async def pic(self, interaction: discord.Interaction, pictype: str):
-        await self.send_album_picture(interaction, pictype)
+    async def pic(self, interaction: discord.Interaction, animal: str):
+        """Sends a photograph of an esteemed animal + some other silly shit"""
+        pictures = [image.link for image in imclient.get_album_images(animal)]
+        await interaction.response.send_message(random.choice(pictures))
 
     @commands.command()
     @commands.guild_only()
