@@ -6,7 +6,7 @@ from redbot.core import commands, app_commands, Config
 from redbot.core.bot import Red
 
 # imgur client handler
-imclient = ImgurClient('6f85cfd1f822e7b', '629f840ae2bf44b669560b64403c3f8511293777')
+imclient = ImgurClient('6f85cfd1f822e7b', 'b50a74aef4b1030b009f84a83ffcc2182896d786')
 
 
 async def isrudyfriend(interaction: discord.Interaction):
