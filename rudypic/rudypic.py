@@ -5,9 +5,6 @@ from typing import Union
 from redbot.core import commands, app_commands, Config
 from redbot.core.bot import Red
 
-# imgur client handler
-imclient = ImgurClient('6f85cfd1f822e7b', 'b50a74aef4b1030b009f84a83ffcc2182896d786')
-
 
 async def isrudyfriend(interaction: discord.Interaction):
     rudy = RudyPic(commands.Cog)
@@ -52,6 +49,7 @@ class RudyPic(commands.Cog, name="rudypic"):
     ])
     async def pic(self, interaction: discord.Interaction, animal: str):
         """Sends a photograph of an esteemed animal + some other silly shit"""
+        imclient = ImgurClient('6f85cfd1f822e7b', 'b50a74aef4b1030b009f84a83ffcc2182896d786')
         pictures = [image.link for image in imclient.get_album_images(animal)]
         await interaction.response.send_message(random.choice(pictures))
 
