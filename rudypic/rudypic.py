@@ -1,6 +1,7 @@
 import discord
+import json
 import random
-from imgurpython import ImgurClient
+import requests
 from typing import Union
 from redbot.core import commands, app_commands, Config
 from redbot.core.bot import Red
@@ -49,9 +50,12 @@ class RudyPic(commands.Cog, name="rudypic"):
     ])
     async def pic(self, interaction: discord.Interaction, animal: str):
         """Sends a photograph of an esteemed animal + some other silly shit"""
-        imclient = ImgurClient('6f85cfd1f822e7b', 'b50a74aef4b1030b009f84a83ffcc2182896d786')
-        pictures = [image.link for image in imclient.get_album_images(animal)]
-        await interaction.response.send_message(random.choice(pictures))
+        url = f'https://api.imgur.com/3/album/{animal}/images'
+        headers = {'Authorization': 'Client-ID 6f85cfd1f822e7b'}
+        response = requests.request("GET", url, headers=headers)
+        data = json.loads(response.text)
+        image = random.choice(data['data'])
+        await interaction.response.send_message(image['link'])
 
     @commands.command()
     @commands.guild_only()
