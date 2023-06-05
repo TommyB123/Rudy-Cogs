@@ -1,8 +1,11 @@
 import discord
 import time
 import random
+import a2s
+import asyncio
 from string import ascii_lowercase
-from redbot.core import commands
+from redbot.core.bot import Red
+from redbot.core import commands, app_commands
 
 gaslinks = [
     'https://i.imgur.com/iuuFvBb.jpg',
@@ -87,6 +90,39 @@ def pretty_time_delta(seconds: int):
 
 
 class FunCommands(commands.Cog):
+    def __init__(self, bot: Red):
+        self.bot = bot
+
+    @app_commands.command()
+    @app_commands.guild_only()
+    @app_commands.choices(server=[
+        app_commands.Choice(name='bhop', value='74.91.124.34:27015'),
+        app_commands.Choice(name='surf', value='66.85.14.237:27015'),
+        app_commands.Choice(name='1v1', value='74.91.119.186:27015')
+    ])
+    async def csgo(self, interaction: discord.Interaction, server: str):
+        ipinfo = server.split(':')
+        ip = ipinfo[0]
+        port = int(ipinfo[1])
+        try:
+            address = (ip, port)
+            info: a2s.SourceInfo = await a2s.ainfo(address)
+        except asyncio.exceptions.TimeoutError:
+            await interaction.response.send_message('Unable to query the requested server. It is likely down.')
+            return
+        except Exception as e:
+            await interaction.response.send_message(f'Unexpected error occurred when fetching server info. ({e})')
+            return
+
+        embed = discord.Embed(title=info.server_name, color=0xFF6600)
+        embed.set_thumbnail(url='https://cdn.cloudflare.steamstatic.com/steam/apps/730/hero_capsule.jpg')
+        embed.add_field(name='Players', value=f'{info.player_count}/{info.max_players}')
+        embed.add_field(name='IP Address', value=server)
+        embed.add_field(name='Current Map', value=info.map_name)
+        embed.add_field(name='Quick Connect', value=f'connect {server}')
+        embed.set_footer(text='bitches', icon_url=self.bot.user.avatar.url)
+        await interaction.response.send_message(embed=embed)
+
     @commands.command()
     @commands.cooldown(1, 60)
     @commands.guild_only()
