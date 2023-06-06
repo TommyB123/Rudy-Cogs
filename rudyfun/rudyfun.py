@@ -89,39 +89,65 @@ def pretty_time_delta(seconds: int):
         return '%s%ds' % (sign_string, seconds)
 
 
+class CsgoButton(discord.ui.View):
+    def __init__(self, *, timeout=30):
+        super().__init__(timeout=timeout)
+
+    @discord.ui.button(label='Bhop', style=discord.ButtonStyle.gray)
+    async def button_bhop(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await format_source_button_embed(self, interaction, button, ('74.91.124.34', 27015))
+
+    @discord.ui.button(label='Surf', style=discord.ButtonStyle.gray)
+    async def button_surf(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await format_source_button_embed(self, interaction, button, ('66.85.14.237', 27015))
+
+    @discord.ui.button(label='1v1', style=discord.ButtonStyle.gray)
+    async def button_1v1(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await format_source_button_embed(self, interaction, button, ('74.91.119.186', 27015))
+
+
+async def format_source_button_embed(view: CsgoButton, interaction: discord.Interaction, button: discord.ui.Button, server: tuple[str, int], sendmessage: bool = True):
+    try:
+        info: a2s.SourceInfo = await a2s.ainfo(server)
+    except asyncio.exceptions.TimeoutError:
+        await interaction.response.edit_message('Unable to query the requested server. It is likely down.')
+        return
+    except Exception as e:
+        await interaction.response.edit_message(f'Unexpected error occurred when fetching server info. ({e})')
+        return
+
+    for other_button in view.children:
+        if other_button is not button:
+            other_button.disabled = False
+
+    embed = format_source_embed(info, server)
+    button.disabled = True
+    if sendmessage:
+        await interaction.response.edit_message(embed=embed, view=view)
+    return embed
+
+
+def format_source_embed(info: a2s.SourceInfo, server: tuple[str, int]):
+    ip = f'{server[0]}:{server[1]}'
+    embed = discord.Embed(title=info.server_name, color=0xFF6600)
+    embed.set_thumbnail(url='https://cdn.cloudflare.steamstatic.com/steam/apps/730/hero_capsule.jpg')
+    embed.add_field(name='Players', value=f'{info.player_count}/{info.max_players}')
+    embed.add_field(name='IP Address', value=ip)
+    embed.add_field(name='Current Map', value=info.map_name)
+    embed.add_field(name='Quick Connect', value=f'connect {ip}')
+    return embed
+
+
 class FunCommands(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
 
     @app_commands.command()
-    @app_commands.guild_only()
-    @app_commands.choices(server=[
-        app_commands.Choice(name='bhop', value='74.91.124.34:27015'),
-        app_commands.Choice(name='surf', value='66.85.14.237:27015'),
-        app_commands.Choice(name='1v1', value='74.91.119.186:27015')
-    ])
-    async def csgo(self, interaction: discord.Interaction, server: str):
-        ipinfo = server.split(':')
-        ip = ipinfo[0]
-        port = int(ipinfo[1])
-        try:
-            address = (ip, port)
-            info: a2s.SourceInfo = await a2s.ainfo(address)
-        except asyncio.exceptions.TimeoutError:
-            await interaction.response.send_message('Unable to query the requested server. It is likely down.')
-            return
-        except Exception as e:
-            await interaction.response.send_message(f'Unexpected error occurred when fetching server info. ({e})')
-            return
-
-        embed = discord.Embed(title=info.server_name, color=0xFF6600)
-        embed.set_thumbnail(url='https://cdn.cloudflare.steamstatic.com/steam/apps/730/hero_capsule.jpg')
-        embed.add_field(name='Players', value=f'{info.player_count}/{info.max_players}')
-        embed.add_field(name='IP Address', value=server)
-        embed.add_field(name='Current Map', value=info.map_name)
-        embed.add_field(name='Quick Connect', value=f'connect {server}')
-        embed.set_footer(text='bitches', icon_url=self.bot.user.avatar.url)
-        await interaction.response.send_message(embed=embed)
+    async def csgo(self, interaction: discord.Interaction):
+        """Fetches info for good CS:GO community servers"""
+        view = CsgoButton()
+        embed = await format_source_button_embed(view, interaction, view.children[0], ('74.91.124.34', 27015), False)
+        await interaction.response.send_message(embed=embed, view=view)
 
     @commands.command()
     @commands.cooldown(1, 60)
