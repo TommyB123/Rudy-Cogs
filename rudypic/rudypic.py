@@ -5,6 +5,7 @@ import requests
 from typing import Union
 from redbot.core import commands, app_commands, Config
 from redbot.core.bot import Red
+from typing import Any
 
 
 async def isrudyfriend(interaction: discord.Interaction):
@@ -54,8 +55,12 @@ class RudyPic(commands.Cog, name="rudypic"):
         headers = {'Authorization': 'Client-ID 6f85cfd1f822e7b'}
         response = requests.request("GET", url, headers=headers)
         data = json.loads(response.text)
-        image = random.choice(data['data'])
-        await interaction.response.send_message(image['link'])
+        if data['success'] is False:
+            await interaction.response.send_message(data['error'])
+        else:
+            images: list[Any] = data['data']
+            image = random.choice(images)
+            await interaction.response.send_message(image['link'])
 
     @commands.command()
     @commands.guild_only()
