@@ -47,7 +47,9 @@ class RudyPic(commands.Cog, name="rudypic"):
         app_commands.Choice(name='Milo', value='h3VORpQ'),
         app_commands.Choice(name='Annie', value='MkkXNpx'),
         app_commands.Choice(name='gizmo', value='SlgjJJu'),
-        app_commands.Choice(name='lylat', value='LF00KOm')
+        app_commands.Choice(name='lylat', value='LF00KOm'),
+        app_commands.Choice(name='Kylo', value='bvF8EX7'),
+        app_commands.Choice(name='April', value='K8womVQ')
     ])
     async def pic(self, interaction: discord.Interaction, animal: str):
         """Sends a photograph of an esteemed animal + some other silly shit"""
