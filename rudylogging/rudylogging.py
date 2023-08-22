@@ -39,6 +39,9 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
         if before.content == after.content:
             return
 
+        if before.guild is None or after.guild is None:
+            return
+
         editchannelid: int = await self.config.guild(before.guild).editlogchannel()
         if editchannelid is None:
             return
