@@ -57,5 +57,5 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                             async with session.get(video_url) as response:
                                 temp = await response.read()
                                 with io.BytesIO(temp) as file:
-                                    newfile = discord.File(file)
+                                    newfile = discord.File(file, 'video.mp4')
                                     await message.channel.send(file=newfile)
