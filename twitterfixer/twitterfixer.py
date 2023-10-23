@@ -47,7 +47,7 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                     if len(tweet['mediaURLs']):
                         if tweet['media_extended'][0]['type'] == 'image':
                             embed.set_image(url=tweet['mediaURLs'][0])
-                        elif tweet['media_extended'][0]['type'] == 'video':
+                        elif tweet['media_extended'][0]['type'] in ['video', 'gif']:
                             video_url = tweet['media_extended'][0]['url']
 
                     await message.channel.send(embed=embed)
