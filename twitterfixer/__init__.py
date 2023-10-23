@@ -1,4 +1,4 @@
-from .twittrerfixer import TwitterFixer
+from .twitterfixer import TwitterFixer
 
 
 async def setup(bot):
