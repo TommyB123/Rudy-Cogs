@@ -18,6 +18,9 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message):
+        if message.guild is None:
+            return
+
         deletechannelid: int = await self.config.guild(message.guild).deletelogchannel()
         if deletechannelid is None:
             return
