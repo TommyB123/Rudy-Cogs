@@ -33,6 +33,8 @@ class FGQuotes(commands.Cog, name='FrostGaming Quotes'):
     quotemanage = app_commands.Group(name='quotemanage', description='Manipulate stored quotes')
 
     @quotemanage.command(name='add', description='Add a new quote to the list')
+    @app_commands.guild_only()
+    @app_commands.check(fg_check)
     @app_commands.describe(quote="The quote you'd like to add")
     async def quotemanage_add(self, interaction: discord.Interaction, *, quote: str):
         async with self.config.guild(interaction.guild).quotes() as quotes:
