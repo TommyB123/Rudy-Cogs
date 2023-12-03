@@ -3,6 +3,8 @@ import re
 import aiohttp
 import json
 import io
+import imageio.v3 as iio
+import pygifsicle
 from datetime import datetime
 from redbot.core import commands
 from redbot.core.bot import Red
@@ -43,14 +45,25 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                     embed.add_field(name="Replies", value=tweet['replies'], inline=True)
                     embed.color = 0x26a7de
 
-                    video_url = ''
                     if len(tweet['mediaURLs']):
                         if tweet['media_extended'][0]['type'] == 'image':
                             embed.set_image(url=tweet['mediaURLs'][0])
-                        elif tweet['media_extended'][0]['type'] in ['video', 'gif']:
+                        elif tweet['media_extended'][0]['type'] == 'gif':
+                            gif_url = tweet['media_extended'][0]['url']
+                        elif tweet['media_extended'][0]['type'] in ['video']:
                             video_url = tweet['media_extended'][0]['url']
 
                     await message.channel.send(embed=embed)
+
+                    if len(gif_url):
+                        async with aiohttp.ClientSession() as session:
+                            async with session.get(gif_url) as response:
+                                temp = await response.read()
+                                frames = iio.imread(temp)
+                                gif_image = pygifsicle.optimize(frames)
+                                async with io.BytesIO(gif_image) as file:
+                                    newfile = discord.File(file, 'gif.gif')
+                                    await message.channel.send(file=newfile)
 
                     if len(video_url):
                         async with aiohttp.ClientSession() as session:

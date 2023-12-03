@@ -1,7 +1,0 @@
-{
-    "name": "Rudy Owner",
-    "author": ["TommyB"],
-    "description": "Commands for the owner of the Rudy bot",
-    "short": "Commands for the owner of the Rudy bot",
-    "end_user_data_statement": "This cog does not collect data pertaining to any Discord user."
-}

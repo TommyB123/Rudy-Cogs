@@ -1,7 +1,0 @@
-{
-    "name": "RCRP Applications",
-    "author": ["TommyB"],
-    "description": "Task that keeps track of pending RCRP Master Account applications",
-    "short": "RCRP Application Tracker",
-    "end_user_data_statement": "This cog does not collect data pertaining to any Discord user."
-}

@@ -1,7 +1,0 @@
-{
-    "name": "RCRP SA-MP Information",
-    "author": ["TommyB"],
-    "description": "Sets the bot's status to RCRP's player count",
-    "short": "Sets the bot's status to RCRP's player count",
-    "end_user_data_statement": "This cog does not collect data pertaining to any Discord user."
-}

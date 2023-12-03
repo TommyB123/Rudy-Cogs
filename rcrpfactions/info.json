@@ -1,7 +1,0 @@
-{
-    "name": "RCRP Factions",
-    "author": ["TommyB"],
-    "description": "Commands for use on Discord servers linked to official RCRP factions",
-    "short": "RCRP faction utilities",
-    "end_user_data_statement": "This cog does not collect data pertaining to any Discord user."
-}
