@@ -58,7 +58,7 @@ class RudyPic(commands.Cog, name="rudypic"):
         response = requests.request("GET", url, headers=headers)
         data = json.loads(response.text)
         if data['success'] is False:
-            await interaction.response.send_message(data['error'])
+            await interaction.response.send_message(data['data']['error'])
         else:
             images: list[Any] = data['data']
             image = random.choice(images)
