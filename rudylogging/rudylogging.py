@@ -33,7 +33,7 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
         embed = discord.Embed(title='Message Deleted', color=message.author.color, timestamp=message.created_at)
         embed.description = f'Message by {message.author.mention} in {message.channel.mention} was deleted'
         embed.add_field(name='Message Content', value=message.content, inline=False)
-        embed.set_author(name=message.author, icon_url=message.author.avatar_url)
+        embed.set_author(name=message.author, icon_url=message.author.avatar.url)
         embed.set_footer(text=f"User ID: {message.author.id}")
         await deletechannel.send(embed=embed)
 
@@ -57,7 +57,7 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
         embed = discord.Embed(title='Message Edited', color=before.author.color, timestamp=after.edited_at)
         embed.add_field(name='Original Message', value=before.content, inline=False)
         embed.add_field(name='New Message', value=after.content, inline=False)
-        embed.set_author(name=after.author, icon_url=after.author.avatar_url)
+        embed.set_author(name=after.author, icon_url=after.author.avatar.url)
         embed.set_footer(text=f"User ID: {after.author.id}")
         await editchannel.send(embed=embed)
 
