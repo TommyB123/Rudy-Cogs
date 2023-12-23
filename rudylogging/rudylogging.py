@@ -67,7 +67,7 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
         if channel.id == deletechannelid:
             await self.config.guild(channel.guild).deletechannel.set(None)
 
-        editchannelid: int = await self.config.guild(channel.id).editchannel()
+        editchannelid: int = await self.config.guild(channel.guild).editchannel()
         if channel.id == editchannelid:
             await self.config.guild(channel.guild).editchannel.set(None)
 
