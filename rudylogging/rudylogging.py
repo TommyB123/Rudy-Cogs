@@ -77,14 +77,14 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
 
     @commands.group()
     @commands.guild_only()
-    @commands.guildowner()
+    @commands.has_guild_permissions(manage_guild=True)
     async def rudylogging(self, ctx: commands.Context):
         """Log various Discord events"""
         pass
 
     @rudylogging.command()
     @commands.guild_only()
-    @commands.guildowner()
+    @commands.has_guild_permissions(manage_guild=True)
     async def setdelete(self, ctx: commands.Context, channel: discord.TextChannel):
         """Sets the channel whhich deleted messages get logged to"""
         await self.config.guild(ctx.guild).deletelogchannel.set(channel.id)
@@ -92,7 +92,7 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
 
     @rudylogging.command()
     @commands.guild_only()
-    @commands.guildowner()
+    @commands.has_guild_permissions(manage_guild=True)
     async def setedit(self, ctx: commands.Context, channel: discord.TextChannel):
         """Sets the channel which edited messages get logged to"""
         await self.config.guild(ctx.guild).editlogchannel.set(channel.id)
@@ -100,7 +100,7 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
 
     @rudylogging.command()
     @commands.guild_only()
-    @commands.guildowner()
+    @commands.has_guild_permissions(manage_guild=True)
     async def ignore(self, ctx: commands.Context, channel: discord.TextChannel):
         """Adds or removes a channel from a list of channels that are skipped when logging"""
         async with self.config.guild(ctx.guild).ignorechannels() as channels:
@@ -113,7 +113,7 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
 
     @rudylogging.command()
     @commands.guild_only()
-    @commands.guildowner()
+    @commands.has_guild_permissions(manage_guild=True)
     async def info(self, ctx: commands.Context):
         """Displays information related to logging functionality on this current server"""
         deletechannelid: int = await self.config.guild(ctx.guild).deletelogchannel()
@@ -138,7 +138,7 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
 
     @rudylogging.command()
     @commands.guild_only()
-    @commands.guildowner()
+    @commands.has_guild_permissions(manage_guild=True)
     async def removedelete(self, ctx: commands.Context):
         """Removes message deletion logging"""
         channelid: int = await self.config.guild(ctx.guild).deletelogchannel()
@@ -148,7 +148,7 @@ class RudyLogging(commands.Cog, name="Rudy Logging"):
 
     @rudylogging.command()
     @commands.guild_only()
-    @commands.guildowner()
+    @commands.has_guild_permissions(manage_guild=True)
     async def removeedit(self, ctx: commands.Context):
         """Removes message deletion logging"""
         channelid: int = await self.config.guild(ctx.guild).editlogchannel()
