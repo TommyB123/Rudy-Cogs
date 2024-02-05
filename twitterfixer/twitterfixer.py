@@ -28,6 +28,8 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
         if match is None:
             return
 
+        await message.edit(suppress=True)
+
         tweet_id = match.group()
         request_string = f'https://api.vxtwitter.com/Twitter/status/{tweet_id}'
         async with aiohttp.ClientSession() as session:
