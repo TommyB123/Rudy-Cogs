@@ -45,16 +45,24 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                     embed.add_field(name="Replies", value=tweet['replies'], inline=True)
                     embed.color = 0x26a7de
 
-                    video_url = ''
+                    image_urls = []
+                    video_urls = []
+
                     if len(tweet['mediaURLs']):
-                        if tweet['media_extended'][0]['type'] == 'image':
-                            embed.set_image(url=tweet['mediaURLs'][0])
-                        elif tweet['media_extended'][0]['type'] in ['video', 'gif']:
-                            video_url = tweet['media_extended'][0]['url']
+                        for media in tweet['media_extended']:
+                            if media['type'] == 'image':
+                                image_urls.append(media['url'])
+                            elif media['type'] in ['video', 'gif']:
+                                video_urls.append(media['url'])
+                                
+                    if len(image_urls) > 1:
+                        embed.set_image(url=f'https://convert.vxtwitter.com/rendercombined.jpg?imgs={",".join(image_urls)}')
+                    elif len(image_urls) == 1:
+                        embed.set_image(url=image_urls[0])
 
                     await message.channel.send(embed=embed)
 
-                    if len(video_url):
+                    for video_url in video_urls:
                         async with aiohttp.ClientSession() as session:
                             async with session.get(video_url) as response:
                                 temp = await response.read()
