@@ -1,11 +1,9 @@
 import discord
-import json
 import random
-import requests
 from typing import Union
 from redbot.core import commands, app_commands, Config
 from redbot.core.bot import Red
-from typing import Any
+from imgurpython import ImgurClient
 
 
 async def isrudyfriend(interaction: discord.Interaction):
@@ -53,17 +51,12 @@ class RudyPic(commands.Cog, name="rudypic"):
     ])
     async def pic(self, interaction: discord.Interaction, animal: str):
         """Sends a photograph of an esteemed animal + some other silly shit"""
-        imgur = await self.bot.get_shared_api_tokens('imgur')
-        url = f'https://api.imgur.com/3/album/{animal}/images'
-        headers = {'Authorization': f"Client-ID {imgur['key']}"}
-        response = requests.request("GET", url, headers=headers)
-        data = json.loads(response.text)
-        if data['success'] is False:
-            await interaction.response.send_message(data['data']['error'])
-        else:
-            images: list[Any] = data['data']
-            image = random.choice(images)
-            await interaction.response.send_message(image['link'])
+        imgur_data = self.bot.get_shared_api_tokens('imgur')
+        client = ImgurClient(imgur_data['client_id'], imgur_data['client_secret'])
+
+        images = client.get_album_images(animal)
+        image = random.choice(images)
+        await interaction.response.send_message(image)
 
     @commands.command()
     @commands.guild_only()
