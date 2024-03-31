@@ -51,7 +51,7 @@ class RudyPic(commands.Cog, name="rudypic"):
     ])
     async def pic(self, interaction: discord.Interaction, animal: str):
         """Sends a photograph of an esteemed animal + some other silly shit"""
-        imgur_data = self.bot.get_shared_api_tokens('imgur')
+        imgur_data = await self.bot.get_shared_api_tokens('imgur')
         client = ImgurClient(imgur_data['client_id'], imgur_data['client_secret'])
 
         images = client.get_album_images(animal)
