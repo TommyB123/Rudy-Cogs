@@ -55,7 +55,7 @@ class RudyPic(commands.Cog, name="rudypic"):
         """Sends a photograph of an esteemed animal + some other silly shit"""
         imgur = await self.bot.get_shared_api_tokens('imgur_client')
         url = f'https://api.imgur.com/3/album/{animal}/images'
-        headers = {'Authorization': f"Client-ID {imgur['key']}"}
+        headers = {'Authorization': f"Client-ID {imgur['imgur']['key']}"}
         response = requests.request("GET", url, headers=headers)
         data = json.loads(response.text)
         if data['success'] is False:
