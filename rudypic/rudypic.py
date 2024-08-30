@@ -56,7 +56,7 @@ class RudyPic(commands.Cog, name="rudypic"):
 
         images = client.get_album_images(animal)
         image = random.choice(images)
-        await interaction.response.send_message(image['link'])
+        await interaction.response.send_message(image.link)
 
     @commands.command()
     @commands.guild_only()
