@@ -25,6 +25,10 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
         if message.author.guild_permissions.embed_links is False:
             return
 
+        bot_member = message.guild.get_member(self.bot.user.id)
+        if bot_member.guild_permissions.manage_messages is None:
+            return
+
         content = message.content
         match = re.search(r'https://(?:twitter|x)\.com/(?:.*)/status/([0-9]*)', content)
         if match is None:
