@@ -26,7 +26,7 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
             return
 
         bot_member = message.guild.get_member(self.bot.user.id)
-        if bot_member.guild_permissions.manage_messages is None:
+        if bot_member.guild_permissions.manage_messages is False:
             return
 
         content = message.content
