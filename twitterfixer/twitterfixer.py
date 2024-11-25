@@ -8,6 +8,7 @@ from ffmpy import FFmpeg
 from datetime import datetime
 from redbot.core import commands
 from redbot.core.bot import Red
+from redbot.core.data_manager import cog_data_path
 
 
 class TwitterFixer(commands.Cog, name='TwitterFixer'):
@@ -73,29 +74,30 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                     # edit the original message to suppress any embed from twitter proper
                     await message.edit(suppress=True)
 
+                    cog_path = cog_data_path(self)
                     for gif_url in gif_urls:
-                        if os.path.exists('original_video.mp4'):
-                            os.remove('original_video.mp4')
+                        if os.path.exists(cog_path / 'original_video.mp4'):
+                            os.remove(cog_path / 'original_video.mp4')
 
-                        if os.path.exists('gif.gif'):
-                            os.remove('gif.gif')
+                        if os.path.exists(cog_path / 'gif.gif'):
+                            os.remove(cog_path / 'gif.gif')
 
                         async with aiohttp.ClientSession() as session:
                             async with session.get(gif_url) as response:
-                                with open('original_video.mp4', 'wb') as file:
+                                with open(cog_path / 'original_video.mp4', 'wb') as file:
                                     temp = await response.read()
                                     data = io.BytesIO(temp)
                                     file.write(data.getbuffer())
 
                                 ff = FFmpeg(
-                                    inputs={'original_video.mp4': None},
-                                    outputs={'gif.gif': '-filter_complex "[0:v] split [a][b];[a] palettegen [p];[b][p] paletteuse"'}
+                                    inputs={cog_path / 'original_video.mp4': None},
+                                    outputs={cog_path / 'gif.gif': '-filter_complex "[0:v] split [a][b];[a] palettegen [p];[b][p] paletteuse"'}
                                 )
                                 ff.run()
-                                discord_attachment = discord.File('gif.gif')
+                                discord_attachment = discord.File(cog_path / 'gif.gif')
                                 await message.channel.send(file=discord_attachment)
-                                os.remove('original_video.mp4')
-                                os.remove('gif.gif')
+                                os.remove(cog_path / 'original_video.mp4')
+                                os.remove(cog_path / 'gif.gif')
 
                     for video_url in video_urls:
                         async with aiohttp.ClientSession() as session:
