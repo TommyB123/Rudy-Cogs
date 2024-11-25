@@ -89,11 +89,13 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                                     data = io.BytesIO(temp)
                                     file.write(data.getbuffer())
 
-                                ff = FFmpeg(
-                                    inputs={cog_path / 'original_video.mp4': None},
-                                    outputs={cog_path / 'gif.gif': '-filter_complex "[0:v] split [a][b];[a] palettegen [p];[b][p] paletteuse"'}
-                                )
-                                ff.run()
+                                async with message.channel.typing():
+                                    ff = FFmpeg(
+                                        inputs={cog_path / 'original_video.mp4': None},
+                                        outputs={cog_path / 'gif.gif': '-filter_complex "[0:v] split [a][b];[a] palettegen [p];[b][p] paletteuse"'}
+                                    )
+                                    ff.run()
+
                                 discord_attachment = discord.File(cog_path / 'gif.gif')
                                 await message.channel.send(file=discord_attachment)
                                 os.remove(cog_path / 'original_video.mp4')
@@ -101,8 +103,9 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
 
                     for video_url in video_urls:
                         async with aiohttp.ClientSession() as session:
-                            async with session.get(video_url) as response:
-                                temp = await response.read()
-                                with io.BytesIO(temp) as file:
-                                    newfile = discord.File(file, 'video.mp4')
-                                    await message.channel.send(file=newfile)
+                            async with message.channel.typing():
+                                async with session.get(video_url) as response:
+                                    temp = await response.read()
+                                    with io.BytesIO(temp) as file:
+                                        newfile = discord.File(file, 'video.mp4')
+                                        await message.channel.send(file=newfile)
