@@ -36,7 +36,7 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
             return
 
         tweet_id = match.group()
-        request_string = f'https://api.vxtwitter.com/Twitter/status/{tweet_id}'
+        request_string = f'https://api.vxtwitter.com/status/{tweet_id}'
         async with aiohttp.ClientSession() as session:
             async with session.get(request_string) as response:
                 if response.ok is True:
