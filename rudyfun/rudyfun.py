@@ -1,9 +1,14 @@
 import discord
 import time
 import random
+import aiomysql
+from datetime import datetime
 from string import ascii_lowercase
 from redbot.core.bot import Red
 from redbot.core import commands
+
+# jank solution but i couldn't get red's API config to work in my env
+from ._mysql import mysqlconfig
 
 gaslinks = [
     'https://i.imgur.com/iuuFvBb.jpg',
@@ -281,3 +286,17 @@ class FunCommands(commands.Cog):
     async def bruh(self, ctx: commands.Context):
         """Bruh"""
         await ctx.send("https://i.imgur.com/7QWYKgO.jpg")
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.cooldown(1, 30)
+    async def rcrptext(self, ctx: commands.Context):
+        sql = await aiomysql.connect(**mysqlconfig)
+        cursor = await sql.cursor(aiomysql.DictCursor)
+        await cursor.execute('SELECT TextMessage, Timestamp FROM sms ORDER BY RAND() LIMIT 1')
+        message = await cursor.fetchone()
+
+        embed = discord.Embed(title='Random RCRP Text Message', color=0xe74c3c)
+        embed.description = message['TextMessage']
+        embed.timestamp = datetime.fromtimestamp((message['Timestamp']))
+        await ctx.reply(embed=embed)
