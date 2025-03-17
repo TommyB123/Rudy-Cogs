@@ -69,7 +69,7 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                     elif len(image_urls) == 1:
                         embed.set_image(url=image_urls[0])
 
-                    await message.channel.send(embed=embed)
+                    new_message = await message.channel.send(embed=embed)
 
                     # edit the original message to suppress any embed from twitter proper
                     await message.edit(suppress=True)
@@ -106,6 +106,13 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                             async with message.channel.typing():
                                 async with session.get(video_url) as response:
                                     temp = await response.read()
+                                    if len(temp) > message.guild.filesize_limit:
+                                        # the file is too big to upload in the current guild
+                                        # delete the new embed and send a raw vxtwitter link instead
+                                        link = tweet['tweetURL'].replace('twitter.com', 'vxtwitter.com')
+                                        await new_message.delete()
+                                        await message.channel.send(link)
+                                        break
                                     with io.BytesIO(temp) as file:
                                         newfile = discord.File(file, 'video.mp4')
                                         await message.channel.send(file=newfile)
