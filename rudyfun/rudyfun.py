@@ -289,7 +289,6 @@ class FunCommands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.cooldown(1, 30)
     async def rcrptext(self, ctx: commands.Context):
         sql = await aiomysql.connect(**mysqlconfig)
         cursor = await sql.cursor(aiomysql.DictCursor)
