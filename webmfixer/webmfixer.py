@@ -22,7 +22,7 @@ class WebMFixer(commands.Cog, name='WebM Fixer'):
         if message.guild is None:
             return
 
-        if self.config.guild(message.guild).enabled.get() is False:
+        if await self.config.guild(message.guild).enabled() is False:
             return
 
         if len(message.attachments):
@@ -52,7 +52,7 @@ class WebMFixer(commands.Cog, name='WebM Fixer'):
     @commands.admin_or_permissions(manage_guild=True)
     async def webmfixer(self, ctx: commands.Context):
         """Toggle bot re-encoding of WebM videos to regular mp4s"""
-        fixer_state = await self.config.guild(ctx.guild).enabled.get()
+        fixer_state = await self.config.guild(ctx.guild).enabled()
         if fixer_state is True:
             await self.config.guild(ctx.guild).enabled.set(False)
             await ctx.send('You have disabled WebM re-encoding.')
