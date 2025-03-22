@@ -1,0 +1,6 @@
+{
+    "name": "WebM Fixer",
+    "author": ["tombly"],
+    "description": "Re-encodes WebM videos to MP4 for poor suckers on iOS that can't see WebM videos (like me)",
+    "end_user_data_statement": "This cog does not collect any data pertaining to any discord user"
+}
