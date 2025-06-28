@@ -96,8 +96,12 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                                     )
                                     ff.run()
 
-                                discord_attachment = discord.File(cog_path / 'gif.gif')
-                                await message.channel.send(file=discord_attachment)
+                                if os.path.getsize(cog_path / 'gif.gif') > message.guild.filesize_limit:
+                                    await message.channel.send("This tweet's GIF could not be reencoded and uploaded because it's too large to upload to this guild.")
+                                else:
+                                    discord_attachment = discord.File(cog_path / 'gif.gif')
+                                    await message.channel.send(file=discord_attachment)
+
                                 os.remove(cog_path / 'original_video.mp4')
                                 os.remove(cog_path / 'gif.gif')
 
