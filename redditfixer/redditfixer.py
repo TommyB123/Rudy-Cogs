@@ -25,7 +25,7 @@ class RedditFixer(commands.Cog, name='RedditFixer'):
         if message.content.find('https://www.reddit.com/') == -1:
             return
 
-        fixed_link = message.content.replace('https://www.reddit.com/', 'https://vxreddit.com/')
+        fixed_link = message.content.replace('https://www.reddit.com/', 'https://redditez.com/')
         await message.channel.send(fixed_link)
 
         # edit the original message to suppress any embed from reddit proper

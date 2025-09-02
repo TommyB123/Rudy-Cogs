@@ -25,7 +25,7 @@ class InstagramFixer(commands.Cog, name='InstagramFixer'):
         if message.content.find('https://www.instagram.com/') == -1:
             return
 
-        fixed_link = message.content.replace('https://www.instagram.com/', 'https://www.ddinstagram.com/')
+        fixed_link = message.content.replace('https://www.instagram.com/', 'https://www.instagramez.com/')
         await message.channel.send(fixed_link)
 
         # edit the original message to suppress any embed from instagram proper

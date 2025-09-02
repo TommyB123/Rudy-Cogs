@@ -25,7 +25,7 @@ class TiktokFixer(commands.Cog, name='TiktokFixer'):
         if message.content.find('https://www.tiktok.com') == -1:
             return
 
-        fixed_link = message.content.replace('https://www.tiktok.com/', 'https://vxtiktok.com/')
+        fixed_link = message.content.replace('https://www.tiktok.com/', 'https://tiktokez.com/')
         await message.channel.send(fixed_link)
 
         # edit the original message to suppress any embed from tiktok proper
