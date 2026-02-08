@@ -15,7 +15,7 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
     def __init__(self, bot: Red):
         self.bot = bot
 
-    async def redirect_to_vx(origin_message: discord.Message, new_message: discord.Message, tweet: dict):
+    async def redirect_to_vx(self, origin_message: discord.Message, new_message: discord.Message, tweet: dict):
         # when a re-encoded file or gif is too big for its intended server, send a vxtwitter link instead
         # delete the new embed and send a raw vxtwitter link instead
         link = tweet['tweetURL'].replace('twitter.com', 'vxtwitter.com')
