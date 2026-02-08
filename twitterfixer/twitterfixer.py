@@ -15,6 +15,13 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
     def __init__(self, bot: Red):
         self.bot = bot
 
+    async def redirect_to_vx(origin_message: discord.Message, new_message: discord.Message, tweet: dict):
+        # when a re-encoded file or gif is too big for its intended server, send a vxtwitter link instead
+        # delete the new embed and send a raw vxtwitter link instead
+        link = tweet['tweetURL'].replace('twitter.com', 'vxtwitter.com')
+        await new_message.delete()
+        await origin_message.channel.send(link)
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.guild is None:
@@ -97,7 +104,7 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                                     ff.run()
 
                                 if os.path.getsize(cog_path / 'gif.gif') > message.guild.filesize_limit:
-                                    await message.channel.send("This tweet's GIF could not be reencoded and uploaded because it's too large to upload to this guild.")
+                                    await self.redirect_to_vx(message, new_message, tweet)
                                 else:
                                     discord_attachment = discord.File(cog_path / 'gif.gif')
                                     await message.channel.send(file=discord_attachment)
@@ -111,11 +118,7 @@ class TwitterFixer(commands.Cog, name='TwitterFixer'):
                                 async with session.get(video_url) as response:
                                     temp = await response.read()
                                     if len(temp) > message.guild.filesize_limit:
-                                        # the file is too big to upload in the current guild
-                                        # delete the new embed and send a raw vxtwitter link instead
-                                        link = tweet['tweetURL'].replace('twitter.com', 'vxtwitter.com')
-                                        await new_message.delete()
-                                        await message.channel.send(link)
+                                        await self.redirect_to_vx(message, new_message, tweet)
                                         break
                                     with io.BytesIO(temp) as file:
                                         newfile = discord.File(file, 'video.mp4')
